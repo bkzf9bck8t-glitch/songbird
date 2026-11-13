@@ -1,16 +1,209 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#1b2033"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="宋鳥的一天"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png"><title>宋鳥的一天｜第一幕</title><style>
-*{box-sizing:border-box}body{margin:0;background:#171b2b;color:#f7f1e8;font-family:system-ui,'Noto Sans TC',sans-serif;touch-action:manipulation}#app{max-width:620px;margin:auto;padding:10px 12px 20px}.top{display:flex;align-items:center;justify-content:space-between;gap:8px}.top strong{font-size:19px}.tag{font-size:11px;color:#d9c9b0}.btn{background:#35415a;border:2px solid #8190a7;border-bottom:4px solid #12192b;border-radius:9px;color:white;padding:10px 13px;font-weight:700;font-size:14px;cursor:pointer}.btn:active{transform:translateY(2px)}.hud{margin:9px 0;display:flex;gap:7px;flex-wrap:wrap;font-size:12px}.pill{background:#30364c;padding:5px 9px;border-radius:20px}canvas{width:100%;display:block;image-rendering:pixelated;background:#262b39;border:4px solid #6d7690;border-radius:6px;aspect-ratio:4/3}.help{text-align:center;color:#b8bed0;font-size:12px;margin:6px 0}.controls{display:none!important}.controls{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:center;margin-top:8px}.dpad{width:160px;height:142px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:4px;margin:auto}.move{background:#4c5772;border:2px solid #7f8da8;border-bottom:4px solid #20283e;border-radius:8px;color:white;font-size:21px;font-weight:bold;touch-action:none}.move:active{background:#8192ae}.act{width:80px;height:80px;border-radius:50%;background:#b96776;border:4px solid #e0a7a9;color:white;font-weight:800;font-size:19px;box-shadow:0 5px #733f55;margin:auto;display:block}.utility{display:flex;justify-content:center;gap:8px;margin-top:9px}.dialog{position:fixed;inset:0;background:#0a0c16b8;display:flex;align-items:end;justify-content:center;z-index:5;padding:12px}.panel{background:#f7edd8;color:#292a38;border:5px solid #525a70;box-shadow:0 7px #0c1020;border-radius:8px;width:min(100%,600px);padding:15px;max-height:75vh;overflow:auto}.panel h3{margin:0 0 10px;font-size:17px}.panel p{line-height:1.65;margin:7px 0 13px;white-space:pre-line}.choices{display:grid;gap:8px}.choice{border:2px solid #8d8c93;background:#fff9ed;color:#2c3041;text-align:left;border-radius:6px;padding:11px;font-weight:700}.choice:active{background:#f2d9b8}.small{font-size:12px;color:#666b78}.hidden{display:none!important}.notebook{position:fixed;inset:0;background:#101626ed;z-index:6;overflow:auto;padding:20px}.book{max-width:570px;margin:auto;background:#f6edda;color:#292d3a;border:5px solid #8b7d6b;padding:18px;border-radius:8px}.book h2{margin-top:0}.clue{background:#fff9ed;padding:10px;margin:7px 0;border-left:4px solid #a57b76}.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pair select{width:100%;padding:9px;border:1px solid #aaa;border-radius:5px;background:white}.footer{font-size:11px;color:#9aa4b8;text-align:center;margin-top:15px}
-</style></head><body><div id="app"><div class="top"><div><strong>宋鳥的一天</strong><div class="tag">第一幕｜今天是我的生日</div></div><button class="btn" id="reset">重新開始</button></div><div class="hud"><span class="pill" id="room">臥室</span><span class="pill" id="goal">🎁 尋找你的生日禮物</span><span class="pill" id="tissues">🧻 0 / 5</span></div><canvas id="game" width="384" height="288"></canvas><div class="help">點擊地板自動移動｜點擊家具自動靠近調查｜點擊綠色門口換房間</div><div class="controls"><div class="dpad"><span></span><button class="move" data-dir="up">▲</button><span></span><button class="move" data-dir="left">◀</button><span></span><button class="move" data-dir="right">▶</button><span></span><button class="move" data-dir="down">▼</button><span></span></div><button class="act" id="action">調查</button></div><div class="utility"><button class="btn" id="book">📓 線索筆記</button><button class="btn" id="task">📋 任務</button><button class="btn" id="hint">❔ 操作說明</button></div><div class="footer">手機版試玩｜進度自動儲存在此裝置瀏覽器</div></div><div class="dialog hidden" id="dialog"><div class="panel"><h3 id="dialogTitle"></h3><p id="dialogText"></p><div class="choices" id="dialogChoices"></div></div></div><div class="notebook hidden" id="notebook"><div class="book"><h2>📓 宋鳥的線索筆記</h2><p class="small">只有值得留意的生活細節才會記在這裡。試著把兩條線索連在一起。</p><div id="clueList"></div><h3>連結線索</h3><div class="pair"><select id="clueA"></select><select id="clueB"></select></div><p><button class="btn" id="combine">嘗試推理</button></p><p id="pairResult"></p><button class="btn" id="closeBook">關閉筆記本</button></div></div><script>
-(()=>{'use strict';const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;const W=12,H=9,T=32;const $=id=>document.getElementById(id);const names={bedroom:'臥室',closet:'衣櫥',living:'客廳',study:'書房',kitchen:'廚房',bath:'浴室',balcony:'陽台'};const layouts={bedroom:{floor:'#9d836d',walls:'#c7b6a0',items:[['bed',2,1,3,2,'床'],['vanity',8,1,2,1,'梳妝台'],['tissueBed',7,5,1,1,'衛生紙'],['fan',9,5,1,1,'電風扇']],doors:[['closet',11,2,'衣櫥'],['living',5,8,'客廳']]},closet:{floor:'#92755c',walls:'#b7a38c',items:[['clothes',2,1,5,1,'掛著的衣服'],['bags',3,5,4,1,'包包']],doors:[['bedroom',0,2,'臥室']]},living:{floor:'#b59b7d',walls:'#d4c2a5',items:[['sofa',1,1,4,2,'格紋沙發'],['tissueSofa',4,3,1,1,'衛生紙'],['tv',8,1,3,1,'電視'],['table',5,4,2,1,'玻璃茶几'],['tea',6,4,1,1,'冰紅茶'],['shelf',9,4,2,2,'白色書櫃'],['tissueLiving',2,5,1,1,'衛生紙']],doors:[['bedroom',5,0,'臥室'],['study',11,4,'書房'],['kitchen',5,8,'廚房']]},study:{floor:'#8f8177',walls:'#b5b1a5',items:[['computers',2,1,7,2,'三台電腦'],['cards',8,5,2,1,'卡牌展示櫃'],['tissueStudy',3,5,1,1,'衛生紙']],doors:[['living',0,4,'客廳']]},kitchen:{floor:'#b6b7ac',walls:'#d8d6c9',items:[['fridge',1,1,2,2,'冰箱'],['island',5,3,4,2,'中島'],['sink',9,1,2,1,'水槽'],['trash',9,6,1,1,'垃圾桶'],['tissueKitchen',4,6,1,1,'衛生紙']],doors:[['living',5,0,'客廳'],['bath',11,4,'浴室'],['balcony',2,8,'陽台']]},bath:{floor:'#a9b9b8',walls:'#cbd7d5',items:[['brushes',2,1,3,1,'牙刷'],['mirror',7,1,2,1,'鏡子'],['shower',8,5,2,2,'淋浴間']],doors:[['kitchen',0,4,'廚房']]},balcony:{floor:'#9eada7',walls:'#b8c6c1',items:[['washer',2,2,2,2,'洗衣機'],['laundry',7,2,3,1,'晾衣區']],doors:[['kitchen',2,0,'廚房']]}};const defaultState=()=>({room:'bedroom',x:6,y:5,seen:{},clues:[],picked:[],discarded:false,teaFridge:false,chapterDone:false,paired:[],started:false});let s;try{s=Object.assign(defaultState(),JSON.parse(localStorage.getItem('songbird-act1')||'{}'))}catch{s=defaultState()}let dialogOpen=false;const save=()=>{try{localStorage.setItem('songbird-act1',JSON.stringify(s))}catch{}};function modal(title,text,options){dialogOpen=true;$('dialog').classList.remove('hidden');$('dialogTitle').textContent=title;$('dialogText').textContent=text;$('dialogChoices').innerHTML='';(options||[['繼續',()=>{}]]).forEach(([label,fn])=>{let b=document.createElement('button');b.className='choice';b.textContent='▸ '+label;b.onclick=()=>{closeModal();fn?.();save();draw()};$('dialogChoices').append(b)})}function closeModal(){dialogOpen=false;$('dialog').classList.add('hidden')}function clue(id,label){if(!s.clues.some(c=>c.id===id)){s.clues.push({id,label});save()}}function seen(id){s.seen[id]=true;save()}function near(obj){let [id,x,y,w,h]=obj;return s.x>=x-1&&s.x<=x+w&&s.y>=y-1&&s.y<=y+h}function blocked(x,y){return layouts[s.room].items.some(([id,a,b,w,h])=>x>=a&&x<a+w&&y>=b&&y<b+h)}function changeRoom(dest){const opposite={bedroom:{closet:[1,2],living:[5,1]},closet:{bedroom:[10,2]},living:{bedroom:[5,7],study:[1,4],kitchen:[5,1]},study:{living:[10,4]},kitchen:{living:[5,7],bath:[1,4],balcony:[2,1]},bath:{kitchen:[10,4]},balcony:{kitchen:[2,7]}};let from=s.room;s.room=dest;[s.x,s.y]=opposite[from]?.[dest]||[6,5];save();draw();if(dest==='closet'&&!s.seen.closet){seen('closet');modal('衣櫥','衣服、包包，還有一些平常不太會去動的東西。\n看起來沒有生日禮物。')}if(dest==='living'&&!s.seen.firstLiving){seen('firstLiving');modal('客廳','一切都很熟悉。\n但又好像哪裡不太對。')}}function move(dir){if(dialogOpen||!$('notebook').classList.contains('hidden'))return;const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir];let x=s.x+d[0],y=s.y+d[1];if(x<0||x>=W||y<0||y>=H)return;let door=layouts[s.room].doors.find(a=>a[1]===x&&a[2]===y);if(door){changeRoom(door[0]);return}if(!blocked(x,y)){s.x=x;s.y=y;save();draw()}}function interact(){if(dialogOpen)return;let list=layouts[s.room].items.filter(near);if(!list.length){modal('宋鳥','這裡沒什麼特別的。');return}let obj=list.sort((a,b)=>Math.abs(s.x-a[1])+Math.abs(s.y-a[2])-Math.abs(s.x-b[1])-Math.abs(s.y-b[2]))[0];act(obj[0])}function pick(id){if(s.picked.includes(id))return; s.picked.push(id);let n=s.picked.length;modal('獲得物品','衛生紙 × 1\n已撿起 '+n+' / 5 張。'+(n===5?'\n……現在得找個垃圾桶。':''));save();draw()}function act(id){if(id.startsWith('tissue')){if(s.picked.includes(id)){modal('地板','這裡已經乾淨了。');return}pick(id);return}switch(id){case 'bed':modal('藍色雙人床','今天是我的生日。\n……生日禮物到底在哪？\n再睡一次應該也不會自己出現。');break;case 'vanity':modal('梳妝台','東西擺得挺齊全。\n宋鳥：「我有這麼講究嗎？」');break;case 'fan':modal('電風扇','臥室還是比較涼。');break;case 'clothes':modal('衣服','熟悉的衣服。\n沒看到什麼禮物。');break;case 'bags':modal('包包','有幾個不常用的包包。\n現在看不出有什麼特別。');break;case 'sofa':clue('sofa','沙發右側');modal('格紋沙發','宋鳥：「沙發上又有衛生紙了。」\n平常坐左邊看電視，右邊總覺得應該空著。');break;case 'tv':modal('電視','宋鳥：「來看一下哲哲好了。」\n螢幕亮起，熟悉的股市分析聲音響了起來。');break;case 'tea':if(s.teaFridge){modal('玻璃茶几','杯子已經拿去冰了。');break}modal('半杯冰紅茶','宋鳥：「又喝一半不冰……」',[['倒掉',()=>modal('廚房水槽前','宋鳥：「等一下，倒掉好像會被罵。可是誰會罵我？」\n系統：你的求生本能阻止了你。',[['還是冰起來',()=>putTea()],['先放著',()=>{}]])],['冰起來',()=>putTea()],['先不管',()=>{}]]);break;case 'table':modal('玻璃茶几',s.teaFridge?'桌面清爽了一點。':'桌上有半杯冰紅茶。');break;case 'shelf':modal('白色書櫃','書、收藏品，還有一盆樂高梅花。\n宋鳥：「這個應該不會死了吧。」');break;case 'computers':clue('computers','第三台電腦');modal('書房｜電腦桌','這裡有三台電腦，卻只有一張電腦椅。\n宋鳥：「……我什麼時候需要三台？」');break;case 'cards':modal('卡牌展示櫃','寶可夢卡牌整整齊齊。\n生日禮物總不會是自己已經買過的卡吧。');break;case 'fridge':modal('冰箱','牛奶快沒了。\n宋鳥：「該回家補貨了。」'+(s.teaFridge?'\n半杯冰紅茶已經放進冰箱。':''));break;case 'island':modal('廚房中島','看起來很普通。\n生日禮物沒有放在這裡。');break;case 'sink':modal('水槽','水槽很乾淨。');break;case 'trash':if(s.picked.length===0){modal('垃圾桶','裡面沒什麼值得調查的。')}else if(s.discarded){modal('垃圾桶','衛生紙已經全部丟掉了。')}else if(s.picked.length<5){modal('垃圾桶','目前撿到 '+s.picked.length+' / 5 張衛生紙。\n好像還有漏網之魚。')}else{s.discarded=true;modal('成就解鎖｜衛生紙清道夫','系統：這個家暫時恢復了文明。\n宋鳥：「……為什麼我做這件事這麼熟練？」',[['收下成就',()=>checkpoint()]]);}break;case 'brushes':clue('brushes','四支牙刷');modal('浴室｜牙刷','洗手台上有四支牙刷。\n宋鳥：「我有四張嘴嗎？」',[['再數一次',()=>modal('牙刷','一、二、三、四。\n數學沒有出問題。')],['把多的丟掉',()=>modal('牙刷','你伸出手，又莫名其妙縮了回來。\n系統：某種求生本能阻止了你。')],['先不管',()=>modal('宋鳥','「反正也不佔位置。」')]]);break;case 'mirror':modal('鏡子','一頭亂翹的捲髮，細細的銀色眼鏡。\n嗯，是今天生日的宋鳥。');break;case 'shower':modal('淋浴間','沒什麼值得注意的。');break;case 'washer':modal('洗衣機','陽台的洗衣機。\n今天先不要洗衣服了。');break;case 'laundry':modal('晾衣區','有些衣服正在晾乾。');break;default:modal('宋鳥','沒什麼特別的。')}}function putTea(){s.teaFridge=true;clue('tea','半杯冰紅茶');modal('冰箱','宋鳥：「反正她還要喝。」\n\n宋鳥：「……誰？」');save();draw()}function checkpoint(){save();if(s.chapterDone)return;if(s.discarded&&s.clues.length>=3){s.chapterDone=true;save();modal('第一幕｜新的疑問','你整理完散落的衛生紙，也發現家裡有些不太合理的細節。\n\n宋鳥：「……以前是不是還有別人住？」\n\n主線任務仍然是：尋找你的生日禮物。\n\n【第一幕完成】\n第二幕將從騎摩托車出門開始。')}else modal('宋鳥','房子暫時乾淨了。\n不過，總覺得還有什麼沒注意到。\n試著調查浴室、客廳和書房，再打開線索筆記本。')}function notebook(){const el=$('notebook');el.classList.remove('hidden');$('clueList').innerHTML=s.clues.length?s.clues.map(c=>'<div class="clue">🔎 '+c.label+'</div>').join(''):'<p>目前還沒有記下線索。試著調查家裡。</p>';for(const id of ['clueA','clueB'])$(id).innerHTML='<option value="">選擇線索</option>'+s.clues.map(c=>'<option value="'+c.id+'">'+c.label+'</option>').join('');$('pairResult').textContent='';}function combine(){let a=$('clueA').value,b=$('clueB').value;if(!a||!b||a===b){$('pairResult').textContent='請選兩條不同的線索。';return}let k=[a,b].sort().join('+'),answers={'brushes+computers':'牙刷和電腦都多出一份。這個家以前是不是還有別人住？','sofa+tea':'總是留著沙發右邊的位置，還習慣替別人收飲料……這到底是誰的習慣？'};if(answers[k]){s.paired=s.paired||[];if(!s.paired.includes(k))s.paired.push(k);$('pairResult').textContent='💡 '+answers[k];save();if(s.discarded&&s.clues.length>=3&&!s.chapterDone){setTimeout(()=>{elClose();checkpoint()},1100)}}else $('pairResult').textContent='宋鳥：「……硬要說有關係，好像也沒有。」';}function elClose(){$('notebook').classList.add('hidden')}function draw(){let L=layouts[s.room];ctx.fillStyle=L.floor;ctx.fillRect(0,0,384,288);for(let y=0;y<H;y++)for(let x=0;x<W;x++){ctx.strokeStyle='#00000012';ctx.strokeRect(x*T,y*T,T,T);if((x+y)%7===0){ctx.fillStyle='#ffffff0c';ctx.fillRect(x*T+4,y*T+5,3,3)}}ctx.fillStyle=L.walls;ctx.fillRect(0,0,384,8);ctx.fillRect(0,280,384,8);ctx.fillRect(0,0,8,288);ctx.fillRect(376,0,8,288);L.doors.forEach(([dest,x,y])=>{ctx.fillStyle='#4d8d82';ctx.fillRect(x*T+3,y*T+3,26,26);ctx.fillStyle='#e4f0cb';ctx.fillRect(x*T+12,y*T+9,8,14);ctx.fillStyle='#172c32';ctx.font='9px sans-serif';ctx.fillText('↗',x*T+12,y*T+28)});const palette={bed:'#52799e',vanity:'#b08b77',fan:'#8b9cb0',clothes:'#9e6880',bags:'#735a53',sofa:'#837e91',tv:'#343c50',table:'#b7d6d2',tea:'#a44f4c',shelf:'#eee5d5',computers:'#5d6983',cards:'#b7a58b',fridge:'#f0ede4',island:'#a38b79',sink:'#b8c9d1',trash:'#4d6973',brushes:'#e9dfd3',mirror:'#a5c9d1',shower:'#a7c4cb',washer:'#ecece2',laundry:'#bca8a1'};L.items.forEach(([id,x,y,w,h,label])=>{if(id.startsWith('tissue')&&s.picked.includes(id))return;let px=x*T+3,py=y*T+3,ww=w*T-6,hh=h*T-6;ctx.fillStyle='#00000040';ctx.fillRect(px+3,py+4,ww,hh);ctx.fillStyle=id.startsWith('tissue')?'#f8f4e7':palette[id]||'#a8a1a1';ctx.fillRect(px,py,ww,hh);ctx.fillStyle='#ffffff40';ctx.fillRect(px+3,py+3,Math.max(ww-6,2),4);ctx.fillStyle=id==='tv'||id==='computers'?'#d6f3e7':'#292c38';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(id.startsWith('tissue')?'🧻':label,px+ww/2,py+hh/2+4,Math.max(ww-3,25));ctx.textAlign='left'});let px=s.x*T+8,py=s.y*T+3;ctx.fillStyle='#00000055';ctx.fillRect(px+1,py+24,17,5);ctx.fillStyle='#252b36';ctx.fillRect(px+3,py+2,16,10);ctx.fillStyle='#f0c2a4';ctx.fillRect(px+5,py+11,13,9);ctx.fillStyle='#a2b4d1';ctx.fillRect(px+4,py+20,15,8);ctx.fillStyle='#303b54';ctx.fillRect(px+5,py+27,5,4);ctx.fillRect(px+14,py+27,5,4);ctx.fillStyle='#e9eef0';ctx.fillRect(px+6,py+13,5,3);ctx.fillRect(px+13,py+13,5,3);ctx.fillStyle='#313844';ctx.fillRect(px+10,py+14,3,2);ctx.fillStyle='#f1d89a';ctx.fillRect(px+8,py-3,5,3);$('room').textContent='📍 '+names[s.room];$('tissues').textContent='🧻 '+s.picked.length+' / 5'+(s.discarded?' ✓':'');$('goal').textContent=s.chapterDone?'🎁 第一幕完成':'🎁 尋找你的生日禮物'}document.querySelectorAll('[data-dir]').forEach(b=>{let timer=null;let run=()=>move(b.dataset.dir);b.addEventListener('pointerdown',e=>{e.preventDefault();run();timer=setInterval(run,155)});for(let evt of ['pointerup','pointercancel','pointerleave'])b.addEventListener(evt,()=>{clearInterval(timer);timer=null})});// 手機點擊尋路：避開家具，抵達相鄰位置後互動。
-let walkTimer=null;function stopWalk(){if(walkTimer!==null){clearInterval(walkTimer);walkTimer=null}}
-function route(tx,ty,adjacent){let q=[[s.x,s.y]], seen=new Set([s.x+','+s.y]),prev=new Map(),end=null;
-const dirs=[[1,0],[-1,0],[0,1],[0,-1]],key=(x,y)=>x+','+y;
-while(q.length){const [x,y]=q.shift();if(adjacent?Math.abs(x-tx)+Math.abs(y-ty)<=1:x===tx&&y===ty){end=[x,y];break}
-for(const [dx,dy] of dirs){const nx=x+dx,ny=y+dy,k=key(nx,ny);if(nx<0||ny<0||nx>=W||ny>=H||seen.has(k)||blocked(nx,ny))continue;seen.add(k);prev.set(k,[x,y]);q.push([nx,ny])}}
-if(!end)return null;let steps=[];while(end[0]!==s.x||end[1]!==s.y){steps.unshift(end);end=prev.get(key(...end))}return steps}
-canvas.addEventListener('pointerdown',e=>{if(dialogOpen||!$('notebook').classList.contains('hidden'))return;e.preventDefault();stopWalk();const r=canvas.getBoundingClientRect(),x=Math.min(W-1,Math.max(0,Math.floor((e.clientX-r.left)/r.width*W))),y=Math.min(H-1,Math.max(0,Math.floor((e.clientY-r.top)/r.height*H)));let L=layouts[s.room];let obj=L.items.find(([id,a,b,w,h])=>x>=a&&x<a+w&&y>=b&&y<b+h&&!(id.startsWith('tissue')&&s.picked.includes(id)));let door=L.doors.find(d=>d[1]===x&&d[2]===y);
-let dest=null,callback=null;if(obj){const [,a,b,w,h]=obj;let opts=[];for(let xx=a;xx<a+w;xx++)for(let yy=b;yy<b+h;yy++)for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){let px=xx+dx,py=yy+dy;if(px>=0&&px<W&&py>=0&&py<H&&!blocked(px,py))opts.push([px,py])}opts.sort((a,b)=>Math.abs(a[0]-s.x)+Math.abs(a[1]-s.y)-Math.abs(b[0]-s.x)-Math.abs(b[1]-s.y));let best=null;for(const pt of opts){const path=route(pt[0],pt[1],false);if(path&&(!best||path.length<best.length))best=path}if(!best){modal('宋鳥','這邊走不過去。');return}dest=best;callback=()=>act(obj[0])}else if(door){dest=route(x,y,false);callback=()=>changeRoom(door[0])}else{dest=route(x,y,false)}
-if(!dest){modal('宋鳥','這裡走不過去。');return}let i=0;if(!dest.length){callback?.();return}walkTimer=setInterval(()=>{if(dialogOpen){stopWalk();return}if(i>=dest.length){stopWalk();callback?.();return}const [nx,ny]=dest[i++];s.x=nx;s.y=ny;save();draw();if(i>=dest.length){stopWalk();callback?.()}},125)
+<!doctype html>
+<html lang="zh-Hant"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>宋鳥的一天（階段 1）</title>
+<style>
+:root{--bg:#f1e8dc;--ink:#2b2230;--box:#fff9ec;--line:#7a5a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1722;--ink:#f0e6d8;--line:#c9a77a}}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+#wrap{max-width:440px;margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:8px}
+#hud{font-size:14px;min-height:20px;text-align:center;opacity:0;transition:opacity .6s}
+#stage{position:relative;width:100%;aspect-ratio:176/208;background:#000;border-radius:10px;overflow:hidden}
+canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
+#dlg{position:absolute;left:8px;right:8px;bottom:8px;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
+#dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
+#intro{position:absolute;inset:0;background:#000;color:#f6e7c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 2.2s;cursor:pointer}
+#intro h1{font-size:30px;margin:0;letter-spacing:.15em}
+#intro p{margin:0;font-size:15px;opacity:.7}
+#note{font-size:12px;text-align:center;opacity:.65}
+</style></head><body>
+<div id="wrap">
+<div id="hud">主線任務：尋找你的生日禮物</div>
+<div id="stage">
+<canvas id="c"></canvas>
+<div id="fade"></div>
+<div id="dlg"></div>
+<div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
+</div>
+<div id="note">階段 1 測試版：臥室、衣帽間、陽台已照真實格局。美術仍是暫時方塊。</div>
+</div>
+<script>
+const T=16,C=11,R=13,W=C*T,H=R*T;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');cv.width=W;cv.height=H;
+const $=id=>document.getElementById(id);
+const BAGS=['一些包包。','我對它們沒有印象。'];
+const ROOMS={
+bed:{wl:2,floor:['#efe3cf','#e9dcc5'],wall:'#e9e2d3',wallL:'#d8cfbc',base:'#b9a07a',
+ objs:[
+ {id:'head',x:4,y:0,w:4,h:2,bg:1,kind:'head',text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']},
+ {x:0,y:4,w:2,h:3,bg:1,kind:'tv',text:['電視。','來看一下哲哲好了。……不對，先找禮物。']},
+ {x:9,y:0,w:2,h:2,bg:1,kind:'window',ac:1,text:['落地窗，外面是陽台。','冷氣開著。']},
+ {x:4,y:2,w:4,h:1,hgt:16,top:'#d6b98c',front:'#c19a6b',solid:1,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']},
+ {id:'bed',x:4,y:3,w:4,h:5,hgt:8,kind:'bed',top:'#8fb0d6',front:'#d2b48a',solid:1,text:['藍色雙人床。','睡得很好，謝謝。']},
+ {x:6,y:3,w:1,h:1,hgt:8,lift:80,kind:'plush',appr:'bed',text:['傑斯維爾。紅色的身體，一臉呆樣。','它看起來比我還想睡。']},
+ {x:2,y:4,w:2,h:4,hgt:9,kind:'dresser',top:'#d9bd90',front:'#b8935f',solid:1,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
+ {x:3,y:8,w:1,h:1,hgt:5,top:'#3d4a5c',front:'#2b3442',solid:1,text:['深色梳妝椅。','沒有人坐，但它看起來很有自信。']},
+ {x:10,y:4,w:1,h:1,hgt:30,kind:'fan',solid:1,text:['電風扇。','轉頭的角度永遠對不到我。']}],
+ exits:[{x:9,y:2,wall:'T',col:'#9fc6dc',to:'balcony',sx:3,sy:3},
+        {x:2,y:9,wall:'L',to:'closet',sx:5,sy:11},{x:2,y:10,wall:'L',to:'closet',sx:5,sy:11},
+        {x:2,y:12,wall:'L',say:['通往客廳的木門。','客廳還在施工中。（階段 1 只做臥室、衣帽間、陽台）']}]},
+closet:{wl:0,floor:['#e4d6bd','#ddcfb4'],wall:'#e2dccd',base:'#b9a07a',
+ objs:[
+ {x:4,y:0,w:3,h:2,bg:1,kind:'window',plain:1,text:['窗戶。','外面是別人家的晾衣架。']},
+ {x:0,y:2,w:3,h:11,void:1,solid:1,bg:1},{x:8,y:2,w:3,h:11,void:1,solid:1,bg:1},
+ {x:3,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
+ {x:7,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
+ {x:4,y:2,w:3,h:1,hgt:10,kind:'shelf',top:'#cdb48f',front:'#a98763',solid:1,text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']}],
+ exits:[{x:4,y:12,to:'bed',sx:3,sy:9},{x:5,y:12,to:'bed',sx:3,sy:9},{x:6,y:12,to:'bed',sx:3,sy:9}]},
+balcony:{wl:2,floor:['#ece6dc','#e4ddd0'],wall:'#c49a82',wallL:'#b58a74',base:'#a37c66',
+ objs:[
+ {x:2,y:6,w:9,h:7,void:1,solid:1,bg:1},{x:3,y:5,w:7,h:1,hgt:14,top:'#c9a06c',front:'#a97c4c',solid:1,text:['長木櫃。','裡面大概是洗衣精和一堆用不到的東西。']},
+ {x:9,y:2,w:2,h:2,hgt:16,top:'#f4f4f2',front:'#dcdcdc',kind:'washer',solid:1,text:['洗衣機。','裡面是空的。']},
+ {x:4,y:2,w:3,h:1,hgt:26,kind:'drying',top:'#cfd3d6',solid:1,text:['晾著的衣服。','大部分是黑色的，我的品味很一致。']},
+ {x:8,y:4,w:1,h:1,hgt:6,top:'#f3e6b8',front:'#d8c88f',solid:1,text:['黃色的水桶。','不知道用來幹嘛，但它一直在這裡。']}],
+ exits:[{x:2,y:3,wall:'L',to:'bed',sx:9,sy:3}]}
+};
+let room='bed',blocked=[],busy=true,pending=null;
+const P={cx:4,cy:6,px:0,py:0,path:[],t:0,moving:false};
+function setCell(x,y){P.cx=x;P.cy=y;P.px=x*T+8;P.py=y*T+14;P.path=[];}
+function build(){
+ const wl=ROOMS[room].wl;
+ blocked=Array.from({length:R},(_,y)=>Array.from({length:C},(_,x)=>(y<2||x<wl)?1:0));
+ ROOMS[room].objs.forEach(o=>{if(o.solid)for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)blocked[o.y+j][o.x+i]=1;});
+}
+function bfs(sx,sy){
+ const d=Array.from({length:R},()=>Array(C).fill(-1)),pr={};d[sy][sx]=0;const q=[[sx,sy]];
+ for(let k=0;k<q.length;k++){const[x,y]=q[k];
+  for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]]){const nx=x+dx,ny=y+dy;
+   if(nx<0||ny<0||nx>=C||ny>=R||blocked[ny][nx]||d[ny][nx]>=0)continue;
+   d[ny][nx]=d[y][x]+1;pr[nx+','+ny]=[x,y];q.push([nx,ny]);}}
+ return{d,pr};
+}
+function route(sx,sy,tx,ty){
+ const{d,pr}=bfs(sx,sy);if(d[ty][tx]<0)return null;
+ const p=[];let c=[tx,ty];while(c[0]!==sx||c[1]!==sy){p.unshift(c);c=pr[c[0]+','+c[1]];}return p;
+}
+let lines=[],after=null;
+function say(ls,cb){lines=ls.slice();after=cb||null;busy=true;next();}
+function next(){
+ const d=$('dlg');
+ if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
+ d.style.display='block';d.innerHTML=lines.shift()+'<small>▼</small>';
+}
+$('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
+cv.addEventListener('pointerdown',e=>{
+ if(busy)return;
+ const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+ const R0=ROOMS[room],objs=R0.objs,wl=R0.wl;
+ const origin=P.path.length?P.path[0]:[P.cx,P.cy],lead=P.path.length?[P.path[0]]:[];
+ const go=(p,act)=>{if(!p)return;P.path=lead.concat(p);pending=act;if(!P.path.length)arrive();};
+ let cx=Math.floor(x/T),cy=Math.floor(y/T);if(cx<0||cy<0||cx>=C||cy>=R)return;
+ let ecx=cx,ecy=cy;if(cx<wl&&cy>=2)ecx=wl;if(cy<2&&cx>=wl)ecy=2;
+ const ex=R0.exits.find(q=>q.x===ecx&&q.y===ecy);
+ if(ex){go(route(origin[0],origin[1],ex.x,ex.y),{exit:ex});return;}
+ for(let i=objs.length-1;i>=0;i--){const o=objs[i];if(o.void||!o.text)continue;
+  if(x>=o.x*T&&x<(o.x+o.w)*T&&y>=o.y*T-(o.hgt||0)&&y<(o.y+o.h)*T){
+   const a=o.appr?objs.find(q=>q.id===o.appr):o;
+   const{d}=bfs(origin[0],origin[1]);let best=null;
+   for(let j=-1;j<=a.h;j++)for(let k=-1;k<=a.w;k++){
+    if((j>=0&&j<a.h)&&(k>=0&&k<a.w))continue;if((j<0||j>=a.h)&&(k<0||k>=a.w))continue;
+    const nx=a.x+k,ny=a.y+j;if(nx<0||ny<0||nx>=C||ny>=R||blocked[ny][nx]||d[ny][nx]<0)continue;
+    if(!best||d[ny][nx]<best.d)best={d:d[ny][nx],nx,ny};}
+   if(best)go(route(origin[0],origin[1],best.nx,best.ny),{talk:o.text});
+   return;}}
+ if(!blocked[cy][cx])go(route(origin[0],origin[1],cx,cy),null);
 });
-$('action').onclick=interact;$('book').onclick=notebook;$('closeBook').onclick=elClose;$('combine').onclick=combine;$('task').onclick=()=>modal('任務列表','🎁 主線：尋找你的生日禮物\n🧻 衛生紙清道夫：撿起衛生紙 '+s.picked.length+'/5，並丟進垃圾桶。'+(s.discarded?'（已完成）':'')+'\n📓 可選：調查異常物品，嘗試連結線索。');$('hint').onclick=()=>modal('操作說明','點擊地板，宋鳥會自動走過去；點擊家具，會自動靠近調查。\n綠色門口可以切換房間。\n找到的線索會記在筆記本。\n衛生紙需要全部撿起，最後到廚房垃圾桶丟掉。\n遊戲會自動儲存。');$('reset').onclick=()=>{stopWalk();modal('重新開始？','這會清除目前第一幕的遊戲進度。',[['確定重新開始',()=>{s=defaultState();save();draw();intro()}],['取消',()=>{}]])};window.addEventListener('keydown',e=>{let map={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};if(map[e.key]){e.preventDefault();move(map[e.key])}else if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!dialogOpen)interact()}});function intro(){s.started=true;save();modal('第一幕｜今天是我的生日','叮鈴鈴——\n\n宋鳥從藍色雙人床上醒來。\n\n宋鳥：「今天我生日欸。」\n宋鳥：「……所以我的禮物呢？」\n\n【主線任務更新】\n🎁 尋找你的生日禮物',[['起床，開始找禮物',()=>modal('系統','你記得自己的生活、喜好，還有今天是生日。\n\n但有些事情，好像被你忘記了。\n\n先在家裡找找吧。')]])}if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{})}draw();if(!s.started)intro();else if(s.chapterDone)modal('第一幕已完成','你已完成第一幕。可以繼續自由探索，或按「重新開始」重新體驗。');})();
-</script></body></html>
+function arrive(){
+ const a=pending;pending=null;if(!a)return;
+ if(a.talk)say(a.talk);
+ else if(a.exit){const e=a.exit;
+  if(e.to){busy=true;$('fade').style.opacity=1;setTimeout(()=>{room=e.to;build();setCell(e.sx,e.sy);$('fade').style.opacity=0;setTimeout(()=>busy=false,300);},320);}
+  else say(e.say,()=>{P.path=[[P.cx,P.cy-1]];});}
+}
+function shade(c,f){const n=parseInt(c.slice(1),16);return`rgb(${Math.max(0,(n>>16)*f)|0},${Math.max(0,((n>>8)&255)*f)|0},${Math.max(0,(n&255)*f)|0})`;}
+function box(o){
+ const x=o.x*T,y=o.y*T-o.hgt,w=o.w*T,h=o.h*T,fy=(o.y+o.h)*T-o.hgt;
+ ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,w,3);
+ ctx.fillStyle=o.top;ctx.fillRect(x,y,w,h);
+ if(o.kind==='rack'){const cols=['#c25a5a','#2e2e36','#e8dfc8','#5b8fb9','#2e2e36','#d98aa6','#6a9e6e','#e8dfc8'];
+  for(let j=0;j<o.h;j++){ctx.fillStyle=cols[j%8];ctx.fillRect(x+2,y+j*T+2,w-4,T-4);}
+  ctx.fillStyle='#a98a62';ctx.fillRect(x,fy,w,o.hgt);ctx.fillStyle='#8c6f4b';for(let j=0;j<o.h;j++)ctx.fillRect(x+2,fy+j*T+(o.hgt-6),w-4,1);}
+ else{ctx.fillStyle=o.front;ctx.fillRect(x,fy,w,o.hgt);}
+ ctx.strokeStyle=shade(o.front||'#a98a62',.62);ctx.strokeRect(x+.5,y+.5,w-1,h+o.hgt-1);
+ if(o.kind==='bed'){
+  ctx.fillStyle='#c8e06a';ctx.fillRect(x+3,y+3,22,10);ctx.fillStyle='#58c79a';ctx.fillRect(x+30,y+3,22,10);
+  ctx.fillStyle='#d9c8a0';ctx.fillRect(x+8,y+26,46,30);ctx.fillRect(x+4,y+32,54,18);ctx.fillStyle='#c4b288';ctx.fillRect(x+12,y+34,18,3);ctx.fillRect(x+30,y+44,18,3);}
+ if(o.kind==='dresser'){const c=['#e07a8c','#7fb069','#f2f2f2','#9b7fc7','#f0c14b','#5aa9c9'];
+  for(let k=0;k<7;k++){ctx.fillStyle=c[k%6];ctx.fillRect(x+3+(k%2)*13,y+4+k*8,5,6);}}
+ if(o.kind==='shelf'){ctx.fillStyle='#2b2230';ctx.fillRect(x+T+4,y-2,9,6);
+  ['#d6453d','#f0b429','#3fa86b','#3b82c4','#9b59b6'].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x+T+3+i*2,y+4,2,9);});}
+}
+function plush(o){const x=o.x*T+4,y=o.y*T-o.hgt-2;
+ ctx.fillStyle='#d6453d';ctx.fillRect(x,y+5,8,9);ctx.fillRect(x-2,y+6,2,6);ctx.fillRect(x+8,y+6,2,6);
+ ctx.fillStyle='#f0dcae';ctx.fillRect(x,y,8,5);ctx.fillStyle='#2b2230';ctx.fillRect(x+1,y+2,2,1);ctx.fillRect(x+5,y+2,2,1);ctx.fillRect(x+2,y+4,4,1);}
+function fan(o){const x=o.x*T,b=(o.y+1)*T;
+ ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,b-2,12,3);
+ ctx.fillStyle='#e8e8e8';ctx.fillRect(x+3,b-3,10,3);ctx.fillRect(x+7,b-20,2,17);
+ ctx.fillStyle='#fafafa';ctx.fillRect(x+1,b-34,14,14);ctx.fillStyle='#c5ccd3';ctx.fillRect(x+3,b-32,10,10);ctx.fillStyle='#fafafa';ctx.fillRect(x+7,b-32,2,10);ctx.fillRect(x+3,b-28,10,2);}
+function washer(o){box(o);const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#2f3a44';ctx.fillRect(x+7,y+h2(o)-18,14,14);ctx.fillStyle='#8aa6b8';ctx.fillRect(x+10,y+h2(o)-15,8,8);}
+function h2(o){return o.h*T+o.hgt;}
+function drying(o){const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#cfd3d6';ctx.fillRect(x,y,o.w*T,3);
+ ctx.fillStyle='#2e2e36';ctx.fillRect(x+4,y+3,9,20);ctx.fillStyle='#8d8f96';ctx.fillRect(x+16,y+3,8,16);ctx.fillStyle='#2a2a33';ctx.fillRect(x+25,y+3,6,22);
+ ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,o.w*T,3);}
+function playerDraw(){
+ const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=Math.round(P.px),y=Math.round(P.py-18-b);
+ ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,P.py-1,10,3);
+ ctx.fillStyle='#2b1d17';ctx.fillRect(x-5,y,10,5);ctx.fillRect(x-6,y+1,2,4);ctx.fillRect(x+4,y+1,2,4);ctx.fillRect(x-3,y-2,2,2);ctx.fillRect(x+1,y-3,2,3);
+ ctx.fillStyle='#f1c9a5';ctx.fillRect(x-4,y+4,8,5);
+ ctx.fillStyle='#c9ced6';ctx.fillRect(x-4,y+5,3,3);ctx.fillRect(x+1,y+5,3,3);ctx.fillStyle='#2b2230';ctx.fillRect(x-3,y+6,1,1);ctx.fillRect(x+2,y+6,1,1);
+ ctx.fillStyle='#2a2a33';ctx.fillRect(x-5,y+9,10,7);ctx.fillStyle='#f1c9a5';ctx.fillRect(x-6,y+11,1,3);ctx.fillRect(x+5,y+11,1,3);
+ const s=P.moving&&Math.sin(P.t*10)>0?1:0;ctx.fillStyle='#3a4a6a';ctx.fillRect(x-4,y+16,3,2-s);ctx.fillRect(x+1,y+16,3,1+s);
+}
+function bgObj(o){
+ const x=o.x*T,y=o.y*T,w=o.w*T,h=o.h*T;
+ if(o.void){ctx.fillStyle='#2a2130';ctx.fillRect(x,y,w,h);}
+ else if(o.kind==='tv'){ctx.fillStyle='#c9a06c';ctx.fillRect(2,y+2,T*2-4,h-4);ctx.fillStyle='#1c1c24';ctx.fillRect(6,y+7,T*2-12,h-14);ctx.fillStyle='#3d4a5f';ctx.fillRect(8,y+9,T*2-16,h-18);}
+ else if(o.kind==='head'){ctx.fillStyle='#d6b98c';ctx.fillRect(x,1,w,2*T-1);ctx.fillStyle='#f1ead9';ctx.fillRect(x+4,3,w-8,15);ctx.fillStyle='#b8935f';ctx.fillRect(x+3,20,w-6,2);
+  ['#e07a8c','#f2f2f2','#7fb069','#f2f2f2','#5aa9c9'].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x+7+i*9,23,4,6);});}
+ else if(o.kind==='window'){ctx.fillStyle='#b9a07a';ctx.fillRect(x,2,w,2*T-4);ctx.fillStyle='#a9d3e6';ctx.fillRect(x+2,4,w-4,2*T-8);
+  if(!o.plain){ctx.fillStyle='#e8c3b8';ctx.fillRect(x+2,4,6,2*T-8);ctx.fillRect(x+w-8,4,6,2*T-8);}
+  if(o.ac){ctx.fillStyle='#f2f2f2';ctx.fillRect(x-12,0,w+10,6);}}
+}
+function exitDraw(e,wl){
+ const c=e.col||'#b98550';ctx.fillStyle=c;
+ if(e.wall==='L'){ctx.fillRect(3,e.y*T+1,wl*T-6,T-1);ctx.fillStyle=shade(c,.7);ctx.fillRect(3,e.y*T,wl*T-6,1);ctx.fillStyle='#e8cf8f';ctx.fillRect(wl*T-9,e.y*T+7,2,2);}
+ else if(e.wall==='T'){ctx.fillRect(e.x*T+1,3,T-2,2*T-5);ctx.fillStyle=shade(c,.7);ctx.fillRect(e.x*T,3,1,2*T-5);}
+ else{ctx.fillStyle='#b98550';ctx.fillRect(e.x*T,e.y*T,T,T);ctx.fillStyle='#8a6035';ctx.fillRect(e.x*T+2,e.y*T+2,T-4,T-4);ctx.fillStyle='#e8cf8f';ctx.fillRect(e.x*T+T-5,e.y*T+7,2,2);}
+}
+function draw(){
+ const R0=ROOMS[room],wl=R0.wl;
+ ctx.fillStyle=R0.wall;ctx.fillRect(0,0,W,2*T);
+ if(wl){ctx.fillStyle=R0.wallL;ctx.fillRect(0,0,wl*T,H);ctx.fillStyle=R0.base;ctx.fillRect(wl*T-3,2*T,3,H);}
+ ctx.fillStyle=R0.base;ctx.fillRect(wl*T,2*T-3,W,3);
+ for(let y=2;y<R;y++)for(let x=wl;x<C;x++){ctx.fillStyle=R0.floor[(x+y)%2];ctx.fillRect(x*T,y*T,T,T);}
+ R0.objs.forEach(o=>{if(o.bg)bgObj(o);});
+ R0.exits.forEach(e=>exitDraw(e,wl));
+ const items=R0.objs.filter(o=>!o.bg).map(o=>({s:(o.y+o.h)*T+(o.lift||0),f:()=>o.kind==='plush'?plush(o):o.kind==='fan'?fan(o):o.kind==='washer'?washer(o):o.kind==='drying'?drying(o):box(o)}));
+ items.push({s:P.py,f:playerDraw});items.sort((a,b)=>a.s-b.s).forEach(i=>i.f());
+ const g=ctx.createRadialGradient(W/2,H/2,50,W/2,H/2,170);g.addColorStop(0,'rgba(255,214,150,0)');g.addColorStop(1,'rgba(40,20,50,.28)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+}
+let last=0;
+function loop(t){
+ const dt=Math.min(.05,(t-last)/1000||0);last=t;P.moving=false;
+ if(P.path.length){const[nx,ny]=P.path[0],tx=nx*T+8,ty=ny*T+14,dx=tx-P.px,dy=ty-P.py,dist=Math.hypot(dx,dy),st=58*dt;P.moving=true;P.t+=dt;
+  if(dist<=st){P.px=tx;P.py=ty;P.cx=nx;P.cy=ny;P.path.shift();if(!P.path.length){P.moving=false;arrive();}}
+  else{P.px+=dx/dist*st;P.py+=dy/dist*st;}}
+ draw();requestAnimationFrame(loop);
+}
+function alarm(){try{const a=new(window.AudioContext||window.webkitAudioContext)();
+ for(let i=0;i<6;i++){const o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=i%2?740:880;g.gain.value=.04;o.connect(g);g.connect(a.destination);o.start(a.currentTime+i*.28);o.stop(a.currentTime+i*.28+.14);}}catch(e){}}
+$('intro').addEventListener('pointerdown',()=>{
+ alarm();$('intro').style.pointerEvents='none';$('intro').style.opacity=0;
+ setTimeout(()=>{$('intro').style.display='none';
+  say(['……（鬧鐘聲）','今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;});},2300);
+},{once:true});
+build();setCell(8,6);requestAnimationFrame(loop);
+</script>
+</body></html>
