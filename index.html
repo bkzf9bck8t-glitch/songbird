@@ -43,7 +43,7 @@ bed:{wl:2,floor:['#efe3cf','#e9dcc5'],wall:'#e9e2d3',wallL:'#d8cfbc',base:'#b9a0
  {x:4,y:2,w:4,h:1,hgt:16,top:'#d6b98c',front:'#c19a6b',solid:1,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']},
  {id:'bed',x:4,y:3,w:4,h:5,hgt:8,kind:'bed',top:'#8fb0d6',front:'#d2b48a',solid:1,text:['藍色雙人床。','睡得很好，謝謝。']},
  {x:6,y:3,w:1,h:1,hgt:8,lift:80,kind:'plush',appr:'bed',text:['傑斯維爾。紅色的身體，一臉呆樣。','它看起來比我還想睡。']},
- {x:2,y:4,w:2,h:4,hgt:9,kind:'dresser',top:'#d9bd90',front:'#b8935f',solid:1,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
+ {x:2,y:4,w:1,h:4,hgt:9,kind:'dresser',top:'#d9bd90',front:'#b8935f',solid:1,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
  {x:3,y:8,w:1,h:1,hgt:5,top:'#3d4a5c',front:'#2b3442',solid:1,text:['深色梳妝椅。','沒有人坐，但它看起來很有自信。']},
  {x:10,y:4,w:1,h:1,hgt:30,kind:'fan',solid:1,text:['電風扇。','轉頭的角度永遠對不到我。']}],
  exits:[{x:9,y:2,wall:'T',col:'#9fc6dc',to:'balcony',sx:3,sy:3},
@@ -136,7 +136,7 @@ function box(o){
   ctx.fillStyle='#c8e06a';ctx.fillRect(x+3,y+3,22,10);ctx.fillStyle='#58c79a';ctx.fillRect(x+30,y+3,22,10);
   ctx.fillStyle='#d9c8a0';ctx.fillRect(x+8,y+26,46,30);ctx.fillRect(x+4,y+32,54,18);ctx.fillStyle='#c4b288';ctx.fillRect(x+12,y+34,18,3);ctx.fillRect(x+30,y+44,18,3);}
  if(o.kind==='dresser'){const c=['#e07a8c','#7fb069','#f2f2f2','#9b7fc7','#f0c14b','#5aa9c9'];
-  for(let k=0;k<7;k++){ctx.fillStyle=c[k%6];ctx.fillRect(x+3+(k%2)*13,y+4+k*8,5,6);}}
+  for(let k=0;k<7;k++){ctx.fillStyle=c[k%6];ctx.fillRect(x+2+(k%2)*7,y+4+k*8,5,6);}}
  if(o.kind==='shelf'){ctx.fillStyle='#2b2230';ctx.fillRect(x+T+4,y-2,9,6);
   ['#d6453d','#f0b429','#3fa86b','#3b82c4','#9b59b6'].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x+T+3+i*2,y+4,2,9);});}
 }
