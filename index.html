@@ -12,7 +12,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 #stage{position:relative;width:100%;aspect-ratio:176/208;background:#000;border-radius:10px;overflow:hidden}
 canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
 #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
-#dlg{position:absolute;left:8px;right:8px;bottom:8px;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
+#dlg{position:absolute;max-height:calc(100% - 16px);overflow-y:auto;-webkit-overflow-scrolling:touch;left:8px;right:8px;bottom:8px;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
 #dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
 #dlg .opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 #dlg .opts button{font:inherit;font-size:16px;text-align:left;min-height:44px;padding:8px 12px;border:2px solid var(--line);border-radius:6px;background:#fff;color:#2b2230;cursor:pointer}
@@ -157,7 +157,7 @@ function enter(to,from,ex){
 
 // 對話腳本：每一行可以是文字，或 {ask:'問題', opts:[['選項文字',[接著的對話...],選後執行的函式?], ...]}
 // 選項後面的對話也可以再放 ask，做成多層選擇。
-let lines=[],after=null,asking=false;
+let lines=[],after=null,asking=false,shown=0;
 function say(ls,cb){lines=ls.slice();after=cb||null;busy=true;next();}
 function next(){
  const d=$('dlg');
@@ -165,10 +165,11 @@ function next(){
  if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
  const l=lines.shift();d.style.display='block';
  if(typeof l==='string'){d.innerHTML=l+'<small>▼</small>';return;}
- asking=true;d.innerHTML=l.ask+'<div class="opts"></div>';
+ asking=true;shown=Date.now();d.innerHTML=l.ask+'<div class="opts"></div>';
  const box=d.querySelector('.opts');
  l.opts.forEach(([t,then,fn])=>{const b=document.createElement('button');b.textContent=t;
-  b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
+  b.addEventListener('pointerdown',e=>e.stopPropagation());
+  b.addEventListener('click',e=>{e.stopPropagation();if(!asking||Date.now()-shown<250)return;
    asking=false;lines=(then||[]).concat(lines);if(fn)fn();next();});
   box.appendChild(b);});
 }
