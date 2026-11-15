@@ -8,49 +8,65 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1722;--ink:#f0e6d8;--line:#c9a77a}}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 #wrap{max-width:440px;margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:8px}
-#hud{font-size:14px;min-height:20px;text-align:center;opacity:0;transition:opacity .6s}
+#hud{font-size:14px;min-height:20px;text-align:center;opacity:0;transition:opacity .6s;line-height:1.5}
 #stage{position:relative;width:100%;aspect-ratio:176/208;background:#000;border-radius:10px;overflow:hidden}
 canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
 #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
 #dlg{position:absolute;left:8px;right:8px;bottom:8px;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
 #dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
+#dlg .opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+#dlg .opts button{font:inherit;font-size:16px;text-align:left;min-height:44px;padding:8px 12px;border:2px solid var(--line);border-radius:6px;background:#fff;color:#2b2230;cursor:pointer}
+#dlg .opts button::before{content:"▶ ";opacity:0;color:var(--line)}
+#dlg .opts button:active{background:#f3e3c4}
+#dlg .opts button:active::before{opacity:1}
 #intro{position:absolute;inset:0;background:#000;color:#f6e7c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 2.2s;cursor:pointer}
 #intro h1{font-size:30px;margin:0;letter-spacing:.15em}
 #intro p{margin:0;font-size:15px;opacity:.7}
 #note{font-size:12px;text-align:center;opacity:.65}
 </style></head><body>
 <div id="wrap">
-<div id="hud">主線任務：尋找你的生日禮物</div>
+<div id="hud">11 月 24 日｜宋鳥的生日<br>主線任務：尋找你的生日禮物</div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
-<div id="note">階段 1 測試版：臥室、衣帽間、陽台已照真實格局。美術仍是暫時方塊。</div>
+<div id="note">階段 1 測試版：臥室使用參考圖背景（暫用版，仍帶有參考圖上的人物與介面）；衣帽間、陽台仍是暫時方塊。</div>
 </div>
 <script>
 const T=16,C=11,R=13,W=C*T,H=R*T;
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');cv.width=W;cv.height=H;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const $=id=>document.getElementById(id);
-const BAGS=['一些包包。','我對它們沒有印象。'];
+
+// ── 臥室：參考圖背景。座標以 800 寬的縮圖量測，乘 K 換成原圖像素 ──
+const BG=new Image();BG.src='assets/bedroom.png';
+const K=1448/800,sc=a=>a.map(([x,y])=>[x*K,y*K]),pt=([x,y])=>[x*K,y*K];
+const BED=[[345,362],[612,422],[560,600],[222,600],[222,512]],
+      CHAIR=[[572,330],[650,330],[655,412],[575,412]],
+      DRESSER=[[625,330],[750,360],[750,420],[640,425]],
+      CAB=[[612,422],[750,360],[750,430],[600,600],[560,600]];
+const BEDLINE=sc([[345,365],[612,425]]);
+const lineY=([[x1,y1],[x2,y2]],x)=>y1+(y2-y1)*(x-x1)/(x2-x1);
+const NEAR_BED=pt([455,380]),NEAR_DRESSER=pt([555,395]);
+
 const ROOMS={
-bed:{wl:2,floor:['#efe3cf','#e9dcc5'],wall:'#e9e2d3',wallL:'#d8cfbc',base:'#b9a07a',
- objs:[
- {id:'head',x:4,y:0,w:4,h:2,bg:1,kind:'head',text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']},
- {x:8,y:0,w:3,h:2,bg:1,kind:'ac',text:['冷氣。','冷氣開著。']},
- {x:10,y:2,w:1,h:7,bg:1,kind:'rwin'},
- {x:5,y:12,w:3,h:1,hgt:6,top:'#3d4a5f',front:'#1c1c24',solid:1,text:['電視。','來看一下哲哲好了。……不對，先找禮物。']},
- {x:4,y:2,w:4,h:1,hgt:16,top:'#d6b98c',front:'#c19a6b',solid:1,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']},
- {x:8,y:2,w:2,h:1,hgt:16,top:'#d6b98c',front:'#c19a6b',solid:1,text:['床邊的木櫃。','跟床頭櫃連在一起，一路延伸到窗邊。']},
- {id:'bed',x:4,y:3,w:4,h:5,hgt:8,kind:'bed',top:'#8fb0d6',front:'#d2b48a',solid:1,text:['藍色雙人床。','睡得很好，謝謝。']},
- {x:6,y:3,w:1,h:1,hgt:8,lift:80,kind:'plush',appr:'bed',text:['傑斯維爾。紅色的身體，一臉呆樣。','它看起來比我還想睡。']},
- {x:2,y:2,w:2,h:1,hgt:16,kind:'dresser',top:'#d9bd90',front:'#b8935f',solid:1,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
- {x:2,y:3,w:1,h:1,hgt:5,top:'#3d4a5c',front:'#2b3442',solid:1,text:['深色梳妝椅。','沒有人坐，但它看起來很有自信。']},
- {x:10,y:4,w:1,h:1,hgt:30,kind:'fan',solid:1,text:['電風扇。','轉頭的角度永遠對不到我。']}],
- exits:[{x:10,y:12,to:'balcony',sx:3,sy:3},
-        {x:2,y:4,wall:'L',to:'closet',sx:5,sy:11},{x:2,y:5,wall:'L',to:'closet',sx:5,sy:11},
-        {x:2,y:12,wall:'L',say:['通往客廳的木門。','客廳還在施工中。（階段 1 只做臥室、衣帽間、陽台）']}]},
+bed:{img:{w:1448,h:1086,speed:300,scale:8,
+ walk:sc([[60,505],[95,470],[283,352],[365,303],[495,318],[590,343],[700,350],[745,372],[560,600],[100,600],[40,540]]),
+ blocks:[BED,CHAIR,DRESSER,CAB].map(sc),
+ hot:[
+  {poly:sc([[555,500],[610,440],[650,450],[600,525],[565,525]]),app:NEAR_BED,text:['傑斯維爾。紅色的身體，一臉呆樣。',{ask:'要對它做什麼？',opts:[['抱一下',['……軟軟的。','它好像在嘲笑我。']],['把它放回去',['傑斯維爾回到床頭的位置。','它的表情一點都沒變。']],['算了',[]]]}]},
+  {poly:sc(CHAIR),app:NEAR_DRESSER,text:['深色梳妝椅。','沒有人坐，但它看起來很有自信。']},
+  {poly:sc([[628,290],[700,240],[745,250],[745,410],[640,425]]),app:NEAR_DRESSER,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
+  {poly:sc([[148,215],[270,188],[270,290],[148,345]]),app:pt([215,410]),text:['電視。','來看一下哲哲好了。……不對，先找禮物。']},
+  {poly:sc([[18,250],[92,228],[92,470],[18,505]]),app:pt([115,478]),to:'balcony',sx:3,sy:3},
+  {poly:sc([[490,75],[695,148],[695,345],[490,322]]),app:pt([545,355]),to:'closet',sx:5,sy:11},
+  {poly:sc([[283,95],[470,60],[470,300],[365,303],[283,350]]),app:pt([360,330]),say:['通往客廳的木門。','客廳還在施工中。（階段 1 只做臥室、衣帽間、陽台）']},
+  {poly:sc(BED),app:NEAR_BED,text:['藍色雙人床。','睡得很好，謝謝。']},
+  {poly:sc(CAB),app:NEAR_BED,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']}],
+ occ:[{poly:sc([[340,355],[615,415],[650,440],[600,600],[215,600],[215,505]]),behind:(x,y)=>y<lineY(BEDLINE,x)},
+      {poly:sc([[570,300],[655,300],[660,415],[570,415]]),behind:(x,y)=>y<405*K}],
+ spawn:{start:pt([412,360]),closet:pt([545,362]),balcony:pt([125,480])}}},
 closet:{wl:0,floor:['#e4d6bd','#ddcfb4'],wall:'#e2dccd',base:'#b9a07a',
  objs:[
  {x:4,y:0,w:3,h:2,bg:1,kind:'window',plain:1,text:['窗戶。','外面是別人家的晾衣架。']},
@@ -58,23 +74,26 @@ closet:{wl:0,floor:['#e4d6bd','#ddcfb4'],wall:'#e2dccd',base:'#b9a07a',
  {x:3,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
  {x:7,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
  {x:4,y:2,w:3,h:1,hgt:10,kind:'shelf',top:'#cdb48f',front:'#a98763',solid:1,text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']}],
- exits:[{x:4,y:12,to:'bed',sx:3,sy:4},{x:5,y:12,to:'bed',sx:3,sy:4},{x:6,y:12,to:'bed',sx:3,sy:4}]},
+ exits:[{x:4,y:12,to:'bed'},{x:5,y:12,to:'bed'},{x:6,y:12,to:'bed'}]},
 balcony:{wl:2,floor:['#ece6dc','#e4ddd0'],wall:'#c49a82',wallL:'#b58a74',base:'#a37c66',
  objs:[
  {x:2,y:6,w:9,h:7,void:1,solid:1,bg:1},{x:3,y:5,w:7,h:1,hgt:14,top:'#c9a06c',front:'#a97c4c',solid:1,text:['長木櫃。','裡面大概是洗衣精和一堆用不到的東西。']},
  {x:9,y:2,w:2,h:2,hgt:16,top:'#f4f4f2',front:'#dcdcdc',kind:'washer',solid:1,text:['洗衣機。','裡面是空的。']},
  {x:4,y:2,w:3,h:1,hgt:26,kind:'drying',top:'#cfd3d6',solid:1,text:['晾著的衣服。','大部分是黑色的，我的品味很一致。']},
  {x:8,y:4,w:1,h:1,hgt:6,top:'#f3e6b8',front:'#d8c88f',solid:1,text:['黃色的水桶。','不知道用來幹嘛，但它一直在這裡。']}],
- exits:[{x:2,y:3,wall:'L',to:'bed',sx:10,sy:11}]}
+ exits:[{x:2,y:3,wall:'L',to:'bed'}]}
 };
+
 let room='bed',blocked=[],busy=true,pending=null;
-const P={cx:4,cy:6,px:0,py:0,path:[],t:0,moving:false};
-function setCell(x,y){P.cx=x;P.cy=y;P.px=x*T+8;P.py=y*T+14;P.path=[];}
-function build(){
- const wl=ROOMS[room].wl;
- blocked=Array.from({length:R},(_,y)=>Array.from({length:C},(_,x)=>(y<2||x<wl)?1:0));
- ROOMS[room].objs.forEach(o=>{if(o.solid)for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)blocked[o.y+j][o.x+i]=1;});
-}
+const P={x:0,y:0,path:[],t:0,moving:false};
+const isImg=()=>!!ROOMS[room].img;
+function setStage(w,h){if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}$('stage').style.aspectRatio=w+'/'+h;ctx.imageSmoothingEnabled=false;}
+function inPoly(p,x,y){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,yi]=p[i],[xj,yj]=p[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;}
+
+// ── 方塊房間（衣帽間、陽台）：16px 格子 ──
+const cellPx=(x,y)=>[x*T+8,y*T+14];
+function setCell(x,y){[P.x,P.y]=cellPx(x,y);P.path=[];}
+const curCell=([x,y]=[P.x,P.y])=>[Math.round((x-8)/T),Math.round((y-14)/T)];
 function bfs(sx,sy){
  const d=Array.from({length:R},()=>Array(C).fill(-1)),pr={};d[sy][sx]=0;const q=[[sx,sy]];
  for(let k=0;k<q.length;k++){const[x,y]=q[k];
@@ -87,20 +106,91 @@ function route(sx,sy,tx,ty){
  const{d,pr}=bfs(sx,sy);if(d[ty][tx]<0)return null;
  const p=[];let c=[tx,ty];while(c[0]!==sx||c[1]!==sy){p.unshift(c);c=pr[c[0]+','+c[1]];}return p;
 }
-let lines=[],after=null;
+
+// ── 圖片房間（臥室）：在圖上用 12px 細格子尋路 ──
+const S=12;let wk=null,WC=0,WR=0;
+const wOK=(c,r)=>r>=0&&c>=0&&r<WR&&c<WC&&wk[r][c];
+function nearestW(x,y){
+ const c0=Math.floor(x/S),r0=Math.floor(y/S);if(wOK(c0,r0))return[c0,r0];
+ for(let d=1;d<60;d++){let best=null,bd=1e9;
+  for(let r=r0-d;r<=r0+d;r++)for(let c=c0-d;c<=c0+d;c++){
+   if(Math.max(Math.abs(r-r0),Math.abs(c-c0))!==d||!wOK(c,r))continue;
+   const dd=(c-c0)**2+(r-r0)**2;if(dd<bd){bd=dd;best=[c,r];}}
+  if(best)return best;}
+ return null;
+}
+function losW(ax,ay,bx,by){const n=Math.max(1,Math.ceil(Math.hypot(bx-ax,by-ay)/6));
+ for(let i=0;i<=n;i++){const x=ax+(bx-ax)*i/n,y=ay+(by-ay)*i/n;if(!wOK(Math.floor(x/S),Math.floor(y/S)))return false;}return true;}
+function ipath(sx,sy,tx,ty){
+ const s=nearestW(sx,sy),t=nearestW(tx,ty);if(!s||!t)return null;
+ const key=(c,r)=>r*WC+c,prev=new Int32Array(WC*WR).fill(-1),ks=key(...s),kt=key(...t);prev[ks]=ks;
+ const q=[s];let found=false;
+ for(let k=0;k<q.length;k++){const[c,r]=q[k];if(key(c,r)===kt){found=true;break;}
+  for(const[dc,dr]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const nc=c+dc,nr=r+dr;
+   if(!wOK(nc,nr)||prev[key(nc,nr)]>=0)continue;if(dc&&dr&&(!wOK(c+dc,r)||!wOK(c,r+dr)))continue;
+   prev[key(nc,nr)]=key(c,r);q.push([nc,nr]);}}
+ if(!found)return null;
+ const cells=[];let k=kt;while(k!==ks){cells.unshift([(k%WC)*S+S/2,Math.floor(k/WC)*S+S/2]);k=prev[k];}
+ if(wOK(Math.floor(tx/S),Math.floor(ty/S)))cells.push([tx,ty]);
+ const out=[];let cx=sx,cy=sy,i=0;
+ while(i<cells.length){let j=cells.length-1;while(j>i&&!losW(cx,cy,cells[j][0],cells[j][1]))j--;out.push(cells[j]);[cx,cy]=cells[j];i=j+1;}
+ return out;
+}
+
+function build(){
+ const R0=ROOMS[room];
+ if(R0.img){const I=R0.img;setStage(I.w,I.h);WC=Math.ceil(I.w/S);WR=Math.ceil(I.h/S);
+  const ok=(x,y)=>inPoly(I.walk,x,y)&&!I.blocks.some(b=>inPoly(b,x,y));
+  wk=Array.from({length:WR},(_,r)=>Array.from({length:WC},(_,c)=>{const x=c*S+S/2,y=r*S+S/2;
+   return ok(x,y)&&ok(x-16,y)&&ok(x+16,y)&&ok(x,y-6)&&ok(x,y+6);}));
+  return;}
+ setStage(W,H);
+ const wl=R0.wl;
+ blocked=Array.from({length:R},(_,y)=>Array.from({length:C},(_,x)=>(y<2||x<wl)?1:0));
+ R0.objs.forEach(o=>{if(o.solid)for(let j=0;j<o.h;j++)for(let i=0;i<o.w;i++)blocked[o.y+j][o.x+i]=1;});
+}
+function enter(to,from,ex){
+ room=to;build();const R1=ROOMS[room];
+ if(R1.img){const s=R1.img.spawn[from]||R1.img.spawn.start;P.x=s[0];P.y=s[1];P.path=[];}
+ else setCell(ex.sx,ex.sy);
+}
+
+// 對話腳本：每一行可以是文字，或 {ask:'問題', opts:[['選項文字',[接著的對話...],選後執行的函式?], ...]}
+// 選項後面的對話也可以再放 ask，做成多層選擇。
+let lines=[],after=null,asking=false;
 function say(ls,cb){lines=ls.slice();after=cb||null;busy=true;next();}
 function next(){
  const d=$('dlg');
+ if(asking)return;
  if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
- d.style.display='block';d.innerHTML=lines.shift()+'<small>▼</small>';
+ const l=lines.shift();d.style.display='block';
+ if(typeof l==='string'){d.innerHTML=l+'<small>▼</small>';return;}
+ asking=true;d.innerHTML=l.ask+'<div class="opts"></div>';
+ const box=d.querySelector('.opts');
+ l.opts.forEach(([t,then,fn])=>{const b=document.createElement('button');b.textContent=t;
+  b.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();
+   asking=false;lines=(then||[]).concat(lines);if(fn)fn();next();});
+  box.appendChild(b);});
 }
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
+
 cv.addEventListener('pointerdown',e=>{
  if(busy)return;
- const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,y=(e.clientY-r.top)/r.height*H;
+ const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cv.width,y=(e.clientY-r.top)/r.height*cv.height;
+ if(isImg())tapImg(x,y);else tapGrid(x,y);
+});
+function tapImg(x,y){
+ const I=ROOMS[room].img,h=I.hot.find(o=>inPoly(o.poly,x,y));
+ let tx=x,ty=y,act=null;
+ if(h){[tx,ty]=h.app;act=h.to?{exit:h}:h.say?{talk:h.say}:{talk:h.text};}
+ else if(!inPoly(I.walk,x,y))return;
+ const p=ipath(P.x,P.y,tx,ty);if(!p)return;
+ P.path=p;pending=act;if(!p.length)arrive();
+}
+function tapGrid(x,y){
  const R0=ROOMS[room],objs=R0.objs,wl=R0.wl;
- const origin=P.path.length?P.path[0]:[P.cx,P.cy],lead=P.path.length?[P.path[0]]:[];
- const go=(p,act)=>{if(!p)return;P.path=lead.concat(p);pending=act;if(!P.path.length)arrive();};
+ const origin=P.path.length?curCell(P.path[0]):curCell(),lead=P.path.length?[P.path[0]]:[];
+ const go=(p,act)=>{if(!p)return;P.path=lead.concat(p.map(([cx,cy])=>cellPx(cx,cy)));pending=act;if(!P.path.length)arrive();};
  let cx=Math.floor(x/T),cy=Math.floor(y/T);if(cx<0||cy<0||cx>=C||cy>=R)return;
  let ecx=cx,ecy=cy;if(cx<wl&&cy>=2)ecx=wl;if(cy<2&&cx>=wl)ecy=2;
  const ex=R0.exits.find(q=>q.x===ecx&&q.y===ecy);
@@ -116,14 +206,15 @@ cv.addEventListener('pointerdown',e=>{
    if(best)go(route(origin[0],origin[1],best.nx,best.ny),{talk:o.text});
    return;}}
  if(!blocked[cy][cx])go(route(origin[0],origin[1],cx,cy),null);
-});
+}
 function arrive(){
  const a=pending;pending=null;if(!a)return;
  if(a.talk)say(a.talk);
- else if(a.exit){const e=a.exit;
-  if(e.to){busy=true;$('fade').style.opacity=1;setTimeout(()=>{room=e.to;build();setCell(e.sx,e.sy);$('fade').style.opacity=0;setTimeout(()=>busy=false,300);},320);}
-  else say(e.say,()=>{P.path=[[P.cx,P.cy-1]];});}
+ else if(a.exit){const e=a.exit,from=room;
+  busy=true;$('fade').style.opacity=1;
+  setTimeout(()=>{enter(e.to,from,e);$('fade').style.opacity=0;setTimeout(()=>busy=false,300);},320);}
 }
+
 function shade(c,f){const n=parseInt(c.slice(1),16);return`rgb(${Math.max(0,(n>>16)*f)|0},${Math.max(0,((n>>8)&255)*f)|0},${Math.max(0,(n&255)*f)|0})`;}
 function box(o){
  const x=o.x*T,y=o.y*T-o.hgt,w=o.w*T,h=o.h*T,fy=(o.y+o.h)*T-o.hgt;
@@ -134,71 +225,62 @@ function box(o){
   ctx.fillStyle='#a98a62';ctx.fillRect(x,fy,w,o.hgt);ctx.fillStyle='#8c6f4b';for(let j=0;j<o.h;j++)ctx.fillRect(x+2,fy+j*T+(o.hgt-6),w-4,1);}
  else{ctx.fillStyle=o.front;ctx.fillRect(x,fy,w,o.hgt);}
  ctx.strokeStyle=shade(o.front||'#a98a62',.62);ctx.strokeRect(x+.5,y+.5,w-1,h+o.hgt-1);
- if(o.kind==='bed'){
-  ctx.fillStyle='#c8e06a';ctx.fillRect(x+3,y+3,22,10);ctx.fillStyle='#58c79a';ctx.fillRect(x+30,y+3,22,10);
-  ctx.fillStyle='#d9c8a0';ctx.fillRect(x+8,y+26,46,30);ctx.fillRect(x+4,y+32,54,18);ctx.fillStyle='#c4b288';ctx.fillRect(x+12,y+34,18,3);ctx.fillRect(x+30,y+44,18,3);}
- if(o.kind==='dresser'){const c=['#e07a8c','#7fb069','#f2f2f2','#9b7fc7','#f0c14b','#5aa9c9'];
-  for(let k=0;k<5;k++){ctx.fillStyle=c[k%6];ctx.fillRect(x+3+k*6,y+4,4,7);}}
  if(o.kind==='shelf'){ctx.fillStyle='#2b2230';ctx.fillRect(x+T+4,y-2,9,6);
   ['#d6453d','#f0b429','#3fa86b','#3b82c4','#9b59b6'].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x+T+3+i*2,y+4,2,9);});}
 }
-function plush(o){const x=o.x*T+4,y=o.y*T-o.hgt-2;
- ctx.fillStyle='#d6453d';ctx.fillRect(x,y+5,8,9);ctx.fillRect(x-2,y+6,2,6);ctx.fillRect(x+8,y+6,2,6);
- ctx.fillStyle='#f0dcae';ctx.fillRect(x,y,8,5);ctx.fillStyle='#2b2230';ctx.fillRect(x+1,y+2,2,1);ctx.fillRect(x+5,y+2,2,1);ctx.fillRect(x+2,y+4,4,1);}
-function fan(o){const x=o.x*T,b=(o.y+1)*T;
- ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,b-2,12,3);
- ctx.fillStyle='#e8e8e8';ctx.fillRect(x+3,b-3,10,3);ctx.fillRect(x+7,b-20,2,17);
- ctx.fillStyle='#fafafa';ctx.fillRect(x+1,b-34,14,14);ctx.fillStyle='#c5ccd3';ctx.fillRect(x+3,b-32,10,10);ctx.fillStyle='#fafafa';ctx.fillRect(x+7,b-32,2,10);ctx.fillRect(x+3,b-28,10,2);}
-function washer(o){box(o);const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#2f3a44';ctx.fillRect(x+7,y+h2(o)-18,14,14);ctx.fillStyle='#8aa6b8';ctx.fillRect(x+10,y+h2(o)-15,8,8);}
-function h2(o){return o.h*T+o.hgt;}
+function washer(o){box(o);const x=o.x*T,y=o.y*T-o.hgt,h2=o.h*T+o.hgt;ctx.fillStyle='#2f3a44';ctx.fillRect(x+7,y+h2-18,14,14);ctx.fillStyle='#8aa6b8';ctx.fillRect(x+10,y+h2-15,8,8);}
 function drying(o){const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#cfd3d6';ctx.fillRect(x,y,o.w*T,3);
  ctx.fillStyle='#2e2e36';ctx.fillRect(x+4,y+3,9,20);ctx.fillStyle='#8d8f96';ctx.fillRect(x+16,y+3,8,16);ctx.fillStyle='#2a2a33';ctx.fillRect(x+25,y+3,6,22);
  ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,o.w*T,3);}
-function playerDraw(){
- const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=Math.round(P.px),y=Math.round(P.py-18-b);
- ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,P.py-1,10,3);
+// 宋鳥（暫用像素角色，之後換成角色圖）。(fx,fy) 是腳底位置，s 是放大倍率
+function playerDraw(fx,fy,s){
+ ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
+ const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=0,y=Math.round(-18-b);
+ ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,-1,10,3);
  ctx.fillStyle='#2b1d17';ctx.fillRect(x-5,y,10,5);ctx.fillRect(x-6,y+1,2,4);ctx.fillRect(x+4,y+1,2,4);ctx.fillRect(x-3,y-2,2,2);ctx.fillRect(x+1,y-3,2,3);
  ctx.fillStyle='#f1c9a5';ctx.fillRect(x-4,y+4,8,5);
  ctx.fillStyle='#c9ced6';ctx.fillRect(x-4,y+5,3,3);ctx.fillRect(x+1,y+5,3,3);ctx.fillStyle='#2b2230';ctx.fillRect(x-3,y+6,1,1);ctx.fillRect(x+2,y+6,1,1);
  ctx.fillStyle='#2a2a33';ctx.fillRect(x-5,y+9,10,7);ctx.fillStyle='#f1c9a5';ctx.fillRect(x-6,y+11,1,3);ctx.fillRect(x+5,y+11,1,3);
- const s=P.moving&&Math.sin(P.t*10)>0?1:0;ctx.fillStyle='#3a4a6a';ctx.fillRect(x-4,y+16,3,2-s);ctx.fillRect(x+1,y+16,3,1+s);
+ const st=P.moving&&Math.sin(P.t*10)>0?1:0;ctx.fillStyle='#3a4a6a';ctx.fillRect(x-4,y+16,3,2-st);ctx.fillRect(x+1,y+16,3,1+st);
+ ctx.restore();
 }
 function bgObj(o){
  const x=o.x*T,y=o.y*T,w=o.w*T,h=o.h*T;
  if(o.void){ctx.fillStyle='#2a2130';ctx.fillRect(x,y,w,h);}
- else if(o.kind==='tv'){ctx.fillStyle='#c9a06c';ctx.fillRect(2,y+2,T*2-4,h-4);ctx.fillStyle='#1c1c24';ctx.fillRect(6,y+7,T*2-12,h-14);ctx.fillStyle='#3d4a5f';ctx.fillRect(8,y+9,T*2-16,h-18);}
- else if(o.kind==='head'){ctx.fillStyle='#d6b98c';ctx.fillRect(x,1,w,2*T-1);ctx.fillStyle='#f1ead9';ctx.fillRect(x+4,3,w-8,15);ctx.fillStyle='#b8935f';ctx.fillRect(x+3,20,w-6,2);
-  ['#e07a8c','#f2f2f2','#7fb069','#f2f2f2','#5aa9c9'].forEach((c,i)=>{ctx.fillStyle=c;ctx.fillRect(x+7+i*9,23,4,6);});}
- else if(o.kind==='ac'){ctx.fillStyle='#f2f2f2';ctx.fillRect(x+4,4,w-8,8);ctx.fillStyle='#d4d4d4';ctx.fillRect(x+4,11,w-8,1);}
- else if(o.kind==='rwin'){ctx.fillStyle='#b9a07a';ctx.fillRect(x+T-6,y,6,h);ctx.fillStyle='#a9d3e6';ctx.fillRect(x+T-5,y+6,4,h-12);ctx.fillStyle='#e8c3b8';ctx.fillRect(x+T-5,y+1,4,6);ctx.fillRect(x+T-5,y+h-7,4,6);}
  else if(o.kind==='window'){ctx.fillStyle='#b9a07a';ctx.fillRect(x,2,w,2*T-4);ctx.fillStyle='#a9d3e6';ctx.fillRect(x+2,4,w-4,2*T-8);
-  if(!o.plain){ctx.fillStyle='#e8c3b8';ctx.fillRect(x+2,4,6,2*T-8);ctx.fillRect(x+w-8,4,6,2*T-8);}
-  if(o.ac){ctx.fillStyle='#f2f2f2';ctx.fillRect(x-12,0,w+10,6);}}
+  if(!o.plain){ctx.fillStyle='#e8c3b8';ctx.fillRect(x+2,4,6,2*T-8);ctx.fillRect(x+w-8,4,6,2*T-8);}}
 }
 function exitDraw(e,wl){
  const c=e.col||'#b98550';ctx.fillStyle=c;
  if(e.wall==='L'){ctx.fillRect(3,e.y*T+1,wl*T-6,T-1);ctx.fillStyle=shade(c,.7);ctx.fillRect(3,e.y*T,wl*T-6,1);ctx.fillStyle='#e8cf8f';ctx.fillRect(wl*T-9,e.y*T+7,2,2);}
- else if(e.wall==='T'){ctx.fillRect(e.x*T+1,3,T-2,2*T-5);ctx.fillStyle=shade(c,.7);ctx.fillRect(e.x*T,3,1,2*T-5);}
  else{ctx.fillStyle='#b98550';ctx.fillRect(e.x*T,e.y*T,T,T);ctx.fillStyle='#8a6035';ctx.fillRect(e.x*T+2,e.y*T+2,T-4,T-4);ctx.fillStyle='#e8cf8f';ctx.fillRect(e.x*T+T-5,e.y*T+7,2,2);}
 }
+function clipRedraw(poly){ctx.save();ctx.beginPath();poly.forEach(([a,b],i)=>i?ctx.lineTo(a,b):ctx.moveTo(a,b));ctx.closePath();ctx.clip();ctx.drawImage(BG,0,0);ctx.restore();}
 function draw(){
- const R0=ROOMS[room],wl=R0.wl;
+ const R0=ROOMS[room];
+ if(R0.img){const I=R0.img;
+  if(!BG.naturalWidth){ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);return;}
+  ctx.drawImage(BG,0,0);
+  playerDraw(P.x,P.y,I.scale);
+  I.occ.forEach(o=>{if(o.behind(P.x,P.y))clipRedraw(o.poly);});
+  return;}
+ const wl=R0.wl;
  ctx.fillStyle=R0.wall;ctx.fillRect(0,0,W,2*T);
  if(wl){ctx.fillStyle=R0.wallL;ctx.fillRect(0,0,wl*T,H);ctx.fillStyle=R0.base;ctx.fillRect(wl*T-3,2*T,3,H);}
  ctx.fillStyle=R0.base;ctx.fillRect(wl*T,2*T-3,W,3);
  for(let y=2;y<R;y++)for(let x=wl;x<C;x++){ctx.fillStyle=R0.floor[(x+y)%2];ctx.fillRect(x*T,y*T,T,T);}
  R0.objs.forEach(o=>{if(o.bg)bgObj(o);});
  R0.exits.forEach(e=>exitDraw(e,wl));
- const items=R0.objs.filter(o=>!o.bg).map(o=>({s:(o.y+o.h)*T+(o.lift||0),f:()=>o.kind==='plush'?plush(o):o.kind==='fan'?fan(o):o.kind==='washer'?washer(o):o.kind==='drying'?drying(o):box(o)}));
- items.push({s:P.py,f:playerDraw});items.sort((a,b)=>a.s-b.s).forEach(i=>i.f());
+ const items=R0.objs.filter(o=>!o.bg).map(o=>({s:(o.y+o.h)*T,f:()=>o.kind==='washer'?washer(o):o.kind==='drying'?drying(o):box(o)}));
+ items.push({s:P.y,f:()=>playerDraw(P.x,P.y,1)});items.sort((a,b)=>a.s-b.s).forEach(i=>i.f());
  const g=ctx.createRadialGradient(W/2,H/2,50,W/2,H/2,170);g.addColorStop(0,'rgba(255,214,150,0)');g.addColorStop(1,'rgba(40,20,50,.28)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 }
 let last=0;
 function loop(t){
  const dt=Math.min(.05,(t-last)/1000||0);last=t;P.moving=false;
- if(P.path.length){const[nx,ny]=P.path[0],tx=nx*T+8,ty=ny*T+14,dx=tx-P.px,dy=ty-P.py,dist=Math.hypot(dx,dy),st=58*dt;P.moving=true;P.t+=dt;
-  if(dist<=st){P.px=tx;P.py=ty;P.cx=nx;P.cy=ny;P.path.shift();if(!P.path.length){P.moving=false;arrive();}}
-  else{P.px+=dx/dist*st;P.py+=dy/dist*st;}}
+ if(P.path.length){const[tx,ty]=P.path[0],dx=tx-P.x,dy=ty-P.y,dist=Math.hypot(dx,dy),st=(isImg()?ROOMS[room].img.speed:58)*dt;P.moving=true;P.t+=dt;
+  if(dist<=st){P.x=tx;P.y=ty;P.path.shift();if(!P.path.length){P.moving=false;arrive();}}
+  else{P.x+=dx/dist*st;P.y+=dy/dist*st;}}
  draw();requestAnimationFrame(loop);
 }
 function alarm(){try{const a=new(window.AudioContext||window.webkitAudioContext)();
@@ -208,6 +290,6 @@ $('intro').addEventListener('pointerdown',()=>{
  setTimeout(()=>{$('intro').style.display='none';
   say(['……（鬧鐘聲）','今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;});},2300);
 },{once:true});
-build();setCell(8,6);requestAnimationFrame(loop);
+enter('bed','start');requestAnimationFrame(loop);
 </script>
 </body></html>
