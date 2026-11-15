@@ -19,6 +19,27 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #dlg .opts button::before{content:"▶ ";opacity:0;color:var(--line)}
 #dlg .opts button:active{background:#f3e3c4}
 #dlg .opts button:active::before{opacity:1}
+#nbBtn{position:absolute;top:8px;right:8px;width:52px;height:52px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:12px;line-height:1.1;padding:0;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+#nbBtn b{display:block;font-size:20px}
+#nbBtn.new::after{content:"";position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#d9483b;border:2px solid #fff}
+#toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#nb{position:fixed;inset:0;z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#f7eedb;color:#2b2230;display:none;flex-direction:column;background-image:repeating-linear-gradient(#f7eedb 0 27px,#e6d8bb 27px 28px)}
+#nb>*{width:100%;max-width:440px;margin:0 auto;box-sizing:border-box}
+#nb header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 6px 14px;border-bottom:3px solid var(--line);background:#efe1c3}
+#nb header h2{margin:0;font-size:19px;letter-spacing:.08em}
+#nb .x{width:44px;height:44px;border:0;background:none;font-size:24px;color:#2b2230;cursor:pointer}
+#nbBody{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 12px 12px}
+#nbBody h3{font-size:13px;margin:10px 0 6px;color:#8a6440;letter-spacing:.1em}
+#nbBody .empty{font-size:14px;opacity:.6;margin:16px 4px}
+.clue{display:block;width:100%;text-align:left;font:inherit;font-size:15px;margin:0 0 6px;padding:8px 10px;min-height:44px;border:2px solid #c9b08a;border-radius:6px;background:#fffaf0;color:#2b2230;cursor:pointer}
+.clue small{display:block;font-size:12px;opacity:.65;margin-top:2px}
+.clue.sel{border-color:#d9483b;background:#fff0e6;box-shadow:inset 4px 0 0 #d9483b}
+.ded{font-size:14px;margin:0 0 6px;padding:8px 10px;border-radius:6px;background:#e9f2df;border:2px solid #9cb784}
+#nb footer{border-top:3px solid var(--line);background:#efe1c3;padding:8px 10px;display:flex;flex-direction:column;gap:6px}
+#nbMsg{font-size:14px;min-height:20px;line-height:1.4}
+#nbGo{font:inherit;font-size:16px;min-height:44px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;cursor:pointer}
+#nbGo:disabled{opacity:.45}
 #intro{position:absolute;inset:0;background:#000;color:#f6e7c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 2.2s;cursor:pointer}
 #intro h1{font-size:30px;margin:0;letter-spacing:.15em}
 #intro p{margin:0;font-size:15px;opacity:.7}
@@ -29,6 +50,11 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
+<button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
+<div id="toast"></div>
+<div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
+<div id="nbBody"></div>
+<footer><div id="nbMsg">選兩條線索，看看能不能推理出什麼。</div><button id="nbGo" disabled>推理</button></footer></div>
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
@@ -57,13 +83,13 @@ bed:{img:{w:1448,h:1086,speed:300,scale:8,
  hot:[
   {poly:sc([[555,500],[610,440],[650,450],[600,525],[565,525]]),app:NEAR_BED,text:['傑斯維爾。紅色的身體，一臉呆樣。',{ask:'要對它做什麼？',opts:[['抱一下',['……軟軟的。','它好像在嘲笑我。']],['把它放回去',['傑斯維爾回到床頭的位置。','它的表情一點都沒變。']],['算了',[]]]}]},
   {poly:sc(CHAIR),app:NEAR_DRESSER,text:['深色梳妝椅。','沒有人坐，但它看起來很有自信。']},
-  {poly:sc([[628,290],[700,240],[745,250],[745,410],[640,425]]),app:NEAR_DRESSER,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。']},
-  {poly:sc([[148,215],[270,188],[270,290],[148,345]]),app:pt([215,410]),text:['電視。','來看一下哲哲好了。……不對，先找禮物。']},
+  {poly:sc([[628,290],[700,240],[745,250],[745,410],[640,425]]),app:NEAR_DRESSER,text:['梳妝台。','鏡子裡的我，頭髮像鳥巢。',{clue:'t_dresser'}]},
+  {poly:sc([[148,215],[270,188],[270,290],[148,345]]),app:pt([215,410]),text:['電視。','來看一下哲哲好了。……不對，先找禮物。',{clue:'t_tv'}]},
   {poly:sc([[18,250],[92,228],[92,470],[18,505]]),app:pt([115,478]),to:'balcony',sx:3,sy:3},
   {poly:sc([[490,75],[695,148],[695,345],[490,322]]),app:pt([545,355]),to:'closet',sx:5,sy:11},
   {poly:sc([[283,95],[470,60],[470,300],[365,303],[283,350]]),app:pt([360,330]),say:['通往客廳的木門。','客廳還在施工中。（階段 1 只做臥室、衣帽間、陽台）']},
   {poly:sc(BED),app:NEAR_BED,text:['藍色雙人床。','睡得很好，謝謝。']},
-  {poly:sc(CAB),app:NEAR_BED,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。']}],
+  {poly:sc(CAB),app:NEAR_BED,text:['床頭櫃體。','上面擺滿瓶瓶罐罐，沒有燈。',{clue:'t_cab'}]}],
  occ:[{poly:sc([[340,355],[615,415],[650,440],[600,600],[215,600],[215,505]]),behind:(x,y)=>y<lineY(BEDLINE,x)},
       {poly:sc([[570,300],[655,300],[660,415],[570,415]]),behind:(x,y)=>y<405*K}],
  spawn:{start:pt([412,360]),closet:pt([545,362]),balcony:pt([125,480])}}},
@@ -163,7 +189,9 @@ function next(){
  const d=$('dlg');
  if(asking)return;
  if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
- const l=lines.shift();d.style.display='block';
+ const l=lines.shift();
+ if(l.clue){if(addClue(l.clue)){d.style.display='block';d.innerHTML='📓 已記入筆記本：「'+CLUES[l.clue].name+'」<small>▼</small>';}else next();return;}
+ d.style.display='block';
  if(typeof l==='string'){d.innerHTML=l+'<small>▼</small>';return;}
  asking=true;shown=Date.now();d.innerHTML=l.ask+'<div class="opts"></div>';
  const box=d.querySelector('.opts');
@@ -173,10 +201,56 @@ function next(){
    asking=false;lines=(then||[]).concat(lines);if(fn)fn();next();});
   box.appendChild(b);});
 }
+
+// ── 線索筆記本 ──
+// 線索只在劇本裡用 {clue:'id'} 記入；推理是兩條線索的組合。目前三條都是測試用，第一幕再換正式內容。
+const CLUES={
+ t_dresser:{cat:'奇怪的地方',name:'（測試）梳妝台的瓶瓶罐罐',note:'鏡子前擺了很多保養品。'},
+ t_cab:{cat:'奇怪的地方',name:'（測試）床頭櫃的瓶罐',note:'床頭櫃上也擺滿了瓶瓶罐罐。'},
+ t_tv:{cat:'奇怪的地方',name:'（測試）電視',note:'想看哲哲。'}};
+const CATS=['奇怪的地方','被遺忘的人','我們的生活'];
+const DEDUCE=[{a:'t_dresser',b:'t_cab',name:'（測試）瓶瓶罐罐也太多了',text:'這麼多瓶瓶罐罐……我有在用這些嗎？'}];
+const WRONG=['好像沒什麼關係。','宋鳥歪著頭想了三秒，放棄了。','這兩個放在一起，只讓人更想睡。'];
+const SAVE_KEY='songbird-save-v1';
+let save={clues:[],deds:[]};
+try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
+ const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save={clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[])};}catch(e){}
+function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
+let nbOpen=false,sel=[];
+function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
+ $('nbBtn').classList.add('new');toast('📓 筆記本更新了');return true;}
+let toastT=0;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800);}
+function renderNb(){
+ const b=$('nbBody');b.innerHTML='';
+ const done=DEDUCE.filter(d=>save.deds.includes(d.a+'+'+d.b));
+ if(done.length){const h=document.createElement('h3');h.textContent='推理';b.appendChild(h);
+  done.forEach(d=>{const e=document.createElement('div');e.className='ded';e.textContent=d.name+'：'+d.text;b.appendChild(e);});}
+ if(!save.clues.length){b.insertAdjacentHTML('beforeend','<p class="empty">還沒有記下任何線索。<br>到處調查看看吧。</p>');}
+ CATS.forEach(cat=>{const ids=save.clues.filter(c=>CLUES[c].cat===cat);if(!ids.length)return;
+  const h=document.createElement('h3');h.textContent=cat;b.appendChild(h);
+  ids.forEach(id=>{const c=CLUES[id],e=document.createElement('button');e.className='clue'+(sel.includes(id)?' sel':'');
+   e.innerHTML=c.name+'<small>'+c.note+'</small>';
+   e.addEventListener('click',()=>{sel=sel.includes(id)?sel.filter(x=>x!==id):sel.concat(id).slice(-2);$('nbMsg').textContent=sel.length?'已選 '+sel.length+' 條。':'選兩條線索，看看能不能推理出什麼。';renderNb();});
+   b.appendChild(e);});});
+ $('nbGo').disabled=sel.length!==2;
+}
+function openNb(){if(busy||nbOpen)return;nbOpen=true;sel=[];$('nbBtn').classList.remove('new');
+ $('nbMsg').textContent='選兩條線索，看看能不能推理出什麼。';renderNb();$('nb').style.display='flex';}
+function closeNb(){nbOpen=false;$('nb').style.display='none';}
+$('nbBtn').addEventListener('pointerdown',e=>e.stopPropagation());
+$('nbBtn').addEventListener('click',openNb);
+$('nb').addEventListener('pointerdown',e=>e.stopPropagation());
+$('nb').querySelector('.x').addEventListener('click',closeNb);
+$('nbGo').addEventListener('click',()=>{if(sel.length!==2)return;
+ const d=DEDUCE.find(d=>sel.includes(d.a)&&sel.includes(d.b));
+ if(!d){$('nbMsg').textContent=WRONG[Math.floor(Math.random()*WRONG.length)];}
+ else{const k=d.a+'+'+d.b;$('nbMsg').textContent=save.deds.includes(k)?'這個已經想過了。':'💡 '+d.text;
+  if(!save.deds.includes(k)){save.deds.push(k);persist();}}
+ sel=[];renderNb();});
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
 
 cv.addEventListener('pointerdown',e=>{
- if(busy)return;
+ if(busy||nbOpen)return;
  const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cv.width,y=(e.clientY-r.top)/r.height*cv.height;
  if(isImg())tapImg(x,y);else tapGrid(x,y);
 });
@@ -279,7 +353,7 @@ function draw(){
 let last=0;
 function loop(t){
  const dt=Math.min(.05,(t-last)/1000||0);last=t;P.moving=false;
- if(P.path.length){const[tx,ty]=P.path[0],dx=tx-P.x,dy=ty-P.y,dist=Math.hypot(dx,dy),st=(isImg()?ROOMS[room].img.speed:58)*dt;P.moving=true;P.t+=dt;
+ if(P.path.length&&!nbOpen){const[tx,ty]=P.path[0],dx=tx-P.x,dy=ty-P.y,dist=Math.hypot(dx,dy),st=(isImg()?ROOMS[room].img.speed:58)*dt;P.moving=true;P.t+=dt;
   if(dist<=st){P.x=tx;P.y=ty;P.path.shift();if(!P.path.length){P.moving=false;arrive();}}
   else{P.x+=dx/dist*st;P.y+=dy/dist*st;}}
  draw();requestAnimationFrame(loop);
@@ -289,7 +363,7 @@ function alarm(){try{const a=new(window.AudioContext||window.webkitAudioContext)
 $('intro').addEventListener('pointerdown',()=>{
  alarm();$('intro').style.pointerEvents='none';$('intro').style.opacity=0;
  setTimeout(()=>{$('intro').style.display='none';
-  say(['……（鬧鐘聲）','今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;});},2300);
+  say(['……（鬧鐘聲）','今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';});},2300);
 },{once:true});
 enter('bed','start');requestAnimationFrame(loop);
 </script>
