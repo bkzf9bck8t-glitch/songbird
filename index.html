@@ -40,6 +40,9 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #nbMsg{font-size:14px;min-height:20px;line-height:1.4}
 #nbGo{font:inherit;font-size:16px;min-height:44px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;cursor:pointer}
 #nbGo:disabled{opacity:.45}
+#pov{position:absolute;inset:0;display:none;transition:filter 1.2s}
+.lid{position:absolute;left:0;right:0;height:50%;background:#000;display:none;pointer-events:none;transition:height .9s ease-in-out}
+#lidT{top:0;border-radius:0 0 50% 50%/0 0 18% 18%}#lidB{bottom:0;border-radius:50% 50% 0 0/18% 18% 0 0}
 #intro{position:absolute;inset:0;background:#000;color:#f6e7c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 2.2s;cursor:pointer}
 #intro h1{font-size:30px;margin:0;letter-spacing:.15em}
 #intro p{margin:0;font-size:15px;opacity:.7}
@@ -50,6 +53,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
+<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div>
 <button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
 <div id="toast"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
@@ -111,7 +115,7 @@ balcony:{wl:2,floor:['#ece6dc','#e4ddd0'],wall:'#c49a82',wallL:'#b58a74',base:'#
 };
 
 let room='bed',blocked=[],busy=true,pending=null;
-const P={x:0,y:0,path:[],t:0,moving:false};
+const P={x:0,y:0,path:[],t:0,moving:false,pose:null,hopY:0};
 const isImg=()=>!!ROOMS[room].img;
 function setStage(w,h){if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}$('stage').style.aspectRatio=w+'/'+h;ctx.imageSmoothingEnabled=false;}
 function inPoly(p,x,y){let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,yi]=p[i],[xj,yj]=p[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)c=!c;}return c;}
@@ -308,14 +312,15 @@ function drying(o){const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#cfd3d6';ctx.fillR
  ctx.fillStyle='#2e2e36';ctx.fillRect(x+4,y+3,9,20);ctx.fillStyle='#8d8f96';ctx.fillRect(x+16,y+3,8,16);ctx.fillStyle='#2a2a33';ctx.fillRect(x+25,y+3,6,22);
  ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,o.w*T,3);}
 // 宋鳥（暫用像素角色，之後換成角色圖）。(fx,fy) 是腳底位置，s 是放大倍率
-function playerDraw(fx,fy,s){
+function playerDraw(fx,fy,s,cut){
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=0,y=Math.round(-18-b);
- ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,-1,10,3);
+ if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,-1,10,3);}
  ctx.fillStyle='#2b1d17';ctx.fillRect(x-5,y,10,5);ctx.fillRect(x-6,y+1,2,4);ctx.fillRect(x+4,y+1,2,4);ctx.fillRect(x-3,y-2,2,2);ctx.fillRect(x+1,y-3,2,3);
  ctx.fillStyle='#f1c9a5';ctx.fillRect(x-4,y+4,8,5);
  ctx.fillStyle='#c9ced6';ctx.fillRect(x-4,y+5,3,3);ctx.fillRect(x+1,y+5,3,3);ctx.fillStyle='#2b2230';ctx.fillRect(x-3,y+6,1,1);ctx.fillRect(x+2,y+6,1,1);
  ctx.fillStyle='#2a2a33';ctx.fillRect(x-5,y+9,10,7);ctx.fillStyle='#f1c9a5';ctx.fillRect(x-6,y+11,1,3);ctx.fillRect(x+5,y+11,1,3);
+ if(P.pose==='stretch'){ctx.fillStyle='#2a2a33';ctx.fillRect(x-7,y+1,2,9);ctx.fillRect(x+5,y+1,2,9);ctx.fillStyle='#f1c9a5';ctx.fillRect(x-7,y-2,2,3);ctx.fillRect(x+5,y-2,2,3);}
  const st=P.moving&&Math.sin(P.t*10)>0?1:0;ctx.fillStyle='#3a4a6a';ctx.fillRect(x-4,y+16,3,2-st);ctx.fillRect(x+1,y+16,3,1+st);
  ctx.restore();
 }
@@ -336,6 +341,7 @@ function draw(){
  if(R0.img){const I=R0.img;
   if(!BG.naturalWidth){ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);return;}
   ctx.drawImage(BG,0,0);
+  if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),I.scale,P.pose==='lie'?9:P.pose==='hop'?null:5);return;}
   playerDraw(P.x,P.y,I.scale);
   I.occ.forEach(o=>{if(o.behind(P.x,P.y))clipRedraw(o.poly);});
   return;}
@@ -358,12 +364,79 @@ function loop(t){
   else{P.x+=dx/dist*st;P.y+=dy/dist*st;}}
  draw();requestAnimationFrame(loop);
 }
-function alarm(){try{const a=new(window.AudioContext||window.webkitAudioContext)();
- for(let i=0;i<6;i++){const o=a.createOscillator(),g=a.createGain();o.type='square';o.frequency.value=i%2?740:880;g.gain.value=.04;o.connect(g);g.connect(a.destination);o.start(a.currentTime+i*.28);o.stop(a.currentTime+i*.28+.14);}}catch(e){}}
+// ── 開場：第一人稱睜眼 → 按掉手機鬧鐘 → 切回全景，宋鳥從床上起來 ──
+let AC=null,ringT=0;
+function beep(){if(!AC)return;const t0=AC.currentTime;
+ for(let i=0;i<6;i++){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=i%2?740:880;g.gain.value=.04;o.connect(g);g.connect(AC.destination);o.start(t0+i*.28);o.stop(t0+i*.28+.14);}}
+function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,2200);}
+function ringStop(){clearInterval(ringT);ringT=0;}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function lids(gap,ms){[$('lidT'),$('lidB')].forEach(l=>{l.style.display='block';l.style.transitionDuration=ms+'ms';l.style.height=(50-gap/2)+'%';});return wait(ms);}
+// 天花板（暫用像素圖，160×120）
+const pv=$('pov'),px=pv.getContext('2d');let povOn=false,povT=0;
+const PHONE={x:116,y:56,w:22,h:34};
+function povDraw(t){
+ const c=px;c.imageSmoothingEnabled=false;
+ c.fillStyle='#ece3d3';c.fillRect(0,0,160,120);
+ for(let i=0;i<70;i++){const x=(i*53)%160,y=(i*37)%120;c.fillStyle=i%2?'#e6dccb':'#f1e9da';c.fillRect(x,y,2,1);}
+ c.fillStyle='#ddd2bf';c.fillRect(0,0,160,6);c.fillStyle='#d2c6b1';c.fillRect(0,6,160,1);
+ // 圓形吸頂燈
+ const lx=74,ly=44;c.fillStyle='rgba(255,246,214,.35)';c.beginPath();c.arc(lx,ly,30,0,7);c.fill();
+ c.fillStyle='#d9d0be';c.beginPath();c.arc(lx,ly+1,21,0,7);c.fill();
+ c.fillStyle='#fffbea';c.beginPath();c.arc(lx,ly,20,0,7);c.fill();
+ c.fillStyle='#fff3c8';c.beginPath();c.arc(lx,ly,13,0,7);c.fill();
+ c.fillStyle='#ffffff';c.fillRect(lx-9,ly-12,6,2);
+ // 枕頭（左右上角）
+ c.fillStyle='#7fae5e';c.beginPath();c.ellipse(-6,116,34,26,0,0,7);c.fill();
+ c.fillStyle='#b8cf5a';c.beginPath();c.ellipse(166,118,30,24,0,0,7);c.fill();
+ // 棉被（下緣）
+ c.fillStyle='#e8d6ad';c.beginPath();c.moveTo(0,120);c.quadraticCurveTo(80,92,160,120);c.fill();
+ c.fillStyle='#d8c493';c.fillRect(46,111,22,1);c.fillRect(92,108,18,1);
+ // 手機（響的時候會抖）
+ const sh=ringT?Math.round(Math.sin(t/30)*1):0,{x,y,w,h}=PHONE;
+ c.fillStyle='#22202a';c.fillRect(x+sh,y,w,h);
+ c.fillStyle=ringT&&Math.floor(t/400)%2?'#bfe3ff':'#8fc4ee';c.fillRect(x+sh+2,y+3,w-4,h-6);
+ c.fillStyle='#22202a';c.font='bold 7px monospace';c.textAlign='center';c.fillText('11/24',x+sh+w/2,y+12);
+ c.fillRect(x+sh+8,y+19,6,5);c.fillRect(x+sh+10,y+18,2,1);c.fillRect(x+sh+10,y+24,2,1);
+ if(ringT&&Math.floor(t/250)%2){c.fillStyle='#fff';c.fillRect(x-4,y+6,2,1);c.fillRect(x-5,y+9,2,1);c.fillRect(x+w+2,y+6,2,1);c.fillRect(x+w+3,y+9,2,1);}
+}
+function povLoop(t){if(!povOn)return;povDraw(t);requestAnimationFrame(povLoop);}
+let phoneCb=null,phoneEarly=false;
+pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(!ringT)return;
+ const r=pv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*160,y=(e.clientY-r.top)/r.height*120;
+ const hit=x>PHONE.x-14&&x<PHONE.x+PHONE.w+14&&y>PHONE.y-14&&y<PHONE.y+PHONE.h+14;
+ if(!phoneCb){if(hit)phoneEarly=true;return;}
+ if(hit){const f=phoneCb;phoneCb=null;f();}else toast('📱 先把鬧鐘關掉……');});
+const BED_HEAD=pt([592,486]),BED_SIT=pt([568,500]),BED_OUT=pt([470,380]);
+function hop(to,ms){const fx=P.x,fy=P.y,t0=performance.now();
+ return new Promise(res=>{(function st(){const k=Math.min(1,(performance.now()-t0)/ms);
+  P.x=fx+(to[0]-fx)*k;P.y=fy+(to[1]-fy)*k;P.hopY=Math.sin(k*Math.PI)*40;
+  if(k<1)requestAnimationFrame(st);else{P.hopY=0;res();}})();});}
+async function opening(){
+ busy=true;
+ lids(0,1);pv.style.display='block';pv.style.filter='blur(4px) brightness(.8)';povOn=true;requestAnimationFrame(povLoop);
+ ringStart();
+ await wait(1800);
+ await lids(14,700);await wait(500);await lids(0,350);await wait(300);
+ pv.style.filter='blur(1.5px)';await lids(100,1100);pv.style.filter='none';
+ if(!phoneEarly){toast('📱 點手機把鬧鐘按掉');await new Promise(r=>phoneCb=r);}
+ ringStop();
+ await new Promise(r=>say(['……（按掉鬧鐘）','還想睡……'],r));busy=true;
+ await lids(0,900);await wait(400);
+ povOn=false;pv.style.display='none';
+ P.pose='lie';P.x=BED_HEAD[0];P.y=BED_HEAD[1];
+ await lids(100,900);[$('lidT'),$('lidB')].forEach(l=>l.style.display='none');
+ await wait(900);
+ P.pose='sit';P.x=BED_SIT[0];P.y=BED_SIT[1];await wait(500);
+ P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
+ P.pose='hop';await hop(BED_OUT,700);P.pose=null;
+ await wait(300);
+ say(['今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';toast('主線任務：尋找你的生日禮物');});
+}
 $('intro').addEventListener('pointerdown',()=>{
- alarm();$('intro').style.pointerEvents='none';$('intro').style.opacity=0;
- setTimeout(()=>{$('intro').style.display='none';
-  say(['……（鬧鐘聲）','今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';});},2300);
+ $('intro').style.pointerEvents='none';$('intro').style.opacity=0;
+ setTimeout(()=>{$('intro').style.display='none';},2300);
+ opening();
 },{once:true});
 enter('bed','start');requestAnimationFrame(loop);
 </script>
