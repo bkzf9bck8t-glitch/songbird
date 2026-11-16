@@ -139,7 +139,7 @@ bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
  walk:sc([[192,462],[290,436],[545,472],[600,498],[650,500],[650,598],[274,598],[274,530],[192,500]]),
  blocks:[],
  hot:[
-  {poly:sc(R4(366,222,468,288)),app:pt([420,478]),text:()=>save.brush?['四支牙刷。','「……還是四支。」']:BRUSH},
+  {poly:sc(R4(366,222,468,288)),app:pt([420,478]),text:()=>save.brush?['四支牙刷。',BRUSH_ASK]:BRUSH},
   {poly:sc(R4(368,92,498,222)),app:pt([420,478]),text:()=>save.hair?['鏡子。','鏡子裡的我，還是雞窩頭。']:['鏡子。']},
   {poly:sc(R4(345,288,498,438)),app:pt([420,478]),text:['洗手台。']},
   {poly:sc(R4(50,430,274,600)),app:pt([300,560]),text:toiletTalk},
@@ -307,12 +307,13 @@ function tissueDraw(){if(room!=='living2')return;const got=save.tis||[],u=9;
   ctx.fillStyle='rgba(60,40,20,.25)';ctx.fillRect(x0+2,y0+5*u-2,6*u,u);
   M.forEach((r,j)=>[...r].forEach((c,i)=>{if(c==='.')return;ctx.fillStyle=c==='o'?'#c9c4bb':(j<2?'#ffffff':'#ece8e0');ctx.fillRect(x0+i*u,y0+j*u,u,u);}));});}
 // 浴室：四支牙刷（線索）
-const BRUSH=['「我怎麼有這麼多支牙刷？」','你數了一下。','一、二、三、四。','「我有四張嘴嗎？」','你確認了一下。','你只有一張嘴。',{clue:'toothbrush'},
- {fn:()=>{save.brush=1;persist();}},
- {ask:'要怎麼處理這些牙刷？',opts:[
+// 第一次點跑完整段；之後再點會直接回到選項，可以試其他選項的反應
+const BRUSH_ASK={ask:'要怎麼處理這些牙刷？',opts:[
   ['再數一次',['一、二、三、四。','「……還是四支。」']],
   ['把多的牙刷丟掉',['你伸手拿起其中三支。','……手停在半空中。','不知道為什麼，丟掉好像會出大事。','你默默把牙刷放了回去。']],
-  ['不管了',['「牙刷多一點，比較不會沒得用。」']]]}];
+  ['不管了',['「牙刷多一點，比較不會沒得用。」']]]};
+const BRUSH=['「我怎麼有這麼多支牙刷？」','你數了一下。','一、二、三、四。','「我有四張嘴嗎？」','你確認了一下。','你只有一張嘴。',{clue:'toothbrush'},
+ {fn:()=>{save.brush=1;persist();}},BRUSH_ASK];
 // 浴室：馬桶。撿完衛生紙後可以沖掉
 function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.flushed;
  const opts=[];
