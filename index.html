@@ -457,7 +457,7 @@ async function opening(){
  pv.style.filter='blur(1.5px)';await lids(100,1100);pv.style.filter='none';
  if(!phoneEarly){toast('📱 點手機把鬧鐘按掉');await new Promise(r=>phoneCb=r);}
  ringStop();
- await new Promise(r=>say(['……（按掉鬧鐘）','還想睡……'],r));busy=true;
+ await new Promise(r=>say(['「……好吵。」'],r));busy=true;
  await lids(0,900);await wait(400);
  povOn=false;pv.style.display='none';
  P.pose='lie';P.x=BED_HEAD[0];P.y=BED_HEAD[1];
@@ -467,7 +467,7 @@ async function opening(){
  P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
  P.pose='hop';await hop(BED_OUT,700);P.pose=null;
  await wait(300);
- say(['今天是我的生日。','禮物應該就在這個家裡某個地方。'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';toast('主線任務：尋找你的生日禮物');});
+ say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';toast('主線任務：尋找你的生日禮物');});
 }
 $('intro').addEventListener('pointerdown',()=>{
  $('intro').style.pointerEvents='none';$('intro').style.opacity=0;
