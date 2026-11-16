@@ -319,7 +319,7 @@ function questCheck(announce){const on=save.clues.length>=QUEST_AT;$('quest').st
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
  $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
 questCheck(false);statShow();
-let toastQ=[],toastOn=false;function toast(t){toastQ.push(t);if(!toastOn)toastNext();}
+let toastQ=[],toastOn=false;function toast(t){if(toastQ.includes(t)||(toastOn&&$('toast').textContent===t))return;toastQ.push(t);if(!toastOn)toastNext();}
 function toastNext(){const e=$('toast');if(!toastQ.length){toastOn=false;e.classList.remove('on');return;}
  toastOn=true;e.textContent=toastQ.shift();e.classList.add('on');setTimeout(()=>{e.classList.remove('on');setTimeout(toastNext,250);},1800);}
 function renderNb(){
