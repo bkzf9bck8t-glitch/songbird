@@ -49,7 +49,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #note{font-size:12px;text-align:center;opacity:.65}
 </style></head><body>
 <div id="wrap">
-<div id="hud">11 月 24 日｜宋鳥的生日<br>主線任務：尋找你的生日禮物</div>
+<div id="hud">11 月 24 日｜宋鳥的生日<span id="quest"><br>主線任務：尋找你的生日禮物</span></div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
@@ -254,11 +254,16 @@ const WRONG=['好像沒什麼關係。','宋鳥歪著頭想了三秒，放棄了
 const SAVE_KEY='songbird-save-v1';
 let save={clues:[],deds:[]};
 try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
- const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save={clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[])};}catch(e){}
+ const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save={clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[]),quest:v.quest||0};}catch(e){}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let nbOpen=false,sel=[];
+// 主線任務「尋找你的生日禮物」要等筆記本收集到五條線索才出現
+const QUEST_AT=5;
+function questCheck(announce){const on=save.clues.length>=QUEST_AT;$('quest').style.display=on?'':'none';
+ if(on&&announce&&!save.quest){save.quest=1;persist();setTimeout(()=>toast('主線任務：尋找你的生日禮物'),1900);}}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
- $('nbBtn').classList.add('new');toast('📓 筆記本更新了');return true;}
+ $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
+questCheck(false);
 let toastT=0;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800);}
 function renderNb(){
  const b=$('nbBody');b.innerHTML='';
@@ -455,9 +460,9 @@ async function opening(){
  await wait(1800);
  await lids(14,700);await wait(500);await lids(0,350);await wait(300);
  pv.style.filter='blur(1.5px)';await lids(100,1100);pv.style.filter='none';
+ await new Promise(r=>say(['「……好吵。」'],r));busy=true;
  if(!phoneEarly){toast('📱 點手機把鬧鐘按掉');await new Promise(r=>phoneCb=r);}
  ringStop();
- await new Promise(r=>say(['「……好吵。」'],r));busy=true;
  await lids(0,900);await wait(400);
  povOn=false;pv.style.display='none';
  P.pose='lie';P.x=BED_HEAD[0];P.y=BED_HEAD[1];
@@ -467,7 +472,7 @@ async function opening(){
  P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
  P.pose='hop';await hop(BED_OUT,700);P.pose=null;
  await wait(300);
- say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';toast('主線任務：尋找你的生日禮物');});
+ say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';});
 }
 $('intro').addEventListener('pointerdown',()=>{
  $('intro').style.pointerEvents='none';$('intro').style.opacity=0;
