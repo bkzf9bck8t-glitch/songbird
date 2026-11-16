@@ -318,7 +318,6 @@ function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.f
  const opts=[];
  if(held)opts.push(['把衛生紙沖掉',['你把五團衛生紙丟進馬桶。','嘩——','什麼都吃的馬桶，一口就吞掉了。','這個家暫時恢復了文明。'],()=>{save.flushed=1;persist();}]);
  opts.push(['抽個煙',['「呼……」']]);
- opts.push(['算了',[]]);
  return ['什麼都吃的馬桶，高麗菜殺手。',{ask:held?'手上還拿著衛生紙。要做什麼？':'要做什麼？',opts}];}
 // 半杯冰紅茶（客廳茶几）
 const TEA=['茶几上有一杯喝一半的冰紅茶。','「又喝一半不冰……」','「等一下，我在罵誰？」',{clue:'tea'},
