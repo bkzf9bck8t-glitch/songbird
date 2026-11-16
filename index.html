@@ -526,13 +526,13 @@ function povDraw(t){
  if(ringT&&Math.floor(t/250)%2){c.fillStyle='#fff';c.fillRect(x-4,y+6,2,1);c.fillRect(x-5,y+9,2,1);c.fillRect(x+w+2,y+6,2,1);c.fillRect(x+w+3,y+9,2,1);}
 }
 function povLoop(t){if(!povOn)return;povDraw(t);requestAnimationFrame(povLoop);}
-let phoneCb=null,phoneEarly=false;
+let phoneCb=null;
 $('alarmBtn').addEventListener('pointerdown',e=>e.stopPropagation());
 $('alarmBtn').addEventListener('click',e=>{e.stopPropagation();if(phoneCb){const f=phoneCb;phoneCb=null;f();}});
 pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(!ringT)return;
  const r=pv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*160,y=(e.clientY-r.top)/r.height*120;
  const hit=x>PHONE.x-14&&x<PHONE.x+PHONE.w+14&&y>PHONE.y-14&&y<PHONE.y+PHONE.h+14;
- if(!phoneCb){if(hit)phoneEarly=true;return;}
+ if(!phoneCb)return;// 「好吵」之前點手機不算，鬧鐘要一直響到玩家按掉
  if(hit){const f=phoneCb;phoneCb=null;f();}else toast('📱 先把鬧鐘關掉……');});
 const BED_HEAD=pt([482,318]),BED_SIT=pt([482,348]),BED_OUT=pt([592,425]);
 function hop(to,ms){const fx=P.x,fy=P.y,t0=performance.now();
@@ -547,7 +547,7 @@ async function opening(){
  await lids(14,700);await wait(500);await lids(0,350);await wait(300);
  pv.style.filter='blur(1.5px)';await lids(100,1100);pv.style.filter='none';
  await new Promise(r=>say(['「……好吵。」'],r));busy=true;
- if(!phoneEarly){$('alarmBtn').style.display='block';await new Promise(r=>phoneCb=r);$('alarmBtn').style.display='none';}
+ $('alarmBtn').style.display='block';await new Promise(r=>phoneCb=r);$('alarmBtn').style.display='none';
  ringStop();
  await lids(0,900);await wait(400);
  povOn=false;pv.style.display='none';
