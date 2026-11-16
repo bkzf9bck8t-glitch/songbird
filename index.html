@@ -317,7 +317,7 @@ const BRUSH=['「我怎麼有這麼多支牙刷？」','你數了一下。','一
 function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.flushed;
  const opts=[];
  if(held)opts.push(['把衛生紙沖掉',['你把五團衛生紙丟進馬桶。','嘩——','什麼都吃的馬桶，一口就吞掉了。','這個家暫時恢復了文明。'],()=>{save.flushed=1;persist();}]);
- opts.push(['抽個煙',['你坐在馬桶上，點了一根菸。','……','人生難得的寧靜時刻。']]);
+ opts.push(['抽個煙',['「呼……」']]);
  opts.push(['算了',[]]);
  return ['什麼都吃的馬桶，高麗菜殺手。',{ask:held?'手上還拿著衛生紙。要做什麼？':'要做什麼？',opts}];}
 // 半杯冰紅茶（客廳茶几）
