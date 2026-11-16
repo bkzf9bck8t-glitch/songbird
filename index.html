@@ -481,18 +481,24 @@ let AC=null,ringT=0;
 let ringOsc=[];
 // 輸出先過壓縮器，整體可以推得比較大聲又不爆音
 let ringOut=null;
-function ringBus(){if(ringOut)return ringOut;const c=AC.createDynamicsCompressor();c.threshold.value=-14;c.ratio.value=4;c.attack.value=.002;c.release.value=.1;
- const g=AC.createGain();g.gain.value=1.6;c.connect(g);g.connect(AC.destination);return ringOut=c;}
+function ringBus(){if(ringOut)return ringOut;const c=AC.createDynamicsCompressor();c.threshold.value=-6;c.ratio.value=2.5;c.attack.value=.002;c.release.value=.1;
+ const g=AC.createGain();g.gain.value=1.2;c.connect(g);g.connect(AC.destination);return ringOut=c;}
 // acc=重音：稍微大聲一點（不要太突兀）；疊低八度增加厚度；vol 讓一段裡的嗶聲由大到小
-function ping(t,f,acc,vol){const v=(acc?.6:.42)*vol,len=acc?.075:.055;
- [[f,'square',1],[f/2,'square',acc?.45:.3]].forEach(([fr,ty,k])=>{
-  const o=AC.createOscillator(),lp=AC.createBiquadFilter(),g=AC.createGain();
-  o.type=ty;o.frequency.value=fr;lp.type='lowpass';lp.frequency.value=3200;
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*k,t+.003);g.gain.setValueAtTime(v*k,t+len*.7);g.gain.exponentialRampToValueAtTime(.001,t+len);
-  o.connect(lp);lp.connect(g);g.connect(ringBus());o.start(t);o.stop(t+len+.01);ringOsc.push(o);});}
-// 一段 = 8 聲嗶：第 1 聲重音，之後一聲比一聲小；段與段之間短暫停頓，持續不斷
+// 回音：越「遠」的嗶聲送進越多回音，聽起來像聲音往遠處跑
+let ringEcho=null;
+function echoBus(){if(ringEcho)return ringEcho;const d=AC.createDelay(),fb=AC.createGain(),lp=AC.createBiquadFilter();
+ d.delayTime.value=.12;fb.gain.value=.32;lp.type='lowpass';lp.frequency.value=1400;
+ d.connect(lp);lp.connect(fb);fb.connect(d);lp.connect(ringBus());return ringEcho=d;}
+// far：0＝最近（大聲、清亮），1＝最遠（小聲、悶、帶回音）
+function ping(t,f,far){const v=.6*Math.pow(.14,far),len=.06,cut=3400*Math.pow(.28,far);
+ [[f,'square',1],[f/2,'square',.35]].forEach(([fr,ty,k])=>{
+  const o=AC.createOscillator(),lp=AC.createBiquadFilter(),g=AC.createGain(),send=AC.createGain();
+  o.type=ty;o.frequency.value=fr;lp.type='lowpass';lp.frequency.value=cut;send.gain.value=.15+far*.5;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*k,t+.003);g.gain.setValueAtTime(v*k,t+len*.7);g.gain.exponentialRampToValueAtTime(.0005,t+len);
+  o.connect(lp);lp.connect(g);g.connect(ringBus());g.connect(send);send.connect(echoBus());o.start(t);o.stop(t+len+.01);ringOsc.push(o);});}
+// 一段 = 8 聲嗶，從近（大聲）漸漸跑到遠（小聲）；下一段又從近處開始，一直重複
 function beep(){if(!AC)return;ringOsc=[];const t0=AC.currentTime+.02,P2=[1319,1568,1319,1568,1319,1568,1760,1568];
- for(let b=0;b<3;b++)P2.forEach((f,i)=>ping(t0+b*.98+i*.095,f,i===0,1-i*.08));}
+ for(let b=0;b<3;b++)P2.forEach((f,i)=>ping(t0+b*.98+i*.095,f,i/(P2.length-1)));}
 function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,2940);}
 function ringStop(){clearInterval(ringT);ringT=0;ringOsc.forEach(o=>{try{o.stop();}catch(e){}});ringOsc=[];}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
