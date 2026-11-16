@@ -492,8 +492,8 @@ function ping(t,f,acc,vol){const v=(acc?.6:.42)*vol,len=acc?.075:.055;
   o.connect(lp);lp.connect(g);g.connect(ringBus());o.start(t);o.stop(t+len+.01);ringOsc.push(o);});}
 // 一段 = 8 聲嗶：第 1 聲重音，之後一聲比一聲小；段與段之間短暫停頓，持續不斷
 function beep(){if(!AC)return;ringOsc=[];const t0=AC.currentTime+.02,P2=[1319,1568,1319,1568,1319,1568,1760,1568];
- for(let b=0;b<3;b++)P2.forEach((f,i)=>ping(t0+b*.7+i*.068,f,i===0,1-i*.08));}
-function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,1980);}
+ for(let b=0;b<3;b++)P2.forEach((f,i)=>ping(t0+b*.98+i*.095,f,i===0,1-i*.08));}
+function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,2940);}
 function ringStop(){clearInterval(ringT);ringT=0;ringOsc.forEach(o=>{try{o.stop();}catch(e){}});ringOsc=[];}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function lids(gap,ms){[$('lidT'),$('lidB')].forEach(l=>{l.style.display='block';l.style.transitionDuration=ms+'ms';l.style.height=(50-gap/2)+'%';});return wait(ms);}
