@@ -479,13 +479,14 @@ function loop(t){
 let AC=null,ringT=0;
 // 鬧鐘：雷達風格的合成音（快速、清脆的連續嗶聲，一段一段重複）。不使用 Apple 的原始音檔。
 let ringOsc=[];
-function ping(t,f){const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain();
- o.type='sine';o.frequency.value=f;o2.type='triangle';o2.frequency.value=f*2;
- g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.09,t+.006);g.gain.exponentialRampToValueAtTime(.001,t+.11);
- o.connect(g);o2.connect(g);g.connect(AC.destination);o.start(t);o2.start(t);o.stop(t+.12);o2.stop(t+.12);ringOsc.push(o,o2);}
-function beep(){if(!AC)return;ringOsc=[];const t0=AC.currentTime+.02;
- for(let b=0;b<3;b++)for(let i=0;i<4;i++)ping(t0+b*.62+i*.085,i%2?1320:1568);}
-function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,2000);}
+function ping(t,f){const o=AC.createOscillator(),lp=AC.createBiquadFilter(),g=AC.createGain();
+ o.type='square';o.frequency.value=f;lp.type='lowpass';lp.frequency.value=f*2.2;
+ g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.06,t+.004);g.gain.setValueAtTime(.06,t+.035);g.gain.exponentialRampToValueAtTime(.001,t+.06);
+ o.connect(lp);lp.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.065);ringOsc.push(o);}
+// 一段 = 很快的 8 聲短嗶（高低交替），段與段之間短暫停頓，持續不斷
+function beep(){if(!AC)return;ringOsc=[];const t0=AC.currentTime+.02,P2=[1976,2349,1976,2349,1976,2349,2637,2349];
+ for(let b=0;b<3;b++)P2.forEach((f,i)=>ping(t0+b*.66+i*.068,f));}
+function ringStart(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();AC.resume&&AC.resume();}catch(e){}beep();ringT=setInterval(beep,1980);}
 function ringStop(){clearInterval(ringT);ringT=0;ringOsc.forEach(o=>{try{o.stop();}catch(e){}});ringOsc=[];}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function lids(gap,ms){[$('lidT'),$('lidB')].forEach(l=>{l.style.display='block';l.style.transitionDuration=ms+'ms';l.style.height=(50-gap/2)+'%';});return wait(ms);}
