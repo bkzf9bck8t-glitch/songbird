@@ -529,11 +529,8 @@ function povLoop(t){if(!povOn)return;povDraw(t);requestAnimationFrame(povLoop);}
 let phoneCb=null;
 $('alarmBtn').addEventListener('pointerdown',e=>e.stopPropagation());
 $('alarmBtn').addEventListener('click',e=>{e.stopPropagation();if(phoneCb){const f=phoneCb;phoneCb=null;f();}});
-pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(!ringT)return;
- const r=pv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*160,y=(e.clientY-r.top)/r.height*120;
- const hit=x>PHONE.x-14&&x<PHONE.x+PHONE.w+14&&y>PHONE.y-14&&y<PHONE.y+PHONE.h+14;
- if(!phoneCb)return;// 「好吵」之前點手機不算，鬧鐘要一直響到玩家按掉
- if(hit){const f=phoneCb;phoneCb=null;f();}else toast('📱 先把鬧鐘關掉……');});
+// 鬧鐘只有按「⏰ 關掉鬧鐘」才會停；點畫面其他地方（包括手機）只提示
+pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(phoneCb)toast('⏰ 按下面的按鈕關掉鬧鐘');});
 const BED_HEAD=pt([482,318]),BED_SIT=pt([482,348]),BED_OUT=pt([592,425]);
 function hop(to,ms){const fx=P.x,fy=P.y,t0=performance.now();
  return new Promise(res=>{(function st(){const k=Math.min(1,(performance.now()-t0)/ms);
