@@ -24,6 +24,8 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #nbBtn.new::after{content:"";position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#d9483b;border:2px solid #fff}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+#alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
+@keyframes ring{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-4deg)}75%{transform:translateX(-50%) rotate(4deg)}}
 #nb{position:fixed;inset:0;z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#f7eedb;color:#2b2230;display:none;flex-direction:column;background-image:repeating-linear-gradient(#f7eedb 0 27px,#e6d8bb 27px 28px)}
 #nb>*{width:100%;max-width:440px;margin:0 auto;box-sizing:border-box}
 #nb header{display:flex;align-items:center;justify-content:space-between;padding:8px 10px 6px 14px;border-bottom:3px solid var(--line);background:#efe1c3}
@@ -53,7 +55,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
-<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div>
+<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
 <button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
 <div id="toast"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
@@ -511,6 +513,8 @@ function povDraw(t){
 }
 function povLoop(t){if(!povOn)return;povDraw(t);requestAnimationFrame(povLoop);}
 let phoneCb=null,phoneEarly=false;
+$('alarmBtn').addEventListener('pointerdown',e=>e.stopPropagation());
+$('alarmBtn').addEventListener('click',e=>{e.stopPropagation();if(phoneCb){const f=phoneCb;phoneCb=null;f();}});
 pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(!ringT)return;
  const r=pv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*160,y=(e.clientY-r.top)/r.height*120;
  const hit=x>PHONE.x-14&&x<PHONE.x+PHONE.w+14&&y>PHONE.y-14&&y<PHONE.y+PHONE.h+14;
@@ -529,7 +533,7 @@ async function opening(){
  await lids(14,700);await wait(500);await lids(0,350);await wait(300);
  pv.style.filter='blur(1.5px)';await lids(100,1100);pv.style.filter='none';
  await new Promise(r=>say(['「……好吵。」'],r));busy=true;
- if(!phoneEarly){toast('📱 點手機把鬧鐘按掉');await new Promise(r=>phoneCb=r);}
+ if(!phoneEarly){$('alarmBtn').style.display='block';await new Promise(r=>phoneCb=r);$('alarmBtn').style.display='none';}
  ringStop();
  await lids(0,900);await wait(400);
  povOn=false;pv.style.display='none';
