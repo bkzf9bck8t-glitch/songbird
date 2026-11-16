@@ -64,7 +64,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
-<div id="note">測試版：臥室、客廳、浴室為正式底圖，宋鳥暫用像素小人；衣帽間、陽台仍是暫時方塊。</div>
+<div id="note">測試版：臥室、客廳、浴室、廚房為正式底圖，宋鳥暫用像素小人；衣帽間、陽台仍是暫時方塊。</div>
 </div>
 <script>
 const T=16,C=11,R=13,W=C*T,H=R*T;
@@ -73,7 +73,7 @@ const $=id=>document.getElementById(id);
 
 // ── 臥室：參考圖背景。座標以 800 寬的縮圖量測，乘 K 換成原圖像素 ──
 const IMGS={};function img(src){if(!IMGS[src]){IMGS[src]=new Image();IMGS[src].src=src;}return IMGS[src];}
-let BG=img('assets/bedroom.png?v=2');img('assets/livingroom.png?v=1');img('assets/living2.png?v=1');img('assets/bathroom.png?v=1');
+let BG=img('assets/bedroom.png?v=2');img('assets/livingroom.png?v=1');img('assets/living2.png?v=1');img('assets/bathroom.png?v=1');img('assets/kitchen.png?v=1');
 const K=1448/800,sc=a=>a.map(([x,y])=>[x*K,y*K]),pt=([x,y])=>[x*K,y*K];
 const R4=(x1,y1,x2,y2)=>[[x1,y1],[x2,y1],[x2,y2],[x1,y2]];
 const BED=R4(270,228,555,488),DESK=R4(98,195,268,318),
@@ -130,10 +130,10 @@ living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
   {poly:sc(R4(565,130,648,292)),app:pt([488,368]),text:['弧形落地燈。']},
   {poly:sc(R4(655,165,748,305)),app:pt([660,560]),text:['右牆上的掛畫。']},
   {poly:sc(R4(100,560,430,600)),app:pt([300,575]),to:'bath'},
-  {poly:sc(R4(430,560,740,600)),app:pt([600,572]),say:['往廚房的方向。','廚房還在施工中。']}],
+  {poly:sc(R4(430,560,740,600)),app:pt([600,572]),to:'kitchen'}],
  occ:[{poly:sc(R4(138,405,220,565)),behind:(x,y)=>y<555*K},
       {poly:sc(R4(300,320,475,525)),behind:(x,y)=>y<520*K}],
- spawn:{start:pt([255,345]),bed:pt([255,345]),living2:pt([300,568]),bath:pt([300,568])}}},
+ spawn:{start:pt([255,345]),bed:pt([255,345]),living2:pt([300,568]),bath:pt([300,568]),kitchen:pt([600,568])}}},
 // 浴室：從客廳視角 1 下方左側進來；出浴室（畫面下方或右邊的門）一律到客廳視角 2
 bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
  walk:sc([[192,462],[290,436],[545,472],[600,498],[650,500],[650,598],[274,598],[274,530],[192,500]]),
@@ -169,9 +169,26 @@ living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,scale:8,
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
   {poly:sc(R4(600,330,800,540)),app:pt([700,560]),text:['吧檯下的收納櫃。','東西多到關不太起來。']},
   {poly:sc(R4(0,500,60,600)),app:pt([40,575]),to:'living'},
-  {poly:sc(R4(740,540,800,600)),app:pt([760,580]),say:['往廚房的方向。','廚房還在施工中。']}],
+  {poly:sc(R4(740,540,800,600)),app:pt([760,580]),to:'kitchen'}],
  occ:[{poly:sc(R4(184,440,558,592)),behind:(x,y)=>y<588*K}],
- spawn:{start:pt([100,560]),living:pt([100,560]),bath:pt([100,560])}}},
+ spawn:{start:pt([100,560]),living:pt([100,560]),bath:pt([100,560]),kitchen:pt([740,575])}}},
+// 廚房：從客廳視角 1 右下或視角 2 右下進來；往畫面下方走回客廳（回到原本來的那個視角）
+kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,scale:8,
+ walk:sc([[442,470],[530,470],[530,506],[628,512],[745,556],[752,594],[258,594],[258,570],[442,566]]),
+ blocks:[],
+ hot:[
+  {poly:sc(R4(626,232,750,556)),app:pt([640,562]),text:fridgeTalk},
+  {poly:sc(R4(330,325,448,368)),app:pt([470,480]),text:['水槽。']},
+  {poly:sc(R4(478,318,605,362)),app:pt([500,480]),text:['瓦斯爐。']},
+  {poly:sc(R4(312,422,428,548)),app:pt([440,578]),text:['花花綠綠的提袋。']},
+  {poly:sc(R4(524,420,624,508)),app:pt([570,520]),text:['堆在地上的箱子。']},
+  {poly:sc(R4(226,195,408,268)),app:pt([470,480]),text:['烘碗機。']},
+  {poly:sc(R4(115,95,225,168)),app:pt([280,580]),text:['吊著的酒杯。']},
+  {poly:sc(R4(78,240,258,582)),app:pt([280,580]),text:['中島。','上面堆滿了東西。']},
+  {poly:sc(R4(222,150,632,262)),app:pt([500,480]),text:['上方的櫃子。']},
+  {poly:sc(R4(250,576,760,600)),app:pt([500,586]),to:'back'}],
+ occ:[],
+ spawn:{start:pt([500,575]),living:pt([600,575]),living2:pt([700,575])}}},
 closet:{wl:0,floor:['#e4d6bd','#ddcfb4'],wall:'#e2dccd',base:'#b9a07a',
  objs:[
  {x:4,y:0,w:3,h:2,bg:1,kind:'window',plain:1,text:['窗戶。','外面是別人家的晾衣架。']},
@@ -321,6 +338,10 @@ function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.f
  if(held)opts.push(['把衛生紙沖掉',['你把五團衛生紙丟進馬桶。','嘩——','什麼都吃的馬桶，一口就吞掉了。','這個家暫時恢復了文明。'],()=>{save.flushed=1;persist();}]);
  opts.push(['抽個煙',['「呼……」']]);
  return ['什麼都吃的馬桶，高麗菜殺手。',{ask:held?'手上還拿著衛生紙。要做什麼？':'要做什麼？',opts}];}
+// 廚房：冰箱。第一次點有旁白介紹，之後直接問要不要打開
+function fridgeTalk(){const open={ask:'冰箱。',opts:[['打開',[save.tea?'裡面除了那杯冰紅茶，空空如也。':'裡面空空如也。','宋鳥陷入了沉思……','「……」','「該回家補貨了。」']]]};
+ if(save.fridge)return[open];
+ return['你發現了一台冰箱。','它的主要功能是保存食物，次要功能是加熱整間客廳。','目前次要功能運作良好（大概）。',{fn:()=>{save.fridge=1;persist();}},open];}
 // 半杯冰紅茶（客廳茶几）
 const TEA=['茶几上有一杯喝一半的冰紅茶。','「又喝一半不冰……」','「等一下，我在罵誰？」',{clue:'tea'},
  {ask:'要怎麼處理這杯冰紅茶？',opts:[
@@ -425,12 +446,14 @@ function onEnter(from){
  if(room==='living'&&from==='bed'&&!save.hot)say(['「……怎麼這麼熱？」','宋鳥離開了舒適圈。','這裡的舒適圈是指臥室的冷氣房。','「幹，冰箱又在發熱。」',
   {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}]);
 }
+let kitchenFrom='living';
 function arrive(){
  const a=pending;pending=null;if(!a)return;
  if(a.talk)say(a.talk);
  else if(a.exit){const e=a.exit,from=room;
   busy=true;$('fade').style.opacity=1;
-  setTimeout(()=>{enter(e.to,from,e);$('fade').style.opacity=0;setTimeout(()=>{busy=false;onEnter(from);},300);},320);}
+  const to=e.to==='back'?kitchenFrom:e.to;if(to==='kitchen')kitchenFrom=from;
+  setTimeout(()=>{enter(to,from,e);$('fade').style.opacity=0;setTimeout(()=>{busy=false;onEnter(from);},300);},320);}
 }
 
 function shade(c,f){const n=parseInt(c.slice(1),16);return`rgb(${Math.max(0,(n>>16)*f)|0},${Math.max(0,((n>>8)&255)*f)|0},${Math.max(0,(n&255)*f)|0})`;}
