@@ -480,7 +480,7 @@ function drying(o){const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#cfd3d6';ctx.fillR
  ctx.fillStyle='#2e2e36';ctx.fillRect(x+4,y+3,9,20);ctx.fillStyle='#8d8f96';ctx.fillRect(x+16,y+3,8,16);ctx.fillStyle='#2a2a33';ctx.fillRect(x+25,y+3,6,22);
  ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,o.w*T,3);}
 // 宋鳥角色圖（assets/songbird.png）。載入後自動裁掉透明邊。圖還沒載好時用下面的暫用像素角色。
-const SB=img('assets/songbird.png?v=1'),SB_H=22,SB_Q=[[.329,1],[.673,.8],[.913,.45],[1,.85]];let sbBox=null;
+const SB=img('assets/songbird.png?v=1'),SB_H=22,SB_Q=[[.375,1],[.673,.8],[.913,.45],[1,.85]];let sbBox=null;
 function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
  const c=document.createElement('canvas');c.width=SB.naturalWidth;c.height=SB.naturalHeight;const x=c.getContext('2d');x.drawImage(SB,0,0);
  const d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=0,y1=0;
