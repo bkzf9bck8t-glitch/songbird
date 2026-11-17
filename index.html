@@ -66,7 +66,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
-<div id="note">測試版：臥室、客廳、浴室、廚房為正式底圖；衣帽間、陽台仍是暫時方塊。</div>
+<div id="note">測試版：臥室、客廳、浴室、廚房、衣帽間、玄關為正式底圖；陽台仍是暫時方塊。</div>
 </div>
 <script src="music.js?v=1"></script>
 <script>
@@ -76,7 +76,7 @@ const $=id=>document.getElementById(id);
 
 // ── 臥室：參考圖背景。座標以 800 寬的縮圖量測，乘 K 換成原圖像素 ──
 const IMGS={};function img(src){if(!IMGS[src]){IMGS[src]=new Image();IMGS[src].src=src;}return IMGS[src];}
-let BG=img('assets/bedroom.png?v=2');img('assets/livingroom.png?v=1');img('assets/living2.png?v=1');img('assets/bathroom.png?v=1');img('assets/kitchen.png?v=1');
+let BG=img('assets/bedroom.png?v=2');img('assets/livingroom.png?v=1');img('assets/living2.png?v=1');img('assets/bathroom.png?v=1');img('assets/kitchen.png?v=1');img('assets/closet.png?v=1');img('assets/entrance.png?v=1');
 const K=1448/800,sc=a=>a.map(([x,y])=>[x*K,y*K]),pt=([x,y])=>[x*K,y*K];
 const R4=(x1,y1,x2,y2)=>[[x1,y1],[x2,y1],[x2,y2],[x1,y2]];
 const BED=R4(270,228,555,488),DESK=R4(98,195,268,318),
@@ -191,20 +191,41 @@ kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,ph:[470,259,6
   {poly:sc(R4(115,95,225,168)),app:pt([280,580]),text:['吊著的酒杯。']},
   {poly:sc(R4(78,240,258,582)),app:pt([280,580]),text:['中島。','上面堆滿了東西。']},
   {poly:sc(R4(222,150,632,262)),app:pt([500,480]),text:['上方的櫃子。']},
-  {poly:sc(R4(752,280,800,600)),app:pt([735,580]),say:['往門口的方向。','門口還在施工中。']},
+  {poly:sc(R4(752,280,800,600)),app:pt([735,580]),to:'entrance'},
   {poly:sc(R4(0,440,78,600)),app:pt([45,590]),to:'back'},
   {poly:sc(R4(78,582,250,600)),app:pt([45,590]),to:'back'},
   {poly:sc(R4(250,545,752,600)),app:pt([460,585]),to:'bath'}],
  occ:[],
- spawn:{start:pt([500,575]),living:pt([60,590]),living2:pt([60,590]),bath:pt([460,585])}}},
-closet:{wl:0,floor:['#e4d6bd','#ddcfb4'],wall:'#e2dccd',base:'#b9a07a',
- objs:[
- {x:4,y:0,w:3,h:2,bg:1,kind:'window',plain:1,text:['窗戶。','外面是別人家的晾衣架。']},
- {x:0,y:2,w:3,h:11,void:1,solid:1,bg:1},{x:8,y:2,w:3,h:11,void:1,solid:1,bg:1},
- {x:3,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
- {x:7,y:3,w:1,h:8,hgt:22,kind:'rack',top:'#c9ae86',solid:1,text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
- {x:4,y:2,w:3,h:1,hgt:10,kind:'shelf',top:'#cdb48f',front:'#a98763',solid:1,text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']}],
- exits:[{x:4,y:12,to:'bed'},{x:5,y:12,to:'bed'},{x:6,y:12,to:'bed'}]},
+ spawn:{start:pt([500,575]),living:pt([60,590]),living2:pt([60,590]),bath:pt([460,585]),entrance:pt([735,580])}}},
+// 衣帽間（直式底圖 1086×1448，座標直接用原圖像素，k:1）：從臥室往衣帽間走道看。畫面下方回臥室。
+// 不要提前暗示禮物位置（禮物在現實衣櫥：掛著的衣服下方、不常用的包包之間）
+closet:{img:{src:'assets/closet.png?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430,1440,690],
+ walk:[[392,975],[596,975],[648,1150],[668,1440],[252,1440],[302,1150]],
+ blocks:[],
+ hot:[
+  {poly:R4(400,440,560,600),app:[495,990],text:['窗戶。','外面是別人家的晾衣架。']},
+  {poly:R4(380,680,600,958),app:[495,990],text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']},
+  {poly:[[190,330],[400,330],[400,960],[330,1200],[190,1200]],app:[330,1120],text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
+  {poly:[[560,280],[860,280],[860,1180],[700,1180],[600,960]],app:[630,1120],text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
+  {poly:R4(900,860,1086,1200),app:[640,1300],text:['梳妝台上的吹風機。']},
+  {poly:R4(240,1330,700,1448),app:[460,1420],to:'bed'}],
+ occ:[],
+ spawn:{start:[460,1380],bed:[460,1380]}}},
+// 玄關（底圖 1448×1086，座標直接用原圖像素，k:1）：左邊是廚房的冰箱，往左回廚房。
+entrance:{img:{src:'assets/entrance.png?v=1',w:1448,h:1086,speed:300,k:1,ph:[905,520,1080,620],
+ walk:[[560,905],[985,905],[992,962],[1082,990],[1082,1080],[30,1080],[30,1000],[360,996],[412,1028],[552,1028]],
+ blocks:[],
+ hot:[
+  {poly:R4(400,200,545,590),app:[600,960],text:['牆上的小架子。','掛著鑰匙圈和一堆小東西。']},
+  {poly:R4(410,600,550,1025),app:[600,1000],text:['小推車上放著清潔劑。']},
+  {poly:R4(1000,90,1140,570),app:[960,960],text:['牆上的置物格。']},
+  {poly:R4(1085,180,1360,870),app:[1040,1000],text:['衣帽架上掛滿了包包。']},
+  {poly:R4(1090,875,1448,1086),app:[1050,1040],text:['鞋櫃上的盤子。','鑰匙和雜物都丟在這裡。']},
+  {poly:R4(770,905,1035,1065),app:[760,1000],text:['門口的鞋子。']},
+  {poly:R4(565,160,990,900),app:[775,930],text:['大門。','現在還不想出門。']},
+  {poly:R4(0,0,400,1086),app:[150,1040],to:'kitchen'}],
+ occ:[],
+ spawn:{start:[200,1040],kitchen:[200,1040]}}},
 balcony:{wl:2,floor:['#ece6dc','#e4ddd0'],wall:'#c49a82',wallL:'#b58a74',base:'#a37c66',
  objs:[
  {x:2,y:6,w:9,h:7,void:1,solid:1,bg:1},{x:3,y:5,w:7,h:1,hgt:14,top:'#c9a06c',front:'#a97c4c',solid:1,text:['長木櫃。','裡面大概是洗衣精和一堆用不到的東西。']},
@@ -507,7 +528,7 @@ function playerDraw(fx,fy,s,cut){
  ctx.restore();
 }
 // 每個房間的人物身高：ph=[y1,身高1,y2,身高2]（800 寬座標），依腳底 y 線性內插，越靠近鏡頭越大
-function phScale(I,y){const[a,ha,b,hb]=I.ph,t=Math.max(0,Math.min(1,(y/K-a)/(b-a)));return(ha+(hb-ha)*t)*K/SB_H;}
+function phScale(I,y){const k=I.k||K,[a,ha,b,hb]=I.ph,t=Math.max(0,Math.min(1,(y/k-a)/(b-a)));return(ha+(hb-ha)*t)*k/SB_H;}// k：座標單位（預設 800 寬格線，k:1 表示原圖像素）
 function playerDrawPix(fx,fy,s,cut){
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=0,y=Math.round(-18-b);
