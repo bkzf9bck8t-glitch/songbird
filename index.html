@@ -110,7 +110,7 @@ bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,ph:[250,166,450,1
       {poly:sc(R4(168,505,628,580)),behind:()=>true},
       {poly:sc([[70,400],[130,418],[130,582],[70,582]]),behind:()=>true},
       {poly:sc(R4(640,318,722,460)),behind:(x,y)=>y<455*K}],
- spawn:{start:pt([592,425]),closet:pt([104,360]),balcony:pt([672,540]),living:pt([150,470])}}},
+ spawn:{start:pt([592,425]),closet:pt([104,360]),balcony:pt([672,540]),living:pt([150,470]),living2:pt([150,470])}}},
 // 客廳視角 1（朝書房那面牆）：重點是書櫃上的樂高梅花，也是走去浴室的過渡視角。
 // 掛帽子包包的木門＝臥室；畫面下方左側＝浴室，右側＝廚房（都在畫面外）。
 living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,ph:[330,196,560,238],
@@ -155,7 +155,7 @@ bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,ph:[440,228,600
   {poly:sc(R4(274,550,650,600)),app:pt([460,580]),to:'living2'}],
  occ:[],
  spawn:{start:pt([620,560]),living:pt([620,560]),kitchen:pt([460,575])}}},
-// 客廳視角 2（朝沙發）：撿衛生紙。從浴室出來後出現。左下回視角 1，右下往廚房。
+// 客廳視角 2（朝沙發）：撿衛生紙。從浴室出來後出現。左邊往臥室，右下往廚房。
 living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,ph:[450,269,580,352],
  walk:sc([[2,560],[60,505],[150,495],[155,447],[600,447],[610,432],[700,492],[792,560],[798,598],[2,598]]),
  blocks:[R4(188,472,552,588)].map(sc),
@@ -172,7 +172,7 @@ living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(150,295,605,446)),app:pt([385,460]),text:['「右邊一看就比較好坐。」']},
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
   {poly:sc(R4(600,330,800,540)),app:pt([700,560]),text:['吧檯下的收納櫃。','東西多到關不太起來。']},
-  {poly:sc(R4(0,500,140,600)),app:pt([40,575]),to:'living'},
+  {poly:sc(R4(0,500,140,600)),app:pt([40,575]),to:'bed'},
   {poly:sc(R4(660,540,800,600)),app:pt([760,580]),to:'kitchen'}],
  occ:[{poly:sc(R4(270,412,295,465)),behind:(x,y)=>y<465*K},{poly:sc(R4(337,440,357,478)),behind:(x,y)=>y<478*K},{poly:sc(R4(373,450,440,472)),behind:(x,y)=>y<472*K},{poly:sc(R4(237,465,303,505)),behind:(x,y)=>y<505*K},{poly:sc(R4(313,478,371,505)),behind:(x,y)=>y<505*K},{poly:sc(R4(390,475,465,508)),behind:(x,y)=>y<508*K},{poly:sc(R4(463,460,513,500)),behind:(x,y)=>y<500*K}],// 玻璃茶几上的東西（玻璃看得穿，不遮腳）
  spawn:{start:pt([100,560]),living:pt([100,560]),bath:pt([100,560]),kitchen:pt([740,575])}}},
@@ -451,7 +451,7 @@ function tapGrid(x,y){
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
- if(room==='bed'&&from==='living'){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
+ if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
  if(room==='living'&&from==='bed'&&!save.hot)say(['「……怎麼這麼熱？」','宋鳥離開了舒適圈。','這裡的舒適圈是指臥室的冷氣房。','「幹，冰箱又在發熱。」',
   {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}]);
 }
