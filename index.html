@@ -339,7 +339,7 @@ function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.f
  opts.push(['抽個煙',['「呼……」']]);
  return ['什麼都吃的馬桶，高麗菜殺手。',{ask:held?'手上還拿著衛生紙。要做什麼？':'要做什麼？',opts}];}
 // 廚房：冰箱。第一次點有旁白介紹，之後直接問要不要打開
-function fridgeTalk(){const open={ask:'冰箱。',opts:[['打開',[save.tea?'裡面除了那杯冰紅茶，空空如也。':'裡面空空如也。','宋鳥陷入了沉思……','「……」','「該回家補貨了。」']]]};
+function fridgeTalk(){const open={ask:'冰箱。',opts:[['打開',[save.tea?'裡面除了那杯冰紅茶，空蕩蕩的。':'裡面空蕩蕩。','宋鳥陷入了沉思……','「……」','「該回家補貨了。」']]]};
  if(save.fridge)return[open];
  return['你發現了一台冰箱。','它的主要功能是保存食物，次要功能是加熱整間客廳。','目前次要功能運作良好（大概）。',{fn:()=>{save.fridge=1;persist();}},open];}
 // 半杯冰紅茶（客廳茶几）
