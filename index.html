@@ -397,7 +397,7 @@ try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let nbOpen=false,sel=[];
 // 主線任務「尋找你的生日禮物」要等筆記本收集到五條線索才出現
-const QUEST_AT=5;
+const QUEST_AT=4;
 function questCheck(announce){const on=save.clues.length>=QUEST_AT;$('quest').style.display=on?'':'none';
  if(on&&announce&&!save.quest){save.quest=1;persist();toast('主線任務：尋找你的生日禮物');}}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
