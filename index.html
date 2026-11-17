@@ -64,7 +64,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
-<div id="note">測試版：臥室、客廳、浴室、廚房為正式底圖，宋鳥暫用像素小人；衣帽間、陽台仍是暫時方塊。</div>
+<div id="note">測試版：臥室、客廳、浴室、廚房為正式底圖；衣帽間、陽台仍是暫時方塊。</div>
 </div>
 <script>
 const T=16,C=11,R=13,W=C*T,H=R*T;
@@ -478,8 +478,24 @@ function dead(o){box(o);const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#5a4a32';ctx.
 function drying(o){const x=o.x*T,y=o.y*T-o.hgt;ctx.fillStyle='#cfd3d6';ctx.fillRect(x,y,o.w*T,3);
  ctx.fillStyle='#2e2e36';ctx.fillRect(x+4,y+3,9,20);ctx.fillStyle='#8d8f96';ctx.fillRect(x+16,y+3,8,16);ctx.fillStyle='#2a2a33';ctx.fillRect(x+25,y+3,6,22);
  ctx.fillStyle='rgba(60,40,20,.22)';ctx.fillRect(x+2,(o.y+o.h)*T-2,o.w*T,3);}
-// 宋鳥（暫用像素角色，之後換成角色圖）。(fx,fy) 是腳底位置，s 是放大倍率
+// 宋鳥角色圖（assets/songbird.png）。載入後自動裁掉透明邊。圖還沒載好時用下面的暫用像素角色。
+const SB=img('assets/songbird.png?v=1'),SB_H=22;let sbBox=null;
+function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
+ const c=document.createElement('canvas');c.width=SB.naturalWidth;c.height=SB.naturalHeight;const x=c.getContext('2d');x.drawImage(SB,0,0);
+ const d=x.getImageData(0,0,c.width,c.height).data;let x0=c.width,y0=c.height,x1=0,y1=0;
+ for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++)if(d[(j*c.width+i)*4+3]>40){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j;}
+ return sbBox=[x0,y0,x1-x0+1,y1-y0+1];}
+// (fx,fy) 是腳底位置，s 是放大倍率，cut 是從腳底往上遮掉幾格（躺在床上、坐著）
 function playerDraw(fx,fy,s,cut){
+ const bx=sbCrop();if(!bx){playerDrawPix(fx,fy,s,cut);return;}
+ ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
+ const b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0,h=SB_H,w=h*bx[2]/bx[3];
+ if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(-w*.4,-1,w*.8,2.5);}
+ const sx=P.pose==='stretch'?1.06:1,sy=P.pose==='stretch'?1.06:1;
+ ctx.scale(sx,sy);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(SB,bx[0],bx[1],bx[2],bx[3],-w/2,-h-b,w,h);
+ ctx.restore();
+}
+function playerDrawPix(fx,fy,s,cut){
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=0,y=Math.round(-18-b);
  if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(x-5,-1,10,3);}
