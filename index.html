@@ -21,6 +21,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #dlg .opts button:active::before{opacity:1}
 #nbBtn{position:absolute;top:8px;right:8px;width:52px;height:52px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:12px;line-height:1.1;padding:0;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 #nbBtn b{display:block;font-size:20px}
+#mute{position:absolute;top:66px;right:8px;width:52px;min-height:30px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:10px;line-height:1.1;padding:2px;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 #nbBtn.new::after{content:"";position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#d9483b;border:2px solid #fff}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -57,6 +58,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="fade"></div>
 <canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
 <button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
+<button id="mute" aria-label="音樂開關">音樂：開</button>
 <div id="toast"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
 <div id="nbBody"></div>
@@ -66,6 +68,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 </div>
 <div id="note">測試版：臥室、客廳、浴室、廚房為正式底圖；衣帽間、陽台仍是暫時方塊。</div>
 </div>
+<script src="music.js?v=1"></script>
 <script>
 const T=16,C=11,R=13,W=C*T,H=R*T;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
@@ -641,9 +644,12 @@ async function opening(){
  P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
  P.pose='hop';await hop(BED_OUT,700);P.pose=null;
  await wait(300);
- say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';});
+ say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';
+  $('mute').style.display='block';if(typeof Music!=='undefined')Music.begin();});// 開場台詞說完才開始主旋律
 }
+// 蛋糕畫面（尚未製作）：進入時呼叫 Music.fadeOut(3) 讓主旋律淡出
 $('intro').addEventListener('pointerdown',()=>{
+ if(typeof Music!=='undefined')Music.start();// iOS 規定音訊要在點擊時建立，這裡只建立不出聲
  $('intro').style.pointerEvents='none';$('intro').style.opacity=0;
  setTimeout(()=>{$('intro').style.display='none';},2300);
  opening();
