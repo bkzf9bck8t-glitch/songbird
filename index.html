@@ -318,7 +318,9 @@ const CLUES={
 // 衛生紙（客廳視角 2）：五團，沙發上兩團、沙發附近地上兩團、茶几上一團
 const TISSUES=[{id:1,at:[262,392],app:[262,458]},{id:2,at:[478,388],app:[478,458]},
  {id:3,at:[168,528],app:[168,536]},{id:4,at:[586,468],app:[586,476]},{id:5,at:[232,522],app:[150,540]}];
-function tissueHot(x,y){if(room!=='living2')return null;const got=save.tis||[];
+// 衛生紙只出現一次：撿過的記在存檔；解鎖「衛生紙清道夫」後，不管怎麼換場景都不會再出現
+function tisGot(){return(save.ach||[]).includes('tissue')?TISSUES.map(t=>t.id):(save.tis||[]);}
+function tissueHot(x,y){if(room!=='living2')return null;const got=tisGot();
  const t=TISSUES.find(t=>!got.includes(t.id)&&Math.hypot(x-t.at[0]*K,y-t.at[1]*K)<26*K);
  return t?{app:pt(t.app),text:()=>pickTissue(t.id)}:null;}
 function pickTissue(id){save.tis=save.tis||[];if(save.tis.includes(id))return[];save.tis.push(id);persist();const n=save.tis.length;
@@ -326,7 +328,7 @@ function pickTissue(id){save.tis=save.tis||[];if(save.tis.includes(id))return[];
   :['你撿起了一團衛生紙。（'+n+'/5）'];
  if(n===TISSUES.length)L.push('五團衛生紙都撿起來了。','「……為什麼我做這件事這麼熟練？」',{clue:'tissue'},{fn:()=>unlockAch('tissue')});
  return L;}
-function tissueDraw(){if(room!=='living2')return;const got=save.tis||[],u=9;
+function tissueDraw(){if(room!=='living2')return;const got=tisGot(),u=9;
  const M=['..##..','.####.','######','##o###','.####.'];
  TISSUES.forEach(t=>{if(got.includes(t.id))return;const x0=t.at[0]*K-3*u,y0=t.at[1]*K-4*u;
   ctx.fillStyle='rgba(60,40,20,.25)';ctx.fillRect(x0+2,y0+5*u-2,6*u,u);
