@@ -83,7 +83,7 @@ const BED=R4(270,228,555,488),DESK=R4(98,195,268,318),
 const L_BED=pt([246,420]),L_TOP=pt([246,340]),R_SIDE=pt([592,400]),R_LOW=pt([625,470]);
 
 const ROOMS={
-bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,scale:8,
+bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,ph:[250,160,450,175],
  walk:sc([[78,240],[718,240],[720,500],[714,575],[628,575],[628,515],[168,515],[168,575],[130,575],[128,420],[80,408]]),
  blocks:[BED,DESK,CHAIR,WCHAIR,FAN,CORNER].map(sc),
  hot:[
@@ -110,7 +110,7 @@ bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,scale:8,
  spawn:{start:pt([592,425]),closet:pt([104,360]),balcony:pt([672,540]),living:pt([150,470])}}},
 // 客廳視角 1（朝書房那面牆）：重點是書櫃上的樂高梅花，也是走去浴室的過渡視角。
 // 掛帽子包包的木門＝臥室；畫面下方左側＝浴室，右側＝廚房（都在畫面外）。
-living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
+living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,ph:[330,190,560,230],
  walk:sc([[208,302],[505,302],[505,345],[590,548],[740,548],[738,586],[100,586],[105,510],[150,420],[205,330]]),
  blocks:[R4(303,340,472,520),R4(150,512,215,562),R4(450,290,570,340),[[500,335],[560,288],[748,400],[748,548],[590,548]]].map(sc),
  hot:[
@@ -135,7 +135,7 @@ living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
       {poly:sc(R4(300,320,475,525)),behind:(x,y)=>y<520*K}],
  spawn:{start:pt([255,345]),bed:pt([255,345]),living2:pt([300,568]),bath:pt([300,568]),kitchen:pt([600,568])}}},
 // 浴室：從客廳視角 1 下方左側進來；出浴室（畫面下方或右邊的門）一律到客廳視角 2
-bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
+bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,ph:[440,220,600,330],
  walk:sc([[192,462],[290,436],[545,472],[600,498],[650,500],[650,598],[274,598],[274,530],[192,500]]),
  blocks:[],
  hot:[
@@ -152,7 +152,7 @@ bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,scale:8,
  occ:[],
  spawn:{start:pt([620,560]),living:pt([620,560]),kitchen:pt([460,575])}}},
 // 客廳視角 2（朝沙發）：撿衛生紙。從浴室出來後出現。左下回視角 1，右下往廚房。
-living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,scale:8,
+living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,ph:[450,260,580,340],
  walk:sc([[2,560],[60,505],[150,495],[155,447],[600,447],[610,432],[700,492],[792,560],[798,598],[2,598]]),
  blocks:[R4(188,472,552,588)].map(sc),
  hot:[
@@ -173,7 +173,7 @@ living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,scale:8,
  occ:[{poly:sc(R4(184,440,558,592)),behind:(x,y)=>y<588*K}],
  spawn:{start:pt([100,560]),living:pt([100,560]),bath:pt([100,560]),kitchen:pt([740,575])}}},
 // 廚房：從客廳視角 1 右下或視角 2 右下進來；往畫面下方走回客廳（回到原本來的那個視角）
-kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,scale:8,
+kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,ph:[470,250,600,290],
  walk:sc([[442,470],[530,470],[530,506],[628,512],[745,556],[752,594],[30,598],[30,580],[258,580],[258,570],[442,566]]),
  blocks:[],
  hot:[
@@ -495,6 +495,8 @@ function playerDraw(fx,fy,s,cut){
  ctx.scale(sx,sy);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(SB,bx[0],bx[1],bx[2],bx[3],-w/2,-h-b,w,h);
  ctx.restore();
 }
+// 每個房間的人物身高：ph=[y1,身高1,y2,身高2]（800 寬座標），依腳底 y 線性內插，越靠近鏡頭越大
+function phScale(I,y){const[a,ha,b,hb]=I.ph,t=Math.max(0,Math.min(1,(y/K-a)/(b-a)));return(ha+(hb-ha)*t)*K/SB_H;}
 function playerDrawPix(fx,fy,s,cut){
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*1.5:0,x=0,y=Math.round(-18-b);
@@ -524,8 +526,8 @@ function draw(){
  if(R0.img){const I=R0.img;BG=img(I.src);
   if(!BG.naturalWidth){ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);return;}
   ctx.drawImage(BG,0,0);
-  if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),I.scale,P.pose==='lie'?9:P.pose==='hop'?null:5);return;}
-  tissueDraw();playerDraw(P.x,P.y,I.scale);
+  if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y),P.pose==='lie'?9:P.pose==='hop'?null:5);return;}
+  tissueDraw();playerDraw(P.x,P.y,phScale(I,P.y));
   I.occ.forEach(o=>{if(o.behind(P.x,P.y))clipRedraw(o.poly);});
   if(I.occ.length)tissueDraw();
   return;}
