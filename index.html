@@ -14,6 +14,10 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
 #dlg{position:absolute;max-height:calc(100% - 16px);overflow-y:auto;-webkit-overflow-scrolling:touch;left:8px;right:8px;bottom:8px;background:rgba(255,249,236,.78);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
 #dlg .qcard{text-align:center;font-size:13px;line-height:1.45}#dlg .qcard b{display:block;font-size:16px;margin:1px 0 2px}#dlg .qcard+small{margin-top:-14px}
+#memV{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
+#memShot{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s;background:radial-gradient(ellipse at center,rgba(40,34,30,.2) 30%,rgba(0,0,0,.85) 100%)}
+#memShot canvas{border-radius:6px;filter:blur(.6px);box-shadow:0 0 40px 20px rgba(0,0,0,.6)}
+#memShot small{position:absolute;right:16px;bottom:12px;color:#fff6e4;opacity:.6;font-size:14px}
 #dlg .memv{font-style:italic;color:#6b5f73}
 #dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
 #dlg .opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
@@ -51,6 +55,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div>
 <div id="stage">
 <canvas id="c"></canvas>
+<div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div>
 <div id="fade"></div>
 <canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
 <button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
@@ -66,7 +71,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118210100';
+const BUILD='20261118210838';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -171,7 +176,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(72,225,132,295)),app:pt([150,530]),text:['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」']},
   {poly:sc(R4(38,28,110,105)),app:pt([150,530]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(5,105,150,498)),app:pt([150,530]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
-  {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:['吧檯上的咖啡機。','「好無聊，來泡個咖啡放冰箱吧。」']},
+  {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:memHot('memory_coffee',['吧檯上的咖啡機。','「好無聊，來泡個咖啡放冰箱吧。」'])},
   {poly:sc(R4(578,135,672,305)),app:pt([640,480]),text:['玻璃展示櫃。','裡面擺著公仔和收藏品。']},
   {poly:sc(R4(318,30,456,92)),app:pt([385,460]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(130,40,285,440)),app:pt([150,530]),text:['弧形落地燈。']},
@@ -328,7 +333,10 @@ function next(){
  if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
  const l=lines.shift();
  if(l.fn){l.fn();next();return;}
- if(l.wait){d.style.display='none';setTimeout(next,l.wait);return;}// 停頓（演出用），期間不能點
+ if(l.wait){d.style.display='none';setTimeout(next,l.wait);return;}
+ if(l.shot){d.style.display='none';memShot(l.shot);return;}// 記憶特寫：點畫面繼續
+ if(l.memGot){memShot(null);const m=MEMORIES[l.memGot];save.mem=save.mem||[];if(!save.mem.includes(l.memGot)){save.mem.push(l.memGot);persist();$('nbBtn').classList.add('new');}
+  d.style.display='block';d.innerHTML='🧩 獲得記憶碎片：〈'+m.name+'〉<small>▼</small>';return;}// 停頓（演出用），期間不能點
  if(l.clue){if(addClue(l.clue)){d.style.display='block';d.innerHTML='📓 已記入筆記本：「'+CLUES[l.clue].name+'」<small>▼</small>';}else next();return;}
  d.style.display='block';
  if(typeof l==='string'){d.innerHTML=l+'<small>▼</small>';return;}
@@ -398,6 +406,7 @@ function unlockAch(id){save.ach=save.ach||[];if(save.ach.includes(id))return;sav
 // 狀態列：炎熱、造型
 function statShow(){const t=[];if(save.hot)t.push('炎熱 Lv.1');if(save.hair)t.push('雞窩頭');$('stat').innerHTML=t.length?'<br>狀態：'+t.join('｜'):'';}
 const CATS=['生活中的不同','被遺忘的人','我們的生活'];
+const lifeN=()=>save.clues.filter(c=>CLUES[c].cat==='生活中的不同').length;// 主線任務只看「生活中的不同」的線索數
 const SAVE_KEY='songbird-save-v1';
 let save={clues:[]};
 try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
@@ -407,12 +416,29 @@ let nbOpen=false;
 // 第一幕結尾｜遺失的記憶：筆記本記下第四條線索，那段對話說完就播記憶，播完才解鎖主線任務
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
- if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
-// 記憶演出三段：①觸碰物品（正常探索）→ ②記憶模糊（褪色、閃白）→ ③記憶碎片（畫面幾乎看不見，只聽到片段）
-const MEM_FX={fade:'grayscale(1) sepia(.25) brightness(.9)',frag:'blur(6px) grayscale(1) brightness(.3)'};
-function memCv(m){cv.style.transition=m==='frag'?'filter .15s':'filter 1s';cv.style.filter=MEM_FX[m]||'none';}
-function memory(frag){return[{fn:()=>memCv('fade')},{wait:1100},{fn:()=>{flashWhite();memCv('frag');}},{wait:700},
- ...frag.map(t=>'<span class="memv">'+t+'</span>'),{fn:()=>memCv(0)},{wait:900}];}
+ if(announce&&!save.quest&&lifeN()>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
+// ===== 記憶碎片演出系統（MemoryFragmentSystem）=====
+// 共用流程：變暗（0.3 秒）→ 褪色、輕微模糊、暗角 → 閃白 → 記憶內容（點一下推進）→ 恢復色彩 → 記錄進度
+// 演出中 busy=true：角色不能走、物件不能點，也不會重複觸發
+const MEM_FX={dim:'grayscale(.85) brightness(.6) blur(1.5px)',frag:'grayscale(1) brightness(.35) blur(5px)'};
+function memCv(m){cv.style.transition=m==='dim'?'filter .3s':m==='frag'?'filter .15s':'filter .8s';cv.style.filter=MEM_FX[m]||'none';$('memV').style.opacity=m?1:0;}
+// frag：記憶內容，可以是文字（灰色斜體）或 {shot:{room,rect:[x,y,w,h]}}（該房間底圖的局部特寫，原圖像素）
+function memory(frag){return[{fn:()=>memCv('dim')},{wait:500},{fn:()=>{flashWhite();memCv('frag');}},{wait:600},
+ ...frag.map(t=>typeof t==='string'?'<span class="memv">'+t+'</span>':t),{fn:()=>{memShot(null);memCv(0);}},{wait:800}];}
+// 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
+function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
+ const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
+ c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter='grayscale(.7) sepia(.3)';g.drawImage(src,x,y,w,h,0,0,w,h);
+ o.style.transition='none';o.style.opacity=0;o.style.pointerEvents='auto';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
+// 每段記憶的資料：名稱、觸發條件、記憶內容、結束後的台詞。
+// 新增記憶：在這裡加一筆，再把該物件的 text 改成 memHot('記憶id',[原本的台詞])
+const MEMORIES={
+ memory_coffee:{name:'下意識的習慣',when:()=>!!save.quest,// 主線開啟後才會觸發
+  frag:[{shot:{room:'living2',rect:[1170,380,260,220]}},{shot:{room:'kitchen',rect:[1110,400,280,600]}}],// 咖啡機特寫 → 冰箱特寫（沒有對話）
+  after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」']}};
+function memHot(id,normal){return()=>{const m=MEMORIES[id];
+ if((save.mem||[]).includes(id)||!m.when())return normal;// 還沒到時機、或已經看過：只說原本的台詞
+ return[...memory(m.frag),...m.after,{memGot:id}];};}
 function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
 function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「蛤？誰在講話？」',
  {quest:1,fn:()=>{save.quest=1;persist();questCheck(false);}},
@@ -431,6 +457,8 @@ function renderNb(){
   ids.forEach(id=>{const c=CLUES[id],e=document.createElement('div');e.className='clue';
    e.innerHTML=c.name+'<small>'+c.note+'</small>';
    b.appendChild(e);});});
+ const mg=(save.mem||[]).filter(id=>MEMORIES[id]);if(mg.length){const h=document.createElement('h3');h.textContent='記憶碎片';b.appendChild(h);
+  mg.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🧩 '+MEMORIES[id].name;b.appendChild(e);});}
  const got=save.ach||[],h=document.createElement('h3');h.textContent='成就';b.appendChild(h);
  Object.entries(ACH).forEach(([id,a])=>{if(a.hidden&&!got.includes(id))return;const e=document.createElement('div');e.className='ded';
   e.textContent=got.includes(id)?'🏆 '+a.name+'：'+a.desc:'🔒 '+a.name;b.appendChild(e);});
@@ -444,6 +472,7 @@ $('nbBtn').addEventListener('click',openNb);
 $('nb').addEventListener('pointerdown',e=>e.stopPropagation());
 $('nb').querySelector('.x').addEventListener('click',closeNb);
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
+$('memShot').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
 
 cv.addEventListener('pointerdown',e=>{
  if(busy||nbOpen)return;
@@ -480,7 +509,7 @@ function tapGrid(x,y){
 }
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
- if(!save.quest&&save.clues.length>=QUEST_AT){say(questScene());return;}// 舊存檔已有四條線索卻還沒看過記憶：進房間時補播
+ if(!save.quest&&lifeN()>=QUEST_AT){say(questScene());return;}// 舊存檔已有四條線索卻還沒看過記憶：進房間時補播
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
  if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
  if(room==='living'&&from==='bed'&&!save.hot)say(['「……怎麼這麼熱？」','宋鳥離開了舒適圈。','這裡的舒適圈是指臥室的冷氣房。','「幹，冰箱又在發熱。」',
