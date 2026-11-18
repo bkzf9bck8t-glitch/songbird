@@ -396,10 +396,18 @@ try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
  const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save=Object.assign(v,{clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[])});}catch(e){}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let nbOpen=false,sel=[];
-// 主線任務「尋找你的生日禮物」要等筆記本收集到五條線索才出現
+// 主線任務「尋找你的生日禮物」：筆記本收集到四條線索後，下次回到客廳播完記憶碎片才開啟
 const QUEST_AT=4;
-function questCheck(announce){const on=save.clues.length>=QUEST_AT;$('quest').style.display=on?'':'none';
- if(on&&announce&&!save.quest){save.quest=1;persist();toast('主線任務：尋找你的生日禮物');}}
+function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
+ if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!save.questHint){save.questHint=1;persist();toast('宋鳥覺得該回客廳想一想……');}}
+function memCv(on){cv.style.transition='filter .8s';cv.style.filter=on?'blur(3px) grayscale(.7) brightness(.75)':'none';}
+const MEM_NAME={rug:'粗糙的地毯',tea:'喝剩的冰紅茶',tissue:'沙發上的衛生紙',deadplant:'死掉的盆栽',toothbrush:'四支牙刷'};
+function questScene(){return['宋鳥回到客廳。',save.clues.map(c=>MEM_NAME[c]).filter(Boolean).join('、')+'……','「這些東西真的是我自己留下的嗎？」',
+ '已經很難再用「我只是忘記收拾」來解釋了。','宋鳥開始回想。',{fn:()=>memCv(1)},
+ '……','「今年生日，你要自己找到禮物喔。」','……',{fn:()=>memCv(0)},
+ '「……是誰說的？」','你想不起來。','但今天是你的生日。','而那段模糊的記憶，也許和這個家裡另一個人的生活痕跡有關。',
+ '「……好。」','「找出禮物，也找出那個人是誰。」',
+ {fn:()=>{save.quest=1;persist();questCheck(false);toast('主線任務：尋找你的生日禮物');}}];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
  $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
 questCheck(false);statShow();
@@ -474,10 +482,12 @@ function tapGrid(x,y){
 }
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
+ const mem=room.startsWith('living')&&!from.startsWith('living')&&!save.quest&&save.clues.length>=QUEST_AT;
+ if(mem&&!(room==='living'&&from==='bed'&&!save.hot)){say(questScene());return;}
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
  if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
  if(room==='living'&&from==='bed'&&!save.hot)say(['「……怎麼這麼熱？」','宋鳥離開了舒適圈。','這裡的舒適圈是指臥室的冷氣房。','「幹，冰箱又在發熱。」',
-  {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}]);
+  {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}],mem?()=>say(questScene()):null);
 }
 let kitchenFrom='living';
 function arrive(){
