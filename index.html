@@ -46,7 +46,6 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #intro{position:absolute;inset:0;background:#000;color:#f6e7c8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity 2.2s;cursor:pointer}
 #intro h1{font-size:30px;margin:0;letter-spacing:.15em}
 #intro p{margin:0;font-size:15px;opacity:.7}
-#note{font-size:12px;text-align:center;opacity:.65}
 </style></head><body>
 <div id="wrap">
 <div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div>
@@ -63,12 +62,11 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="dlg"></div>
 <div id="intro"><h1>宋鳥的一天</h1><p>點一下開始</p></div>
 </div>
-<div id="note">測試版：所有房間都是正式底圖（書房暫不開放）。</div>
 </div>
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118205639';
+const BUILD='20261118205658';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
