@@ -13,6 +13,7 @@ html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family
 canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-action:none}
 #fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .3s}
 #dlg{position:absolute;max-height:calc(100% - 16px);overflow-y:auto;-webkit-overflow-scrolling:touch;left:8px;right:8px;bottom:8px;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
+#dlg .qcard{text-align:center;padding:6px 0 2px;line-height:1.7}#dlg .qcard b{display:block;font-size:20px;margin:2px 0 4px}
 #dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
 #dlg .opts{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 #dlg .opts button{font:inherit;font-size:16px;text-align:left;min-height:44px;padding:8px 12px;border:2px solid var(--line);border-radius:6px;background:#fff;color:#2b2230;cursor:pointer}
@@ -52,7 +53,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #note{font-size:12px;text-align:center;opacity:.65}
 </style></head><body>
 <div id="wrap">
-<div id="hud">11 月 24 日｜宋鳥的生日<span id="quest"><br>主線任務：尋找你的生日禮物</span><span id="stat"></span></div>
+<div id="hud">11 月 24 日｜宋鳥的生日<span id="quest"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
@@ -396,18 +397,19 @@ try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
  const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save=Object.assign(v,{clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[])});}catch(e){}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let nbOpen=false,sel=[];
-// 主線任務「尋找你的生日禮物」：筆記本收集到四條線索後，下次回到客廳播完記憶碎片才開啟
+// 第一幕結尾｜遺失的記憶：筆記本收集到四條線索後，從浴室回到客廳（視角 2）播這段，播完才解鎖主線任務
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
- if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!save.questHint){save.questHint=1;persist();toast('宋鳥覺得該回客廳想一想……');}}
+ if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!save.questHint){save.questHint=1;persist();toast('宋鳥覺得腦袋有點亂，想去浴室洗把臉……');}}
 function memCv(on){cv.style.transition='filter .8s';cv.style.filter=on?'blur(3px) grayscale(.7) brightness(.75)':'none';}
-const MEM_NAME={rug:'粗糙的地毯',tea:'喝剩的冰紅茶',tissue:'沙發上的衛生紙',deadplant:'死掉的盆栽',toothbrush:'四支牙刷'};
-function questScene(){return['宋鳥回到客廳。',save.clues.map(c=>MEM_NAME[c]).filter(Boolean).join('、')+'……','「這些東西真的是我自己留下的嗎？」',
- '已經很難再用「我只是忘記收拾」來解釋了。','宋鳥開始回想。',{fn:()=>memCv(1)},
- '……','「今年生日，你要自己找到禮物喔。」','……',{fn:()=>memCv(0)},
- '「……是誰說的？」','你想不起來。','但今天是你的生日。','而那段模糊的記憶，也許和這個家裡另一個人的生活痕跡有關。',
- '「……好。」','「找出禮物，也找出那個人是誰。」',
- {fn:()=>{save.quest=1;persist();questCheck(false);toast('主線任務：尋找你的生日禮物');}}];}
+function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
+function questScene(){return['「四支牙刷、兩個人的飲料……」','「我家是什麼時候開始有這麼多東西的？」','「而且今天不是我生日嗎……」','「總覺得有什麼事情忘記了。」',
+ {fn:()=>{flashWhite();memCv(1);}},
+ '<i>？？？：「我把你的生日禮物藏起來了，你自己找！」</i>',
+ {fn:()=>memCv(0)},
+ '「……蛤？」','「誰在講話？」','「等一下，所以我今年有生日禮物？」','「可是……誰會把禮物藏在我家？」',
+ {fn:()=>{save.quest=1;persist();questCheck(false);}},
+ '<div class="qcard">🎁 主線任務解鎖<b>尋找你的生日禮物</b>有人在這個家裡留下了生日禮物。<br>找到禮物，也許就能想起被遺忘的事情。</div>'];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
  $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
 questCheck(false);statShow();
@@ -482,7 +484,7 @@ function tapGrid(x,y){
 }
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
- const mem=room.startsWith('living')&&!from.startsWith('living')&&!save.quest&&save.clues.length>=QUEST_AT;
+ const mem=room==='living2'&&from==='bath'&&!save.quest&&save.clues.length>=QUEST_AT;
  if(mem&&!(room==='living'&&from==='bed'&&!save.hot)){say(questScene());return;}
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
  if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
