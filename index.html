@@ -54,7 +54,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #note{font-size:12px;text-align:center;opacity:.65}
 </style></head><body>
 <div id="wrap">
-<div id="hud">11 月 24 日｜宋鳥的生日<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div>
+<div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="fade"></div>
@@ -73,7 +73,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118203836';
+const BUILD='20261118204154';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
