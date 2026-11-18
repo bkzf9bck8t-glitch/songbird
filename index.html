@@ -68,7 +68,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118204602';
+const BUILD='20261118205038';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -84,7 +84,7 @@ const $=id=>document.getElementById(id);
 
 // ── 臥室：參考圖背景。座標以 800 寬的縮圖量測，乘 K 換成原圖像素 ──
 const IMGS={};function img(src){if(!IMGS[src]){IMGS[src]=new Image();IMGS[src].src=src;}return IMGS[src];}
-let BG=img('assets/bedroom.png?v=2');img('assets/livingroom.png?v=1');img('assets/living2.png?v=1');img('assets/bathroom.png?v=1');img('assets/kitchen.png?v=1');img('assets/closet.png?v=1');img('assets/entrance.png?v=1');
+let BG=img('assets/bedroom.jpg?v=1');img('assets/livingroom.jpg?v=1');img('assets/living2.jpg?v=1');img('assets/bathroom.jpg?v=1');img('assets/kitchen.jpg?v=1');img('assets/closet.jpg?v=1');img('assets/entrance.jpg?v=1');
 const K=1448/800,sc=a=>a.map(([x,y])=>[x*K,y*K]),pt=([x,y])=>[x*K,y*K];
 const R4=(x1,y1,x2,y2)=>[[x1,y1],[x2,y1],[x2,y2],[x1,y2]];
 const BED=R4(270,228,555,488),DESK=R4(98,195,268,318),
@@ -94,7 +94,7 @@ const BED=R4(270,228,555,488),DESK=R4(98,195,268,318),
 const L_BED=pt([246,420]),L_TOP=pt([246,340]),R_SIDE=pt([592,400]),R_LOW=pt([625,470]);
 
 const ROOMS={
-bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,ph:[250,166,450,181],
+bed:{img:{src:'assets/bedroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[250,166,450,181],
  walk:sc([[78,240],[718,240],[720,500],[714,575],[628,575],[628,503],[168,503],[168,575],[130,575],[128,420],[80,408]]),
  blocks:[BED,DESK,CHAIR,WCHAIR,FAN,CORNER].map(sc),
  hot:[
@@ -121,7 +121,7 @@ bed:{img:{src:'assets/bedroom.png?v=2',w:1448,h:1086,speed:300,ph:[250,166,450,1
  spawn:{start:pt([592,425]),closet:pt([104,360]),balcony:pt([672,540]),living:pt([150,470]),living2:pt([150,470])}}},
 // 客廳視角 1（朝書房那面牆）：重點是書櫃上的樂高梅花，也是走去浴室的過渡視角。
 // 掛帽子包包的木門＝臥室；畫面下方左側＝浴室，右側＝廚房（都在畫面外）；點沙發＝轉到視角 2。
-living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,ph:[330,196,560,238],
+living:{img:{src:'assets/livingroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[330,196,560,238],
  walk:sc([[208,302],[505,302],[505,345],[590,548],[740,548],[738,586],[100,586],[105,510],[150,420],[205,330]]),
  blocks:[R4(303,340,472,520),R4(150,512,215,562),R4(450,290,570,340),[[500,335],[560,288],[748,400],[748,548],[590,548]]].map(sc),
  hot:[
@@ -148,7 +148,7 @@ living:{img:{src:'assets/livingroom.png?v=1',w:1448,h:1086,speed:300,ph:[330,196
       {poly:sc(R4(322,348,470,440)),behind:(x,y)=>y<440*K}],// 電風扇本體、玻璃茶几上的瓶子與雜物（玻璃本身看得穿，不遮腳）
  spawn:{start:pt([255,345]),bed:pt([255,345]),living2:pt([300,568]),bath:pt([300,568]),kitchen:pt([600,568]),entrance:pt([600,568])}}},
 // 浴室：從客廳視角 1 下方左側進來；出浴室（畫面下方或右邊的門）一律到客廳視角 2
-bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,ph:[440,228,600,342],
+bath:{img:{src:'assets/bathroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[440,228,600,342],
  walk:sc([[192,462],[290,436],[545,472],[600,498],[650,500],[650,598],[274,598],[274,530],[192,500]]),
  blocks:[],
  hot:[
@@ -165,7 +165,7 @@ bath:{img:{src:'assets/bathroom.png?v=1',w:1448,h:1086,speed:300,ph:[440,228,600
  occ:[],
  spawn:{start:pt([620,560]),living:pt([620,560]),kitchen:pt([460,575]),living2:pt([460,575]),entrance:pt([632,560])}}},
 // 客廳視角 2（朝沙發）：撿衛生紙。從浴室出來後出現。左邊往臥室，點吧台往廚房，右下往浴室。
-living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,ph:[450,269,580,352],
+living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,580,352],
  walk:sc([[2,560],[60,505],[150,495],[155,447],[600,447],[610,432],[700,492],[792,560],[798,598],[2,598]]),
  blocks:[R4(188,472,552,588)].map(sc),
  hot:[
@@ -186,7 +186,7 @@ living2:{img:{src:'assets/living2.png?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
  occ:[{poly:sc(R4(270,412,295,465)),behind:(x,y)=>y<465*K},{poly:sc(R4(337,440,357,478)),behind:(x,y)=>y<478*K},{poly:sc(R4(373,450,440,472)),behind:(x,y)=>y<472*K},{poly:sc(R4(237,465,303,505)),behind:(x,y)=>y<505*K},{poly:sc(R4(313,478,371,505)),behind:(x,y)=>y<505*K},{poly:sc(R4(390,475,465,508)),behind:(x,y)=>y<508*K},{poly:sc(R4(463,460,513,500)),behind:(x,y)=>y<500*K}],// 玻璃茶几上的東西（玻璃看得穿，不遮腳）
  spawn:{start:pt([100,560]),living:pt([420,462]),bath:pt([100,560]),kitchen:pt([740,575])}}},
 // 廚房：從客廳視角 1 右下或視角 2 右下進來；往畫面下方走回客廳（回到原本來的那個視角）
-kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,ph:[470,259,600,301],
+kitchen:{img:{src:'assets/kitchen.jpg?v=1',w:1448,h:1086,speed:300,ph:[470,259,600,301],
  walk:sc([[442,470],[530,470],[530,506],[628,512],[745,556],[752,594],[30,598],[30,580],[258,580],[258,570],[442,566]]),
  blocks:[],
  hot:[
@@ -207,7 +207,7 @@ kitchen:{img:{src:'assets/kitchen.png?v=1',w:1448,h:1086,speed:300,ph:[470,259,6
  spawn:{start:pt([500,575]),living:pt([60,590]),living2:pt([60,590]),bath:pt([460,585]),entrance:pt([735,580])}}},
 // 衣帽間（直式底圖 1086×1448，座標直接用原圖像素，k:1）：從臥室往衣帽間走道看。畫面下方回臥室。
 // 不要提前暗示禮物位置（禮物在現實衣櫥：掛著的衣服下方、不常用的包包之間）
-closet:{img:{src:'assets/closet.png?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430,1440,690],
+closet:{img:{src:'assets/closet.jpg?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430,1440,690],
  walk:[[392,975],[596,975],[648,1150],[668,1440],[252,1440],[302,1150]],
  blocks:[],
  hot:[
@@ -220,7 +220,7 @@ closet:{img:{src:'assets/closet.png?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430
  occ:[],
  spawn:{start:[460,1380],bed:[460,1380]}}},
 // 玄關（底圖 1448×1086，座標直接用原圖像素，k:1）：往左 → 廚房；右邊／右下角 → 浴室；畫面下方 → 客廳視角 1。
-entrance:{img:{src:'assets/entrance.png?v=1',w:1448,h:1086,speed:300,k:1,ph:[905,520,1080,620],
+entrance:{img:{src:'assets/entrance.jpg?v=1',w:1448,h:1086,speed:300,k:1,ph:[905,520,1080,620],
  walk:[[560,905],[985,905],[992,962],[1082,990],[1082,1080],[30,1080],[30,1000],[360,996],[412,1028],[552,1028]],
  blocks:[],
  hot:[
@@ -564,7 +564,8 @@ function clipRedraw(poly){ctx.save();ctx.beginPath();poly.forEach(([a,b],i)=>i?c
 function draw(){
  const R0=ROOMS[room];
  if(R0.img){const I=R0.img;BG=img(I.src);
-  if(!BG.naturalWidth){ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);return;}
+  if(!(BG.complete&&BG.naturalWidth)){// 還沒下載完（手機網路慢時）：只畫黑底和「載入中」，不要畫人，否則會留下殘影
+   ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);ctx.fillStyle='#fff6e4';ctx.font='bold 48px sans-serif';ctx.textAlign='center';ctx.fillText('載入中……',I.w/2,I.h/2);ctx.textAlign='start';return;}
   ctx.drawImage(BG,0,0);
   if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y),P.pose==='lie'?9:P.pose==='hop'?null:5);return;}
   tissueDraw();playerDraw(P.x,P.y,phScale(I,P.y));
