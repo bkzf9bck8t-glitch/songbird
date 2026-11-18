@@ -68,7 +68,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118205428';
+const BUILD='20261118205438';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -246,7 +246,6 @@ balcony:{img:{src:'assets/balcony.jpg?v=1',w:1447,h:1087,speed:300,k:1,ph:[945,5
   {poly:R4(800,770,1045,995),app:[920,1030],text:['一盆洗好的衣服。','大部分是黑色的，我的品味很一致。']},
   {poly:R4(1140,265,1375,485),app:[1010,1040],text:['一排洗衣精。']},
   {poly:R4(1055,485,1425,1087),app:[1010,1040],text:['木櫃。','裡面大概是一堆用不到的東西。']},
-  {poly:R4(15,20,500,680),app:[520,965],text:['窗外是一片樹。','今天天氣不錯。']},
   {poly:R4(0,1010,1060,1087),app:[600,1070],to:'bed'},// 畫面下方 → 臥室
   {poly:R4(0,680,300,1087),app:[340,1060],to:'bed'},// 左下 → 臥室
   {poly:R4(180,0,1200,230),app:[700,965],text:['晾衣架。','今天什麼都沒晾。']}],
