@@ -66,7 +66,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118205658';
+const BUILD='20261118205836';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -568,7 +568,7 @@ function draw(){
   if(!(BG.complete&&BG.naturalWidth)){// 還沒下載完（手機網路慢時）：只畫黑底和「載入中」，不要畫人，否則會留下殘影
    ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);ctx.fillStyle='#fff6e4';ctx.font='bold 48px sans-serif';ctx.textAlign='center';ctx.fillText('載入中……',I.w/2,I.h/2);ctx.textAlign='start';return;}
   ctx.drawImage(BG,0,0);
-  if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y),P.pose==='lie'?9:P.pose==='hop'?null:5);return;}
+  if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y));return;}// 起床動畫：全身都畫（以前躺著／坐著會切掉下半身，看起來像只有頭）
   tissueDraw();playerDraw(P.x,P.y,phScale(I,P.y));
   I.occ.forEach(o=>{if(o.behind(P.x,P.y))clipRedraw(o.poly);});
   if(I.occ.length)tissueDraw();
@@ -665,10 +665,9 @@ async function opening(){
  ringStop();
  await lids(0,900);await wait(400);
  povOn=false;pv.style.display='none';
- P.pose='lie';P.x=BED_HEAD[0];P.y=BED_HEAD[1];
+ P.pose='sit';P.x=BED_SIT[0];P.y=BED_SIT[1];
  await lids(100,900);[$('lidT'),$('lidB')].forEach(l=>l.style.display='none');
- await wait(900);
- P.pose='sit';P.x=BED_SIT[0];P.y=BED_SIT[1];await wait(500);
+ await wait(700);
  P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
  P.pose='hop';await hop(BED_OUT,700);P.pose=null;
  await wait(300);
