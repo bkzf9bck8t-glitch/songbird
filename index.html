@@ -399,20 +399,18 @@ try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
  const v=JSON.parse(localStorage.getItem(SAVE_KEY)||'null');if(v&&Array.isArray(v.clues))save=Object.assign(v,{clues:v.clues.filter(c=>CLUES[c]),deds:(v.deds||[])});}catch(e){}
 function persist(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(save));}catch(e){}}
 let nbOpen=false,sel=[];
-// 第一幕結尾｜遺失的記憶：筆記本收集到四條線索後，從浴室回到客廳（視角 2）播這段，播完才解鎖主線任務
+// 第一幕結尾｜遺失的記憶：筆記本記下第四條線索，那段對話說完就播記憶，播完才解鎖主線任務
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
- if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!save.questHint){save.questHint=1;persist();toast('宋鳥覺得腦袋有點亂，想去浴室洗把臉……');}}
+ if(announce&&!save.quest&&save.clues.length>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
 // 記憶演出三段：①觸碰物品（正常探索）→ ②記憶模糊（褪色、閃白）→ ③記憶碎片（畫面幾乎看不見，只聽到片段）
 const MEM_FX={fade:'grayscale(1) sepia(.25) brightness(.9)',frag:'blur(6px) grayscale(1) brightness(.3)'};
 function memCv(m){cv.style.transition=m==='frag'?'filter .15s':'filter 1s';cv.style.filter=MEM_FX[m]||'none';}
 function memory(frag){return[{fn:()=>memCv('fade')},{wait:1100},{fn:()=>{flashWhite();memCv('frag');}},{wait:700},
  ...frag.map(t=>'<span class="memv">'+t+'</span>'),{fn:()=>memCv(0)},{wait:900}];}
 function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
-function questScene(){return['「四支牙刷、兩個人的飲料……」','「我家是什麼時候開始有這麼多東西的？」','「而且今天不是我生日嗎……」','「總覺得有什麼事情忘記了。」',
- ...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),
- '「……蛤？」','「誰在講話？」','「等一下，所以我今年有生日禮物？」','「可是……誰會把禮物藏在我家？」',
- {fn:()=>{save.quest=1;persist();questCheck(false);}},
+function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「蛤？誰在講話？」',
+ {quest:1,fn:()=>{save.quest=1;persist();questCheck(false);}},
  '<div class="qcard">🎁 主線任務解鎖<b>尋找你的生日禮物</b>有人在這個家裡留下了生日禮物。<br>找到禮物，也許就能想起被遺忘的事情。</div>'];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
  $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
@@ -488,12 +486,11 @@ function tapGrid(x,y){
 }
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
- const mem=room==='living2'&&from==='bath'&&!save.quest&&save.clues.length>=QUEST_AT;
- if(mem&&!(room==='living'&&from==='bed'&&!save.hot)){say(questScene());return;}
+ if(!save.quest&&save.clues.length>=QUEST_AT){say(questScene());return;}// 舊存檔已有四條線索卻還沒看過記憶：進房間時補播
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
  if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
  if(room==='living'&&from==='bed'&&!save.hot)say(['「……怎麼這麼熱？」','宋鳥離開了舒適圈。','這裡的舒適圈是指臥室的冷氣房。','「幹，冰箱又在發熱。」',
-  {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}],mem?()=>say(questScene()):null);
+  {fn:()=>{save.hot=1;persist();statShow();toast('🌡️ 獲得狀態：炎熱 Lv.1（移動速度不變，但心情受到影響）');}}]);
 }
 let kitchenFrom='living';
 function arrive(){
