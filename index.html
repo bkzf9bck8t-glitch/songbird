@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119222434';
+const BUILD='20261119222551';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -711,10 +711,19 @@ function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
 // 宋鳥角色：PIX_SB=true 用程式畫的像素人物（和結局的女友同一種畫風）；false 改回原本的 assets/songbird.png
 const PIX_SB=true;let sbPix=null;
 function playerDraw(fx,fy,s,cut){
- if(PIX_SB){sbPix=sbPix||spriteCanvas(40,64,drawSongbird);const k=SB_H*.8/sbPix.height,w=sbPix.width*k,h=SB_H*.8,b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0;
+ if(PIX_SB){const hair=!!save.hair;sbPix=sbPix||{};
+  // 上方多留 7 格給雞窩頭的那撮毛；比例用原本 66 格高算，身體大小不變
+  const im=sbPix[hair]||(sbPix[hair]=spriteCanvas(40,71,g=>{g.translate(0,7);drawSongbird(g,hair);}));
+  const k=SB_H*.8/66,w=im.width*k,h=im.height*k,b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0;
   ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
   if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(-w*.35,-1,w*.7,2.5);}
-  if(P.pose==='stretch')ctx.scale(1.06,1.06);ctx.imageSmoothingEnabled=false;ctx.drawImage(sbPix,-w/2,-h-b,w,h);ctx.restore();return;}
+  if(P.pose==='stretch')ctx.scale(1.06,1.06);ctx.imageSmoothingEnabled=false;ctx.drawImage(im,-w/2,-h-b,w,h);
+  // 炎熱 Lv.1：每 3 秒左右，頭的旁邊冒一滴汗，往下滑、淡掉（左右輪流）
+  if(save.hot&&!ending){const c=performance.now()/3200,ph=c%1;if(ph<.38){const side=Math.floor(c)%2?1:-1,q=ph/.38,
+   x=side*w*.36,y=-h*.62-b+q*2.2,r=.75;ctx.globalAlpha=Math.min(1,(1-q)*1.6);ctx.fillStyle='#8fd0ff';ctx.strokeStyle='#2b5a7a';ctx.lineWidth=.22;
+   ctx.beginPath();ctx.moveTo(x,y-r*1.9);ctx.quadraticCurveTo(x+r,y-r*.2,x,y+r);ctx.quadraticCurveTo(x-r,y-r*.2,x,y-r*1.9);ctx.fill();ctx.stroke();
+   ctx.fillStyle='#fff';ctx.fillRect(x-r*.35,y-r*.3,r*.3,r*.45);ctx.globalAlpha=1;}}
+  ctx.restore();return;}
  const bx=sbCrop();if(!bx){playerDrawPix(fx,fy,s,cut);return;}
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0,h=SB_H,w=h*bx[2]/bx[3];
@@ -887,7 +896,7 @@ function drawGirl(g){const H='#3a2722',H2='#5a3f35',S='#f6cfae',T='#f3e2c6',T2='
  spx(g,D,14,21,3,4);spx(g,D,23,21,3,4);spx(g,'#fff',15,21,1,1);spx(g,'#fff',24,21,1,1);// 眼睛（有反光）
  spx(g,'#f3a3a0',11,26,3,1);spx(g,'#f3a3a0',26,26,3,1);spx(g,'#b4545a',19,28,2,1);}// 臉頰、嘴巴
 // 宋鳥：捲捲的黑髮、眼鏡、黑 T 恤、黑褲子（照 assets/songbird.png 的特徵，用和女友一樣的畫法）
-function drawSongbird(g){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',T='#2a252d',T2='#3a3440',P='#1f1b22',O='#2e2a33';
+function drawSongbird(g,messy){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',T='#2a252d',T2='#3a3440',P='#1f1b22',O='#2e2a33';
  sell(g,H,20,16,14,12);// 一頭捲髮
  [[7,12],[9,6],[14,3],[20,2],[26,3],[31,6],[33,12],[34,18],[6,18],[8,24],[32,24]].forEach(([x,y])=>sell(g,H,x,y,4,4));
  spx(g,T,11,33,18,12);spx(g,T,8,34,4,5);spx(g,T,28,34,4,5);// 黑 T 恤、短袖
@@ -897,6 +906,12 @@ function drawSongbird(g){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',
  spx(g,S,18,30,4,4);sell(g,S,20,23,10,9);sell(g,S,10,24,2,2);sell(g,S,30,24,2,2);// 脖子、臉、耳朵
  [[13,15],[18,13],[23,14],[28,16]].forEach(([x,y])=>sell(g,H,x,y,4,3.5));// 瀏海的捲
  [[12,8],[22,5],[29,11],[9,18]].forEach(([x,y])=>spx(g,H2,x,y,3,1));// 頭髮的反光
+ if(messy){// 雞窩頭：頭頂翹起一撮亂毛
+  spx(g,H,18,-5,3,8);spx(g,H,20,-7,3,2);spx(g,H,22,-6,1,2);// 中間翹起、尾端捲一下
+  spx(g,H,14,-3,3,4);spx(g,H,12,-5,2,3);spx(g,H,10,-7,2,3);// 往左岔
+  spx(g,H,24,-3,3,4);spx(g,H,26,-5,2,3);spx(g,H,28,-7,2,3);// 往右岔
+  spx(g,H,7,0,3,3);spx(g,H,31,0,3,3);// 兩側也亂翹
+  spx(g,H2,19,-4,1,3);spx(g,H2,13,-4,1,2);spx(g,H2,26,-4,1,2);}
  spx(g,D,13,20,6,5);spx(g,D,21,20,6,5);spx(g,'#e8eef4',14,21,4,3);spx(g,'#e8eef4',22,21,4,3);spx(g,D,19,21,2,1);// 眼鏡
  spx(g,D,15,22,2,2);spx(g,D,23,22,2,2);spx(g,'#fff',15,22,1,1);spx(g,'#fff',23,22,1,1);// 眼睛（小一點，有反光）
  spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,18,28,4,1);}// 臉頰、嘴巴（平的，宋鳥平常不太笑）
