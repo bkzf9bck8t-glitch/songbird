@@ -34,7 +34,8 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #nbBtn b{display:block;font-size:20px}
 #mute{position:relative;width:52px;height:52px;border:0;border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:24px;line-height:1.1;padding:2px;display:none;cursor:pointer}
 #nbBtn:active,#mute:active{opacity:.6}
-#nbBtn.new::after{content:"";position:absolute;top:2px;right:4px;width:12px;height:12px;border-radius:50%;background:#d9483b;border:0}
+#nbBtn.new{animation:nbGlow 1.6s ease-in-out infinite}
+@keyframes nbGlow{0%,100%{filter:drop-shadow(0 3px 3px rgba(0,0,0,.55)) drop-shadow(0 0 6px rgba(255,214,140,.8));transform:translateY(-1px)}50%{filter:drop-shadow(0 5px 4px rgba(0,0,0,.6)) drop-shadow(0 0 14px rgba(255,214,140,1)) drop-shadow(0 0 4px rgba(255,236,190,1));transform:translateY(-3px)}}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
@@ -81,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119222335';
+const BUILD='20261119222434';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
