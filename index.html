@@ -76,7 +76,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119211316';
+const BUILD='20261119211636';
 let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -418,7 +418,8 @@ function unlockAch(id){save.ach=save.ach||[];if(save.ach.includes(id))return;sav
 // 狀態列：炎熱、造型
 function statShow(){const t=[];if(save.hot)t.push('炎熱 Lv.1');if(save.hair)t.push('雞窩頭');$('stat').innerHTML=t.length?'<br>狀態：'+t.join('｜'):'';}
 const CATS=['生活中的不同','被遺忘的人','我們的生活'];
-const lifeN=()=>save.clues.filter(c=>CLUES[c].cat==='生活中的不同').length;// 主線任務只看「生活中的不同」的線索數
+const ACT1=['rug','tea','deadplant','toothbrush'];// 第一幕的四項正式線索：地毯、冰紅茶、死掉的植物、牙刷（衛生紙不算）
+const lifeN=()=>save.clues.filter(c=>ACT1.includes(c)).length;
 const SAVE_KEY='songbird-save-v1';
 let save={clues:[]};
 try{if(location.search.includes('reset'))localStorage.removeItem(SAVE_KEY);
