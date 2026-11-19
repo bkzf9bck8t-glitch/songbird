@@ -32,7 +32,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #dlg .opts button:active::before{opacity:1}
 #nbBtn{position:relative;width:52px;height:52px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:12px;line-height:1.1;padding:0;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 #nbBtn b{display:block;font-size:20px}
-#mute{position:relative;width:52px;height:52px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:10px;line-height:1.1;padding:2px;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+#mute{position:relative;width:52px;height:52px;border:3px solid var(--line);border-radius:8px;background:var(--box);color:#2b2230;font:inherit;font-size:24px;line-height:1.1;padding:2px;display:none;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
 #nbBtn.new::after{content:"";position:absolute;top:-5px;right:-5px;width:12px;height:12px;border-radius:50%;background:#d9483b;border:2px solid #fff}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221841';
+const BUILD='20261119222249';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -114,7 +114,7 @@ bed:{img:{src:'assets/bedroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[250,166,450,1
   {poly:sc(R4(548,268,628,336)),app:R_SIDE,clue:'rug',text:['椅子上鋪著一張藍色的地毯。','「好粗糙，看起來不像買的。」',{clue:'rug'}]},
   {poly:sc(WCHAIR),app:R_SIDE,text:['白色折疊椅。','上面鋪著一張地毯。']},
   {poly:sc(R4(280,200,366,336)),app:L_TOP,text:['傑斯維爾。紅色的身體，一臉呆樣。',{ask:'要對它做什麼？',opts:[['抱一下',['……軟軟的。','它好像在嘲笑我。']],['把它放回去',['傑斯維爾回到床頭的位置。','它的表情一點都沒變。']],['算了',[]]]}]},
-  {poly:sc(R4(333,488,478,560)),app:pt([405,500]),text:['電視。','「來看一下哲哲好了。」']},
+  {poly:sc(R4(333,488,478,560)),app:pt([405,500]),text:['電視。']},
   {poly:sc([[72,278],[120,278],[120,338],[72,338]]),app:pt([104,352]),to:'closet',sx:5,sy:11},
   {poly:sc([[628,500],[724,500],[716,582],[628,582]]),app:pt([672,548]),to:'balcony',dir:'down',sx:3,sy:3},
   {poly:sc([[688,62],[750,38],[750,500],[712,500],[690,470]]),app:pt([694,482]),text:['窗戶。','外面的陽光很刺眼。']},
@@ -143,9 +143,9 @@ living:{img:{src:'assets/livingroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[330,196
   {poly:sc(R4(485,82,548,135)),app:pt([488,368]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(452,135,570,340)),app:pt([488,368]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
   {poly:sc(R4(205,85,302,332)),app:pt([255,340]),to:'bed'},
-  {poly:sc(R4(318,95,448,305)),app:pt([385,322]),say:['通往書房的拉門。','書房還在施工中。']},
+  {poly:sc(R4(318,95,448,305)),app:pt([385,322]),say:['通往書房的拉門。','門卡住了。']},
   {poly:sc(R4(50,408,88,498)),app:pt([200,420]),text:['PS5。','「什麼時候買的？算了。」']},
-  {poly:sc([[60,250],[160,238],[162,370],[100,440],[60,480]]),app:pt([205,410]),text:['電視。','來看一下哲哲好了。']},
+  {poly:sc([[60,250],[160,238],[162,370],[100,440],[60,480]]),app:pt([205,410]),text:['電視。','「來看一下哲哲好了。」']},
   {poly:sc(R4(162,282,198,332)),app:pt([215,345]),text:['電視櫃上的小檯燈。','暖暖的光。']},
   {poly:sc(R4(158,165,202,278)),app:pt([215,345]),text:['左牆上的掛畫。']},
   {poly:sc(R4(140,408,218,562)),app:pt([235,520]),text:['小寶小寶……']},
@@ -622,6 +622,10 @@ $('nb').querySelector('.x').addEventListener('click',closeNb);
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
 $('panel').addEventListener('pointerdown',()=>{if($('dlg').style.display==='block'&&!asking)next();});
 $('memShot').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
+// 音樂按鈕：music.js 會寫「音樂：開／關」，這裡換成圖示 🔊（有聲音）／🔇（靜音），不用改 music.js
+(function(){const b=$('mute');const fix=()=>{const t=b.textContent;if(t==='🔊'||t==='🔇')return;const off=t.includes('關');
+ b.textContent=off?'🔇':'🔊';b.setAttribute('aria-label',off?'音樂已關，點一下打開':'音樂已開，點一下關掉');b.title=b.getAttribute('aria-label');};
+ fix();new MutationObserver(fix).observe(b,{childList:true,characterData:true,subtree:true});})();
 
 cv.addEventListener('pointerdown',e=>{
  if(busy||nbOpen)return;
