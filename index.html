@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221504';
+const BUILD='20261119221602';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -546,7 +546,7 @@ function memHot(id,normal){return()=>{const m=MEMORIES[id];
 const HINT_AFTER=60000;let hintT=Date.now();
 function memAvail(){return Object.keys(MEMORIES).filter(id=>!(save.mem||[]).includes(id)&&MEMORIES[id].when());}
 // ===== 看得出能點什麼、出口在哪 =====
-// 1. 第一次進一個房間：每個出口閃一個會跳動的小箭頭＋去哪裡，約 5 秒
+// 1. 第一次進一個房間：出口處有淡淡的光和往外流動的小「›」，約 5 秒（刻意做得低調，不出戲）
 // 2. 還沒找到的線索物件：很淡的光暈，慢慢呼吸；找到後消失
 const ROOM_NAME={bed:'臥室',living:'客廳',living2:'客廳',kitchen:'廚房',bath:'浴室',entrance:'玄關',closet:'衣帽間',balcony:'陽台'};
 let exitUntil=0;
@@ -555,12 +555,14 @@ function exitArrows(){const n=performance.now();if(n>=exitUntil)return;const I=R
  I.hot.forEach(o=>{if(!o.to)return;const to=o.to==='back'?kitchenFrom:o.to;if(done[to])return;done[to]=1;
   let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
   let dx=cx-W0/2,dy=cy-H0/2;if(Math.abs(dx)>Math.abs(dy)){dx=Math.sign(dx);dy=0;}else{dy=Math.sign(dy);dx=0;}// 箭頭朝畫面外
-  const b=Math.sin(n/160)*12*u,x=Math.max(90*u,Math.min(W0-90*u,cx))+dx*b,y=Math.max(110*u,Math.min(H0-110*u,cy))+dy*b,r=52*u,ang=Math.atan2(dy,dx);
-  ctx.save();ctx.globalAlpha=fade*(.75+.25*Math.sin(n/200));ctx.translate(x,y);
-  ctx.save();ctx.rotate(ang);ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(-r*.6,-r*.8);ctx.lineTo(-r*.2,0);ctx.lineTo(-r*.6,r*.8);ctx.closePath();
-  ctx.fillStyle='#fff6e4';ctx.strokeStyle='#2b2230';ctx.lineWidth=7*u;ctx.lineJoin='round';ctx.stroke();ctx.fill();ctx.restore();
-  ctx.font='bold '+Math.round(46*u)+'px sans-serif';ctx.textAlign='center';ctx.lineWidth=8*u;ctx.strokeStyle='#2b2230';ctx.fillStyle='#fff6e4';
-  const ty=dy<0?r*1.9:-r*1.3;ctx.strokeText(ROOM_NAME[to]||'',0,ty);ctx.fillText(ROOM_NAME[to]||'',0,ty);ctx.restore();});}
+  const x=Math.max(90*u,Math.min(W0-90*u,cx)),y=Math.max(90*u,Math.min(H0-90*u,cy)),ang=Math.atan2(dy,dx),f=fade*Math.min(1,(n-exitUntil+5000)/800);
+  // 出口處一團淡淡的暖光（像門外透進來的光）＋三個往外流動的小「›」，沒有文字、沒有外框
+  const g=ctx.createRadialGradient(x,y,0,x,y,90*u);g.addColorStop(0,'rgba(255,240,205,'+(.28*f)+')');g.addColorStop(1,'rgba(255,240,205,0)');
+  ctx.save();ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,90*u,0,Math.PI*2);ctx.fill();
+  ctx.translate(x,y);ctx.rotate(ang);ctx.strokeStyle='#fff8ea';ctx.lineWidth=6*u;ctx.lineCap='round';ctx.lineJoin='round';
+  for(let k=0;k<3;k++){const ph=((n/900)+k/3)%1,px=(-26+ph*52)*u;ctx.globalAlpha=f*.45*Math.sin(ph*Math.PI);
+   ctx.beginPath();ctx.moveTo(px-9*u,-14*u);ctx.lineTo(px+5*u,0);ctx.lineTo(px-9*u,14*u);ctx.stroke();}
+  ctx.restore();});}
 function clueDraw(){const I=ROOMS[room].img,u=I.w/1448,t=performance.now()/1000;
  I.hot.forEach((o,i)=>{if(!o.clue||save.clues.includes(o.clue))return;
   let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
