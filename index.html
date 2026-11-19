@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119220202';
+const BUILD='20261119220733';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -454,20 +454,22 @@ function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.poin
  o.style.transition='none';o.style.opacity=0;o.style.pointerEvents='auto';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
 // 每段記憶的資料：名稱、觸發條件、記憶內容、結束後的台詞。
 // 新增記憶：在這裡加一筆，再把該物件的 text 改成 memHot('記憶id',[原本的台詞])
+// 物品回憶（和閃光）要等第一幕四項線索全部找到、主線開啟之後才開始
+function memOpen(){return!!save.quest&&lifeN()>=QUEST_AT;}
 const MEMORIES={
- memory_coffee:{name:'下意識的習慣',when:()=>!!save.quest,// 主線開啟後才會觸發
+ memory_coffee:{name:'下意識的習慣',when:()=>memOpen(),// 四項線索都找到、主線開啟後才會觸發（之前不會閃光）
   room:'living2',at:pt([715,262]),hint:'客廳',// 閃光位置；提示用的地點
   frag:[{shot:{room:'living2',rect:[1170,380,260,220]}},{shot:{room:'kitchen',rect:[1110,400,280,600]}}],// 咖啡機特寫 → 冰箱特寫（沒有對話）
   after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」']},
  // 記憶② 沙發（暫定）：撿完衛生紙之後再點沙發。沙發左半邊（坐在沙發上的人的右邊）的模糊特寫，不出現女友
  // 【待補】正式台詞還沒定，after 先放可替換的文字
- memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>!!save.quest&&save.clues.includes('tissue'),
+ memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>memOpen()&&save.clues.includes('tissue'),
   room:'living2',at:pt([250,370]),hint:'沙發',
   frag:[{shot:{room:'living2',rect:[271,520,440,300]}}],
   after:['（記憶②台詞待補）']},
  // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
  // 【待補】正式台詞還沒定；看完接「最後提示」，主線更新成「前往衣帽間，調查包包」
- memory_lego:{name:'樂高梅花（暫定）',when:()=>!!save.quest&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
+ memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
   spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
   frag:[{shot:{room:'living',rect:[860,370,170,170]}}],
   after:['（記憶③台詞待補）'],
