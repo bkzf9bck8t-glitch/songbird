@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119223820';
+const BUILD='20261119223847';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -454,14 +454,19 @@ function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.poin
  c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter='grayscale(.7) sepia(.3)';g.drawImage(src,x,y,w,h,0,0,w,h);g.filter='none';if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
  o.style.transition='none';o.style.opacity=0;o.style.pointerEvents='auto';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
 // 記憶特寫上的模糊人影（不畫出五官和細節，只有剪影）。先畫在很小的畫布上再放大，就會變模糊
-function ghostDraw(g,w,h,kind){const k=4,c=document.createElement('canvas');c.width=Math.ceil(w/k);c.height=Math.ceil(h/k);const x=c.getContext('2d');x.scale(1/k,1/k);
- x.fillStyle='rgb(30,24,28)';const E=(cx,cy,rx,ry,r)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,r||0,0,Math.PI*2);x.fill();};
- if(kind==='lying'){// 半躺在沙發上滑手機：頭靠扶手、長髮、身體沿著座墊、膝蓋微彎
-  E(82,100,23,25);E(74,134,19,34,.2);// 頭靠在扶手上、披下來的長髮
-  E(165,160,68,26,.08);// 上半身躺在座墊上
-  E(126,110,9,21,-.5);x.fillRect(126,78,15,22);// 舉著手機的手和手機
-  E(266,170,58,19,-.08);E(330,142,42,14,-.75);E(380,166,30,12,.4);}// 腿（膝蓋立起來）
- g.save();g.globalAlpha=.85;g.imageSmoothingEnabled=true;g.drawImage(c,0,0,c.width,c.height,0,0,w,h);g.restore();}
+function ghostDraw(g,w,h,kind){const k=2.5,c=document.createElement('canvas');c.width=Math.ceil(w/k);c.height=Math.ceil(h/k);const x=c.getContext('2d');x.scale(1/k,1/k);
+ const col='rgb(16,12,15)';x.fillStyle=col;x.strokeStyle=col;x.lineCap='round';x.lineJoin='round';
+ const E=(cx,cy,rx,ry,r)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,r||0,0,Math.PI*2);x.fill();};
+ const L=(wd,...p)=>{x.lineWidth=wd;x.beginPath();x.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)x.lineTo(p[i],p[i+1]);x.stroke();};
+ if(kind==='lying'){// 半躺在沙發上滑手機：頭靠扶手、長髮、身體沿著座墊、膝蓋立起來（整個人連在一起，像一個人影）
+  E(84,98,25,27);// 頭
+  L(26,78,110,70,150,78,172);// 披下來的長髮
+  L(22,100,120,120,136);// 脖子
+  L(50,124,142,180,156,228,166);// 上半身到屁股
+  L(30,228,166,322,126,388,170);// 腿：膝蓋立起來
+  L(14,140,140,150,112,134,90);// 舉起來的手
+  x.fillRect(122,58,20,30);}// 手機
+ g.save();g.globalAlpha=.9;g.imageSmoothingEnabled=true;g.drawImage(c,0,0,c.width,c.height,0,0,w,h);g.restore();}
 // 每段記憶的資料：名稱、觸發條件、記憶內容、結束後的台詞。
 // 新增記憶：在這裡加一筆，再把該物件的 text 改成 memHot('記憶id',[原本的台詞])
 // 物品回憶（和閃光）要等第一幕四項線索全部找到、主線開啟之後才開始
