@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119212810';
+const BUILD='20261119213323';
 let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -126,6 +126,7 @@ bed:{img:{src:'assets/bedroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[250,166,450,1
   {poly:sc(R4(652,370,704,458)),app:R_LOW,text:['除濕機。','水箱還沒滿。']},
   {poly:sc(R4(552,50,690,236)),app:R_SIDE,text:['層架。','上面坐著好幾隻娃娃，還有一盞小檯燈。']},
   {poly:sc(R4(262,40,564,228)),app:L_TOP,text:['床頭櫃體。','上面擺滿瓶瓶罐罐。']},
+  {poly:sc(R4(275,440,550,488)),app:pt([405,500]),when:searching,text:searchHot('underBed',pt([410,470]))},// 床底下（找禮物時才有）
   {poly:sc(BED),app:L_BED,text:['藍色雙人床。','睡得很好，謝謝。']}],
  occ:[{poly:sc(CHAIR),behind:(x,y)=>y<388*K},
       {poly:sc(R4(168,505,628,580)),behind:()=>true},
@@ -191,8 +192,9 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(318,30,456,92)),app:pt([385,460]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(130,40,285,440)),app:pt([150,530]),text:['弧形落地燈。']},
   {poly:sc(R4(290,130,570,300)),app:pt([385,460]),text:['牆上掛滿了畫和海報。']},
-  {poly:sc(R4(150,295,605,446)),app:pt([385,460]),text:memHot('memory_sofa',['「右邊一看就比較好坐。」'])},
+  {poly:sc(R4(150,295,605,446)),app:pt([385,460]),text:memHot('memory_sofa',searchHot('underSofa',pt([380,440]),['「右邊一看就比較好坐。」']))},
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
+  {poly:sc(R4(608,345,790,550)),app:pt([700,530]),when:searching,text:searchHot('barCab',pt([700,440]))},// 吧台下方櫃子（找禮物時才有）
   {poly:sc([[600,300],[672,300],[672,100],[800,100],[800,540],[600,540]]),app:pt([700,530]),to:'kitchen'},// 點吧台（含後面看得到的廚房）→ 廚房
   {poly:sc(R4(0,500,140,600)),app:pt([40,575]),to:'bed'},
   {poly:sc(R4(660,540,800,600)),app:pt([760,580]),to:'bath'}],
@@ -211,7 +213,7 @@ kitchen:{img:{src:'assets/kitchen.jpg?v=1',w:1448,h:1086,speed:300,ph:[470,259,6
   {poly:sc(R4(226,195,408,268)),app:pt([470,480]),text:['烘碗機。']},
   {poly:sc(R4(115,95,225,168)),app:pt([280,580]),text:['吊著的酒杯。']},
   {poly:sc(R4(78,240,258,582)),app:pt([280,580]),text:['中島。','上面堆滿了東西。']},
-  {poly:sc(R4(222,150,632,262)),app:pt([500,480]),text:['上方的櫃子。']},
+  {poly:sc(R4(222,150,632,262)),app:pt([500,480]),text:searchHot('kitchenCab',pt([427,206]),['上方的櫃子。'])},
   {poly:sc(R4(752,280,800,600)),app:pt([735,580]),to:'entrance'},
   {poly:sc(R4(0,440,78,600)),app:pt([45,590]),to:'back'},
   {poly:sc(R4(78,582,250,600)),app:pt([45,590]),to:'back'},
@@ -246,6 +248,7 @@ entrance:{img:{src:'assets/entrance.jpg?v=1',w:1448,h:1086,speed:300,k:1,ph:[905
   {poly:R4(1090,875,1448,1086),app:[1060,1050],to:'bath'},// 右下角 → 浴室
   {poly:R4(1360,0,1448,875),app:[1060,1050],to:'bath'},// 右邊 → 浴室
   {poly:R4(400,980,1090,1086),app:[700,1060],to:'living'},// 畫面下方 → 客廳（視角 1）
+  {poly:R4(995,590,1095,960),app:[960,960],when:searching,text:searchHot('shoeCab',[1045,775])},// 鞋櫃（找禮物時才有）
   {poly:R4(770,905,1035,980),app:[760,960],text:['門口的鞋子。']},
   {poly:R4(565,160,990,900),app:[775,930],text:['大門。','現在還不想出門。']},
   {poly:R4(0,0,400,1086),app:[150,1040],to:'kitchen'}],
@@ -256,8 +259,8 @@ balcony:{img:{src:'assets/balcony.jpg?v=1',w:1447,h:1087,speed:300,k:1,ph:[945,5
  blocks:[],
  hot:[
   {poly:R4(625,495,712,565),app:[640,965],text:['「這什麼……死掉了。」','「我怎麼還不丟？」',{clue:'deadplant'}]},// 洗衣機上的小盆栽
-  {poly:R4(485,560,840,940),app:[660,965],text:['洗衣機。','塞得滿滿的……']},
-  {poly:R4(1055,485,1425,1087),app:[1010,1040],text:['木櫃。','裡面大概是一堆用不到的東西。']},
+  {poly:R4(485,560,840,940),app:[660,965],text:searchHot('washer',[660,750],['洗衣機。','塞得滿滿的……'])},
+  {poly:R4(1055,485,1425,1087),app:[1010,1040],text:searchHot('balconyCab',[1240,780],['木櫃。','裡面大概是一堆用不到的東西。'])},
   {poly:R4(0,1010,1060,1087),app:[600,1070],to:'bed'},// 畫面下方 → 臥室
   {poly:R4(0,680,300,1087),app:[340,1060],to:'bed'}],// 左下 → 臥室
  occ:[],
@@ -477,13 +480,26 @@ function finalHint(){return[...memory(['？？？：「我把你的生日禮物�
 // 衣帽間的包包：宋鳥先翻找一陣子（跳動＋窸窣的動態），翻完才出現對話框和「我找到了！」
 // 對話框會一直停著，等玩家在現實中找到禮物再按。重新開遊戲的話，回衣帽間再點一次包包就會再出現
 // 【待補】調查包包的台詞還沒定
-// 【待補】每個地方「不在這裡」的台詞還沒定
-const SEARCH_LINES={window:['（翻找窗戶：台詞待補）'],shelf:['（翻找盡頭的架子：台詞待補）'],clothesL:['（翻找左邊的衣服：台詞待補）'],
+// ===== 全屋尋寶 =====
+// 主線開啟後（第一幕結束）到挑戰完成前：八個尋寶地點可以自由搜查，順序不限，不用全部翻完
+// 每次搜查：宋鳥翻找一下（跳動＋窸窣線條）→ 該地點自己的台詞；第一次搜查會記進筆記本的「尋寶地點」
+// 衣帽間的五個位置合算一個「衣帽間收納區」；衣帽間的包包要等關鍵記憶（樂高梅花）之後才會出現
+const HUNT=[['kitchenCab','廚房櫃子','廚房'],['shoeCab','鞋櫃','玄關'],['washer','洗衣機','陽台'],['balconyCab','陽台木櫃','陽台'],
+ ['underSofa','沙發底下','客廳'],['barCab','吧台下方櫃子','客廳'],['underBed','床底下','臥室'],['closet','衣帽間收納區','衣帽間']];
+const CLOSET_SPOTS=['window','shelf','clothesL','clothesR','dresser'];
+// 【待補】每個地方的搜查台詞還沒定（要有不同的生活吐槽，逐項確認）
+const SEARCH_LINES={kitchenCab:['（搜查廚房櫃子：台詞待補）'],shoeCab:['（搜查鞋櫃：台詞待補）'],washer:['（搜查洗衣機：台詞待補）'],
+ balconyCab:['（搜查陽台木櫃：台詞待補）'],underSofa:['（搜查沙發底下：台詞待補）'],barCab:['（搜查吧台下方櫃子：台詞待補）'],underBed:['（搜查床底下：台詞待補）'],
+ window:['（翻找窗戶：台詞待補）'],shelf:['（翻找盡頭的架子：台詞待補）'],clothesL:['（翻找左邊的衣服：台詞待補）'],
  clothesR:['（翻找右邊的衣服：台詞待補）'],dresser:['（翻找梳妝台：台詞待補）']};
-function searchHot(id,at,normal){return()=>save.quest===2?[{fn:()=>rummage(1800,at)},{wait:2000},...SEARCH_LINES[id]]:normal;}
+function searching(){return save.quest>=1&&save.quest<3;}
+function huntMark(id){const h=CLOSET_SPOTS.includes(id)?'closet':id;save.hunt=save.hunt||[];if(save.hunt.includes(h))return;
+ save.hunt.push(h);persist();const n=save.hunt.length,e=HUNT.find(x=>x[0]===h);toast('🔍 搜查過：'+e[1]+'（'+n+'/'+HUNT.length+'）');}
+function searchHot(id,at,normal){return()=>searching()?[{fn:()=>rummage(1800,at)},{wait:2000},...SEARCH_LINES[id],{fn:()=>huntMark(id)}]
+ :(normal||[]);}
 // 包包：翻找 → 空盒子（規格書第十一節）→ 五秒尋寶挑戰（規格書第十二節）→ 對話框停在「我找到了！」
 const FOUND_ASK={ask:'找不到也沒關係，反正你還是得自己找。',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]};
-function bagTalk(){const dig=[{fn:()=>rummage(2600,[255,960])},{wait:2900}];
+function bagTalk(){const dig=[{fn:()=>rummage(2600,[255,960])},{wait:2900},{fn:()=>huntMark('closet')}];
  if(save.quest>=3)return[...dig,FOUND_ASK];// 已經挑戰過：直接回到「我找到了！」
  return[...dig,'「終於找到了。」','你打開了盒子。','裡面是空的。','恭喜你，獲得一個空盒子。','「……」','真正的禮物不在這裡。',
   '「嗨宋鳥，祝你生日快樂！」',
@@ -493,16 +509,16 @@ function countShow(n){const e=$('count');if(!n){e.classList.remove('on');return;
  e.textContent=n;e.classList.remove('on');e.offsetWidth;e.classList.add('on');
  try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;
   o.type='square';o.frequency.value=n===1?1320:880;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.3);}catch(e){}}
-let rumUntil=0,rumAt=[255,960];
-function rummage(ms,at){const t0=performance.now();rumUntil=t0+ms;if(at)rumAt=at;
+let rumUntil=0,rumAt=[255,960],rumRoom='closet';
+function rummage(ms,at){const t0=performance.now();rumUntil=t0+ms;rumRoom=room;if(at)rumAt=at;
  (function f(){const n=performance.now();if(n<rumUntil){P.hopY=Math.abs(Math.sin((n-t0)/90))*12;requestAnimationFrame(f);}else P.hopY=0;})();}
-function rummageDraw(){if(room!=='closet'||performance.now()>=rumUntil)return;const n=performance.now()/1000;
+function rummageDraw(){if(room!==rumRoom||performance.now()>=rumUntil)return;const n=performance.now()/1000;
  ctx.save();ctx.strokeStyle='#fff6e4';ctx.lineWidth=7;ctx.lineCap='round';
  for(let i=0;i<5;i++){const k=Math.floor(n*8)+i*7,x=rumAt[0]+Math.sin(k*1.7)*80,y=rumAt[1]+Math.cos(k*2.3)*90;ctx.globalAlpha=.55+.45*Math.sin(n*20+i);
   ctx.beginPath();ctx.moveTo(x-14,y);ctx.quadraticCurveTo(x,y-14,x+14,y);ctx.stroke();}
  ctx.restore();}
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
- if((save.mem||[]).includes(id)||!m.when())return normal;// 還沒到時機、或已經看過：只說原本的台詞
+ if((save.mem||[]).includes(id)||!m.when())return typeof normal==='function'?normal():normal;// 還沒到時機、或已經看過：只說原本的台詞
  hintT=Date.now();
  return[...memory(m.frag),...m.after,{memGot:id},...(m.then?m.then():[])];};}
 // ===== 下一步提示 =====
@@ -539,6 +555,8 @@ function renderNb(){
    b.appendChild(e);});});
  const mg=(save.mem||[]).filter(id=>MEMORIES[id]);if(mg.length){const h=document.createElement('h3');h.textContent='記憶碎片';b.appendChild(h);
   mg.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🧩 '+MEMORIES[id].name;b.appendChild(e);});}
+ if(save.quest){const hs=save.hunt||[],h=document.createElement('h3');h.textContent='尋寶地點（'+hs.length+'/'+HUNT.length+'）';b.appendChild(h);
+  HUNT.forEach(([id,n,place])=>{const e=document.createElement('div');e.className='clue';e.innerHTML=(hs.includes(id)?'✅ ':'⬜ ')+n+'<small>'+place+'</small>';b.appendChild(e);});}
  const got=save.ach||[],h=document.createElement('h3');h.textContent='成就';b.appendChild(h);
  Object.entries(ACH).forEach(([id,a])=>{if(a.hidden&&!got.includes(id))return;const e=document.createElement('div');e.className='ded';
   e.textContent=got.includes(id)?'🏆 '+a.name+'：'+a.desc:'🔒 '+a.name;b.appendChild(e);});
@@ -679,7 +697,7 @@ function draw(){
    ctx.fillStyle='#000';ctx.fillRect(0,0,I.w,I.h);ctx.fillStyle='#fff6e4';ctx.font='bold 48px sans-serif';ctx.textAlign='center';ctx.fillText('載入中……',I.w/2,I.h/2);ctx.textAlign='start';return;}
   ctx.drawImage(BG,0,0);
   if(P.pose){playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y));return;}// 起床動畫：全身都畫（以前躺著／坐著會切掉下半身，看起來像只有頭）
-  tissueDraw();playerDraw(P.x,P.y,phScale(I,P.y));
+  tissueDraw();playerDraw(P.x,P.y-(P.hopY||0),phScale(I,P.y));
   I.occ.forEach(o=>{if(o.behind(P.x,P.y))clipRedraw(o.poly);});
   if(I.occ.length)tissueDraw();
   memSparkle();
