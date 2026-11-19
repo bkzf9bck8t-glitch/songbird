@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="zh-Hant"><head>
 <meta charset="utf-8">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>宋鳥的一天（階段 1）</title>
 <style>
@@ -76,7 +78,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119211636';
+const BUILD='20261119212055';
 let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -760,54 +762,62 @@ async function opening(){
 // ===== 第四階段｜生日結局 =====
 // 按「我找到了！」：畫面變暗 → 女友端著蛋糕出現 → 鏡頭慢慢推近蛋糕、人物模糊淡出 → 周圍全黑只剩燭光 → 燭火一直搖曳，不自動結束
 // 全程沒有任何文字。女友和蛋糕是程式畫的暫用像素圖（之後可以換成正式圖）
-const GIRL=[
-'......hhhhhhhh......','.....hhhhhhhhhh.....','....hhhhhhhhhhhh....','....hhhhhhhhhhhh....',
-'...hhhsssssssshhh...','...hhsssssssssshh...','...hhsseesseesshh...','...hhcsssssssschh...',
-'...hhssssmmsssshh...','...hhhsssssssshhh...','..hhhhhhsssshhhhhh..','..hhhtttttttttthhh..',
-'.hhhtttttttttttthhh.','.hhtttttttttttttthh.','.hhtttttttttttttthh.','.hTTttttttttttttTTh.',
-'..TTttttttttttttTT..','..TTttttttttttttTT..','..TTttttttttttttTT..','..TTttttttttttttTT..',
-'.TTTTTTTTTTTTTTTTTT.','.TT.pppppppppppp.TT.','.ss.pppppppppppp.ss.','....pppppppppppp....',
-'....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....',
-'....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....','....ooooo..ooooo....','...oooooo..oooooo...'];
-const CAKE=['...k....k....k..','...k....k....k..','...k....k....k..','.ffffffffffffff.',
-'fffrffffrffffrff','ffffffffffffffff','bbbbbbbbbbbbbbbb','ffffffffffffffff','bbbbbbbbbbbbbbbb','gggggggggggggggg'];
-const PIXC={h:'#3b2a24',s:'#f2c9a5',e:'#2b2230',c:'#f0a6a0',m:'#c96f6f',t:'#f1dcc0',T:'#d9bf9c',p:'#4a5a78',o:'#5a3d2e',
- k:'#f7a8c4',f:'#fff8ee',r:'#e0435a',b:'#f3d2a2',g:'#d9d4cc'};
-function pixCanvas(rows){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
- rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(PIXC[ch]){g.fillStyle=PIXC[ch];g.fillRect(x,y,1,1);}}));return c;}
-const CAKE_AT=[2,13],FLAMES=[5,10,15];// 蛋糕在人物圖上的位置；三根蠟燭的 x
+// 女友和蛋糕（暫用）：照宋鳥角色圖的風格畫——大頭、深色外框、眼睛有反光、臉頰紅暈
+function spriteCanvas(w,h,draw){const c=document.createElement('canvas');c.width=w+2;c.height=h+2;const g=c.getContext('2d');g.translate(1,1);draw(g);
+ const d=g.getImageData(0,0,c.width,c.height),p=d.data,W2=c.width,H2=c.height,a=(x,y)=>x>=0&&y>=0&&x<W2&&y<H2&&p[(y*W2+x)*4+3]>0;
+ for(let k=3;k<p.length;k+=4)p[k]=p[k]>110?255:0;// 去掉半透明邊，保持像素感
+ const edge=[];for(let y=0;y<H2;y++)for(let x=0;x<W2;x++)if(!a(x,y)&&(a(x-1,y)||a(x+1,y)||a(x,y-1)||a(x,y+1)))edge.push((y*W2+x)*4);
+ edge.forEach(k=>{p[k]=0x1c;p[k+1]=0x14;p[k+2]=0x18;p[k+3]=255;});g.putImageData(d,0,0);return c;}
+const spx=(g,c,x,y,w,h)=>{g.fillStyle=c;g.fillRect(x,y,w,h);},sell=(g,c,x,y,rx,ry)=>{g.fillStyle=c;g.beginPath();g.ellipse(x,y,rx,ry,0,0,Math.PI*2);g.fill();};
+function drawGirl(g){const H='#3a2722',H2='#5a3f35',S='#f6cfae',T='#f3e2c6',T2='#dcc6a2',P='#3f4a66',O='#2a2228',D='#1c1418';
+ sell(g,H,20,19,15,14);spx(g,H,6,19,28,22);// 長頭髮（在臉後面，披到肩膀）
+ spx(g,T,11,34,18,14);spx(g,T2,11,45,18,2);spx(g,T,8,36,4,9);spx(g,T,28,36,4,9);// 上衣、袖子
+ spx(g,S,7,44,4,3);spx(g,S,29,44,4,3);// 手
+ spx(g,P,13,47,6,12);spx(g,P,21,47,6,12);spx(g,O,12,58,7,4);spx(g,O,21,58,7,4);// 褲子、鞋子
+ spx(g,S,18,31,4,4);sell(g,S,20,22,11,10);// 脖子、臉
+ g.fillStyle=H;g.beginPath();g.ellipse(20,17,13,9,0,Math.PI,0);g.fill();spx(g,H,8,15,24,3);// 瀏海
+ spx(g,H,11,18,3,2);spx(g,H,17,18,2,2);spx(g,H,25,18,4,2);spx(g,H2,13,10,6,1);spx(g,H2,23,11,4,1);
+ spx(g,D,14,21,3,4);spx(g,D,23,21,3,4);spx(g,'#fff',15,21,1,1);spx(g,'#fff',24,21,1,1);// 眼睛（有反光）
+ spx(g,'#f3a3a0',11,26,3,1);spx(g,'#f3a3a0',26,26,3,1);spx(g,'#b4545a',19,28,2,1);}// 臉頰、嘴巴
+const CANDLES=[6,12,18];
+function drawCake(g){const F='#fff8ee',B='#f0c99a',R='#e0435a',K='#f7a8c4';
+ CANDLES.forEach(x=>{spx(g,K,x,0,2,5);spx(g,'#fff',x,1,1,1);});
+ spx(g,F,2,5,22,4);spx(g,B,2,9,22,2);spx(g,F,2,11,22,1);spx(g,B,2,12,22,2);
+ [3,9,15,21].forEach(x=>spx(g,F,x,9,2,1));[4,10,16,21].forEach(x=>spx(g,R,x,5,2,2));
+ spx(g,'#e4ddd3',0,14,26,2);}
+const CAKE_AT=[6,35],FLAMES=CANDLES.map(x=>CAKE_AT[0]+1+x);// 蛋糕在人物圖上的位置；三根蠟燭的 x
 let wakeLock=null;
 function keepAwake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{});}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(ending&&!document.hidden)keepAwake();});
 function endingStart(){if(ending)return;ending=true;busy=true;$('foundBtn').style.display='none';
  keepAwake();if(typeof Music!=='undefined')Music.fadeOut(3);
  const f=$('fade');f.style.transition='opacity 2.5s';f.style.opacity=1;
- const E=$('end'),g=E.getContext('2d'),girl=pixCanvas(GIRL),cake=pixCanvas(CAKE),tmp=document.createElement('canvas');
+ const E=$('end'),g=E.getContext('2d'),girl=spriteCanvas(40,64,drawGirl),cake=spriteCanvas(26,16,drawCake),tmp=document.createElement('canvas');
  let t0=0;const ease=k=>k<0?0:k>1?1:k*k*(3-2*k),seg=(t,a,b)=>ease((t-a)/(b-a));
  let fl=[0,0,0],flT=0;
  function frame(now){if(!t0)t0=now;const t=(now-t0)/1000,dpr=Math.min(3,window.devicePixelRatio||1),W=innerWidth*dpr,H=innerHeight*dpr;
   if(E.width!==Math.round(W)||E.height!==Math.round(H)){E.width=Math.round(W);E.height=Math.round(H);}
   g.setTransform(1,0,0,1,0,0);g.fillStyle='#000';g.fillRect(0,0,W,H);
   // 鏡頭：從整個人慢慢推近到蛋糕（按下後約 5～19 秒）
-  const z=seg(t,2.5,16.5),S0=H*.55/GIRL.length,S1=Math.min(W*.8/16,H*.55/13),S=S0*Math.pow(S1/S0,z),
-   cx=10,cy=GIRL.length/2+(CAKE_AT[1]+3.5-GIRL.length/2)*z,X=a=>W/2+(a-cx)*S,Y=a=>H/2+(a-cy)*S;
+  const z=seg(t,2.5,16.5),S0=H*.55/girl.height,S1=Math.min(W*.8/cake.width,H*.5/(cake.height+5)),S=S0*Math.pow(S1/S0,z),
+   cx=girl.width/2,cy=girl.height/2+(CAKE_AT[1]+cake.height/2-2-girl.height/2)*z,X=a=>W/2+(a-cx)*S,Y=a=>H/2+(a-cy)*S;
   const show=seg(t,0,2.5),rise=(1-show)*2;
   // 人物：出現 → 開始模糊 → 淡出
   const blur=seg(t,4.5,11.5),ga=show*(1-seg(t,6.5,13.5));
-  if(ga>0){const gx=X(0),gy=Y(rise),gw=GIRL[0].length*S,gh=GIRL.length*S;g.globalAlpha=ga;
+  if(ga>0){const gx=X(0),gy=Y(rise),gw=girl.width*S,gh=girl.height*S;g.globalAlpha=ga;
    if(blur<.02){g.imageSmoothingEnabled=false;g.drawImage(girl,gx,gy,gw,gh);}
    else{const k=1+blur*14;tmp.width=Math.max(2,gw/k);tmp.height=Math.max(2,gh/k);const tg=tmp.getContext('2d');tg.imageSmoothingEnabled=false;
     tg.clearRect(0,0,tmp.width,tmp.height);tg.drawImage(girl,0,0,tmp.width,tmp.height);g.imageSmoothingEnabled=true;g.drawImage(tmp,gx,gy,gw,gh);}
    g.globalAlpha=1;}
   // 蛋糕
-  g.globalAlpha=show;g.imageSmoothingEnabled=false;g.drawImage(cake,X(CAKE_AT[0]),Y(CAKE_AT[1]+rise),16*S,CAKE.length*S);
+  g.globalAlpha=show;g.imageSmoothingEnabled=false;g.drawImage(cake,X(CAKE_AT[0]),Y(CAKE_AT[1]+rise),cake.width*S,cake.height*S);
   // 燭火：每根各自搖曳
   if(now-flT>110){flT=now;fl=fl.map(()=>Math.random());}
-  FLAMES.forEach((fx,i)=>{const h=2+(fl[i]>.6?1:0),sx=fl[i]>.85?.25:fl[i]<.15?-.25:0,top=CAKE_AT[1]+rise-h;
-   g.fillStyle='#ffb347';g.fillRect(X(fx+sx),Y(top),S,h*S);g.fillStyle='#fff3b0';g.fillRect(X(fx+sx+.25),Y(top+h*.45),S*.5,h*.55*S);});
+  FLAMES.forEach((fx,i)=>{const h=3+(fl[i]>.6?1:0),sx=fl[i]>.85?.3:fl[i]<.15?-.3:0,top=CAKE_AT[1]+1+rise-h;
+   g.fillStyle='#ffb347';g.fillRect(X(fx+sx),Y(top),2*S,h*S);g.fillStyle='#fff3b0';g.fillRect(X(fx+sx+.5),Y(top+h*.4),S,h*.6*S);});
   g.globalAlpha=1;
   // 光線：周圍慢慢變全黑，只留蠟燭的光
-  const dark=.35+.62*seg(t,8.5,16.5),fx=X(10.5),fy=Y(CAKE_AT[1]+rise-1),fk=1+.05*Math.sin(now/90)+.04*(fl[1]-.5),R=S*(13-6*seg(t,8.5,16.5))*fk;
+  const dark=.35+.62*seg(t,8.5,16.5),fx=X(FLAMES[1]+1),fy=Y(CAKE_AT[1]+rise-1),fk=1+.05*Math.sin(now/90)+.04*(fl[1]-.5),R=S*(20-9*seg(t,8.5,16.5))*fk;
   g.save();const hole=g.createRadialGradient(fx,fy,R*.25,fx,fy,R*1.6);hole.addColorStop(0,'rgba(0,0,0,0)');hole.addColorStop(1,'rgba(0,0,0,'+dark+')');
   g.fillStyle=hole;g.fillRect(0,0,W,H);// 漸層外圍自動延伸成全暗
   g.globalCompositeOperation='lighter';const glow=g.createRadialGradient(fx,fy,0,fx,fy,R*.8);
