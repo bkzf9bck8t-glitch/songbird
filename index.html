@@ -35,6 +35,8 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
+#foundBtn{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 22px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);z-index:6}
+#end{position:fixed;inset:0;width:100%;height:100%;z-index:50;background:#000;display:none;opacity:0;transition:opacity 2.5s;touch-action:none}
 @keyframes ring{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-4deg)}75%{transform:translateX(-50%) rotate(4deg)}}
 #nb{position:fixed;inset:0;z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#f7eedb;color:#2b2230;display:none;flex-direction:column;background-image:repeating-linear-gradient(#f7eedb 0 27px,#e6d8bb 27px 28px)}
 #nb>*{width:100%;max-width:440px;margin:0 auto;box-sizing:border-box}
@@ -55,13 +57,13 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #intro p{margin:0;font-size:15px;opacity:.7}
 </style></head><body>
 <div id="wrap">
-<div id="top"><div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small>尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div><div id="btns"><button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
+<div id="top"><div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small id="questSub">尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div><div id="btns"><button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
 <button id="mute" aria-label="音樂開關">音樂：開</button></div></div>
 <div id="stage">
 <canvas id="c"></canvas>
 <div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div>
 <div id="fade"></div>
-<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
+<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button><button id="foundBtn">我找到了！</button>
 <div id="toast"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
 <div id="nbBody"></div>
@@ -70,10 +72,12 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 </div>
 <div id="panel"><div id="dlg"></div></div>
 </div>
+<canvas id="end"></canvas>
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119210543';
+const BUILD='20261119211316';
+let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -130,7 +134,7 @@ living:{img:{src:'assets/livingroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[330,196
  walk:sc([[208,302],[505,302],[505,345],[590,548],[740,548],[738,586],[100,586],[105,510],[150,420],[205,330]]),
  blocks:[R4(303,340,472,520),R4(150,512,215,562),R4(450,290,570,340),[[500,335],[560,288],[748,400],[748,548],[590,548]]].map(sc),
  hot:[
-  {poly:sc(R4(496,222,548,278)),app:pt([488,368]),text:['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」']},
+  {poly:sc(R4(496,222,548,278)),app:pt([488,368]),text:memHot('memory_lego',['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」'])},
   {poly:sc(R4(485,82,548,135)),app:pt([488,368]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(452,135,570,340)),app:pt([488,368]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
   {poly:sc(R4(205,85,302,332)),app:pt([255,340]),to:'bed'},
@@ -175,7 +179,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
  blocks:[R4(188,472,552,588)].map(sc),
  hot:[
   {poly:sc(R4(470,456,514,502)),app:pt([585,478]),text:()=>save.tea?['冰紅茶已經冰進冰箱了。']:TEA},
-  {poly:sc(R4(72,225,132,295)),app:pt([150,530]),text:['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」']},
+  {poly:sc(R4(72,225,132,295)),app:pt([150,530]),text:memHot('memory_lego',['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」'])},
   {poly:sc(R4(38,28,110,105)),app:pt([150,530]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(5,105,150,498)),app:pt([150,530]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
   {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:memHot('memory_coffee',['吧檯上的咖啡機。'])},
@@ -183,7 +187,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(318,30,456,92)),app:pt([385,460]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(130,40,285,440)),app:pt([150,530]),text:['弧形落地燈。']},
   {poly:sc(R4(290,130,570,300)),app:pt([385,460]),text:['牆上掛滿了畫和海報。']},
-  {poly:sc(R4(150,295,605,446)),app:pt([385,460]),text:['「右邊一看就比較好坐。」']},
+  {poly:sc(R4(150,295,605,446)),app:pt([385,460]),text:memHot('memory_sofa',['「右邊一看就比較好坐。」'])},
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
   {poly:sc([[600,300],[672,300],[672,100],[800,100],[800,540],[600,540]]),app:pt([700,530]),to:'kitchen'},// 點吧台（含後面看得到的廚房）→ 廚房
   {poly:sc(R4(0,500,140,600)),app:pt([40,575]),to:'bed'},
@@ -216,6 +220,7 @@ closet:{img:{src:'assets/closet.jpg?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430
  walk:[[392,975],[596,975],[648,1150],[668,1440],[252,1440],[302,1150]],
  blocks:[],
  hot:[
+  {poly:R4(190,860,320,1060),app:[330,1120],when:()=>save.quest>=2,text:bagTalk},// 掛衣區下方的包包：最後提示之後才出現
   {poly:R4(400,440,560,600),app:[495,990],text:['窗戶。','外面是別人家的晾衣架。']},
   {poly:R4(380,680,600,958),app:[495,990],text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']},
   {poly:[[190,330],[400,330],[400,960],[330,1200],[190,1200]],app:[330,1120],text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
@@ -423,6 +428,8 @@ let nbOpen=false;
 // 第一幕結尾｜遺失的記憶：筆記本記下第四條線索，那段對話說完就播記憶，播完才解鎖主線任務
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
+ if(save.quest>=2)$('questSub').textContent='前往衣帽間，調查包包。';
+ $('foundBtn').style.display=save.quest>=3&&!ending?'block':'none';
  if(announce&&!save.quest&&lifeN()>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
 // ===== 記憶碎片演出系統（MemoryFragmentSystem）=====
 // 共用流程：變暗（0.3 秒）→ 褪色、輕微模糊、暗角 → 閃白 → 記憶內容（點一下推進）→ 恢復色彩 → 記錄進度
@@ -443,25 +450,48 @@ const MEMORIES={
  memory_coffee:{name:'下意識的習慣',when:()=>!!save.quest,// 主線開啟後才會觸發
   room:'living2',at:pt([715,262]),hint:'客廳',// 閃光位置；提示用的地點
   frag:[{shot:{room:'living2',rect:[1170,380,260,220]}},{shot:{room:'kitchen',rect:[1110,400,280,600]}}],// 咖啡機特寫 → 冰箱特寫（沒有對話）
-  after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」']}};
+  after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」']},
+ // 記憶② 沙發（暫定）：撿完衛生紙之後再點沙發。沙發左半邊（坐在沙發上的人的右邊）的模糊特寫，不出現女友
+ // 【待補】正式台詞還沒定，after 先放可替換的文字
+ memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>!!save.quest&&save.clues.includes('tissue'),
+  room:'living2',at:pt([250,370]),hint:'沙發',
+  frag:[{shot:{room:'living2',rect:[271,520,440,300]}}],
+  after:['（記憶②台詞待補）']},
+ // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
+ // 【待補】正式台詞還沒定；看完接「最後提示」，主線更新成「前往衣帽間，調查包包」
+ memory_lego:{name:'樂高梅花（暫定）',when:()=>!!save.quest&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
+  spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
+  frag:[{shot:{room:'living',rect:[860,370,170,170]}}],
+  after:['（記憶③台詞待補）'],
+  then:()=>finalHint()}};
+// 第三階段｜最後提示：再想起第一段生日記憶，主線更新
+// 【待補】引導到包包的提示台詞還沒定
+function finalHint(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'（想到衣帽間包包的提示台詞待補）',
+ {fn:()=>{save.quest=2;persist();questCheck(false);}},
+ '<div class="qcard">🎁 主線任務更新<b>前往衣帽間，調查包包</b></div>'];}
+// 衣帽間的包包：調查後出現「我找到了！」按鈕（之後到現實中找禮物）
+// 【待補】調查包包的台詞還沒定
+function bagTalk(){return['（調查包包的台詞待補）',{fn:()=>{if(save.quest<3){save.quest=3;persist();}questCheck(false);}}];}
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
  if((save.mem||[]).includes(id)||!m.when())return normal;// 還沒到時機、或已經看過：只說原本的台詞
  hintT=Date.now();
- return[...memory(m.frag),...m.after,{memGot:id}];};}
+ return[...memory(m.frag),...m.after,{memGot:id},...(m.then?m.then():[])];};}
 // ===== 下一步提示 =====
 // 1. 可以觸發記憶的物件旁邊有閃光（看過就消失）
 // 2. 主線開啟後，有記憶可以看、玩家卻一陣子沒找到時，跳出一句提示（之後每隔一段時間再提示一次）
 const HINT_AFTER=60000;let hintT=Date.now();
 function memAvail(){return Object.keys(MEMORIES).filter(id=>!(save.mem||[]).includes(id)&&MEMORIES[id].when());}
-function memSparkle(){const t=performance.now()/1000;memAvail().forEach(id=>{const m=MEMORIES[id];if(m.room!==room)return;
- const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3),[x,y]=m.at;
+function memSparkle(){const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
+ if(save.quest===2&&room==='closet')pts.push([255,960]);// 最後提示之後：衣帽間的包包
+ pts.filter(Boolean).forEach(([x,y])=>{
+ const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3);
  ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#fff6c8';ctx.shadowColor='#ffe680';ctx.shadowBlur=30;
  ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.3:r;ctx.lineTo(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});}
 setInterval(()=>{if(!save.quest||busy||nbOpen||!memAvail().length){if(busy)hintT=Math.max(hintT,Date.now()-HINT_AFTER+15000);return;}
  if(Date.now()-hintT<HINT_AFTER)return;hintT=Date.now();
  const m=MEMORIES[memAvail()[0]];toast('💭 好像有什麼事想不起來……'+m.hint+'那邊？');},3000);
 function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
-function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「蛤？誰在講話？」',
+function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「……蛤？誰在講話？」','「所以我今年真的有生日禮物？」',
  {quest:1,fn:()=>{save.quest=1;persist();questCheck(false);hintT=Date.now();}},
  '<div class="qcard">🎁 主線任務解鎖<b>尋找你的生日禮物</b>有人在這個家裡留下了生日禮物。<br>找到禮物，也許就能想起被遺忘的事情。</div>'];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
@@ -502,7 +532,7 @@ cv.addEventListener('pointerdown',e=>{
  if(isImg())tapImg(x,y);else tapGrid(x,y);
 });
 function tapImg(x,y){
- const I=ROOMS[room].img,h=tissueHot(x,y)||I.hot.find(o=>inPoly(o.poly,x,y));
+ const I=ROOMS[room].img,h=tissueHot(x,y)||I.hot.find(o=>(!o.when||o.when())&&inPoly(o.poly,x,y));
  let tx=x,ty=y,act=null;
  if(h){[tx,ty]=h.app;act=h.to?{exit:h}:h.say?{talk:h.say}:{talk:typeof h.text==='function'?h.text():h.text};}
  else if(!inPoly(I.walk,x,y))return;
@@ -726,7 +756,66 @@ async function opening(){
  say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';
   $('mute').style.display='block';if(typeof Music!=='undefined')Music.begin();});// 開場台詞說完才開始主旋律
 }
-// 蛋糕畫面（尚未製作）：進入時呼叫 Music.fadeOut(3) 讓主旋律淡出
+// ===== 第四階段｜生日結局 =====
+// 按「我找到了！」：畫面變暗 → 女友端著蛋糕出現 → 鏡頭慢慢推近蛋糕、人物模糊淡出 → 周圍全黑只剩燭光 → 燭火一直搖曳，不自動結束
+// 全程沒有任何文字。女友和蛋糕是程式畫的暫用像素圖（之後可以換成正式圖）
+const GIRL=[
+'......hhhhhhhh......','.....hhhhhhhhhh.....','....hhhhhhhhhhhh....','....hhhhhhhhhhhh....',
+'...hhhsssssssshhh...','...hhsssssssssshh...','...hhsseesseesshh...','...hhcsssssssschh...',
+'...hhssssmmsssshh...','...hhhsssssssshhh...','..hhhhhhsssshhhhhh..','..hhhtttttttttthhh..',
+'.hhhtttttttttttthhh.','.hhtttttttttttttthh.','.hhtttttttttttttthh.','.hTTttttttttttttTTh.',
+'..TTttttttttttttTT..','..TTttttttttttttTT..','..TTttttttttttttTT..','..TTttttttttttttTT..',
+'.TTTTTTTTTTTTTTTTTT.','.TT.pppppppppppp.TT.','.ss.pppppppppppp.ss.','....pppppppppppp....',
+'....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....',
+'....ppppp..ppppp....','....ppppp..ppppp....','....ppppp..ppppp....','....ooooo..ooooo....','...oooooo..oooooo...'];
+const CAKE=['...k....k....k..','...k....k....k..','...k....k....k..','.ffffffffffffff.',
+'fffrffffrffffrff','ffffffffffffffff','bbbbbbbbbbbbbbbb','ffffffffffffffff','bbbbbbbbbbbbbbbb','gggggggggggggggg'];
+const PIXC={h:'#3b2a24',s:'#f2c9a5',e:'#2b2230',c:'#f0a6a0',m:'#c96f6f',t:'#f1dcc0',T:'#d9bf9c',p:'#4a5a78',o:'#5a3d2e',
+ k:'#f7a8c4',f:'#fff8ee',r:'#e0435a',b:'#f3d2a2',g:'#d9d4cc'};
+function pixCanvas(rows){const c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;const g=c.getContext('2d');
+ rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(PIXC[ch]){g.fillStyle=PIXC[ch];g.fillRect(x,y,1,1);}}));return c;}
+const CAKE_AT=[2,13],FLAMES=[5,10,15];// 蛋糕在人物圖上的位置；三根蠟燭的 x
+let wakeLock=null;
+function keepAwake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{});}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(ending&&!document.hidden)keepAwake();});
+function endingStart(){if(ending)return;ending=true;busy=true;$('foundBtn').style.display='none';
+ keepAwake();if(typeof Music!=='undefined')Music.fadeOut(3);
+ const f=$('fade');f.style.transition='opacity 2.5s';f.style.opacity=1;
+ const E=$('end'),g=E.getContext('2d'),girl=pixCanvas(GIRL),cake=pixCanvas(CAKE),tmp=document.createElement('canvas');
+ let t0=0;const ease=k=>k<0?0:k>1?1:k*k*(3-2*k),seg=(t,a,b)=>ease((t-a)/(b-a));
+ let fl=[0,0,0],flT=0;
+ function frame(now){if(!t0)t0=now;const t=(now-t0)/1000,dpr=Math.min(3,window.devicePixelRatio||1),W=innerWidth*dpr,H=innerHeight*dpr;
+  if(E.width!==Math.round(W)||E.height!==Math.round(H)){E.width=Math.round(W);E.height=Math.round(H);}
+  g.setTransform(1,0,0,1,0,0);g.fillStyle='#000';g.fillRect(0,0,W,H);
+  // 鏡頭：從整個人慢慢推近到蛋糕（按下後約 5～19 秒）
+  const z=seg(t,2.5,16.5),S0=H*.55/GIRL.length,S1=Math.min(W*.8/16,H*.55/13),S=S0*Math.pow(S1/S0,z),
+   cx=10,cy=GIRL.length/2+(CAKE_AT[1]+3.5-GIRL.length/2)*z,X=a=>W/2+(a-cx)*S,Y=a=>H/2+(a-cy)*S;
+  const show=seg(t,0,2.5),rise=(1-show)*2;
+  // 人物：出現 → 開始模糊 → 淡出
+  const blur=seg(t,4.5,11.5),ga=show*(1-seg(t,6.5,13.5));
+  if(ga>0){const gx=X(0),gy=Y(rise),gw=GIRL[0].length*S,gh=GIRL.length*S;g.globalAlpha=ga;
+   if(blur<.02){g.imageSmoothingEnabled=false;g.drawImage(girl,gx,gy,gw,gh);}
+   else{const k=1+blur*14;tmp.width=Math.max(2,gw/k);tmp.height=Math.max(2,gh/k);const tg=tmp.getContext('2d');tg.imageSmoothingEnabled=false;
+    tg.clearRect(0,0,tmp.width,tmp.height);tg.drawImage(girl,0,0,tmp.width,tmp.height);g.imageSmoothingEnabled=true;g.drawImage(tmp,gx,gy,gw,gh);}
+   g.globalAlpha=1;}
+  // 蛋糕
+  g.globalAlpha=show;g.imageSmoothingEnabled=false;g.drawImage(cake,X(CAKE_AT[0]),Y(CAKE_AT[1]+rise),16*S,CAKE.length*S);
+  // 燭火：每根各自搖曳
+  if(now-flT>110){flT=now;fl=fl.map(()=>Math.random());}
+  FLAMES.forEach((fx,i)=>{const h=2+(fl[i]>.6?1:0),sx=fl[i]>.85?.25:fl[i]<.15?-.25:0,top=CAKE_AT[1]+rise-h;
+   g.fillStyle='#ffb347';g.fillRect(X(fx+sx),Y(top),S,h*S);g.fillStyle='#fff3b0';g.fillRect(X(fx+sx+.25),Y(top+h*.45),S*.5,h*.55*S);});
+  g.globalAlpha=1;
+  // 光線：周圍慢慢變全黑，只留蠟燭的光
+  const dark=.35+.62*seg(t,8.5,16.5),fx=X(10.5),fy=Y(CAKE_AT[1]+rise-1),fk=1+.05*Math.sin(now/90)+.04*(fl[1]-.5),R=S*(13-6*seg(t,8.5,16.5))*fk;
+  g.save();const hole=g.createRadialGradient(fx,fy,R*.25,fx,fy,R*1.6);hole.addColorStop(0,'rgba(0,0,0,0)');hole.addColorStop(1,'rgba(0,0,0,'+dark+')');
+  g.fillStyle=hole;g.fillRect(0,0,W,H);// 漸層外圍自動延伸成全暗
+  g.globalCompositeOperation='lighter';const glow=g.createRadialGradient(fx,fy,0,fx,fy,R*.8);
+  glow.addColorStop(0,'rgba(255,170,70,'+(.22*show)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
+  requestAnimationFrame(frame);}
+ setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);},2500);}
+$('foundBtn').addEventListener('pointerdown',e=>e.stopPropagation());
+$('foundBtn').addEventListener('click',e=>{e.stopPropagation();if(!busy)endingStart();});
+$('end').addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();});
 $('intro').addEventListener('pointerdown',()=>{
  if(typeof Music!=='undefined')Music.start();// iOS 規定音訊要在點擊時建立，這裡只建立不出聲
  $('intro').style.pointerEvents='none';$('intro').style.opacity=0;
