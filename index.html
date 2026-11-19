@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119223035';
+const BUILD='20261119223820';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -192,7 +192,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:memHot('memory_coffee',['吧檯上的咖啡機。'])},
   {poly:sc(R4(578,135,672,305)),app:pt([640,480]),text:['玻璃展示櫃。','裡面擺著公仔和收藏品。']},
   {poly:sc(R4(318,30,456,92)),app:pt([385,460]),text:['冷氣。','遙控器不知道又放去哪了。']},
-  {poly:sc(R4(130,40,285,440)),app:pt([150,530]),text:['弧形落地燈。']},
+  {poly:sc([[130,40],[285,40],[285,295],[160,295],[160,440],[130,440]]),app:pt([150,530]),text:['弧形落地燈。']},// 燈的範圍避開沙發，沙發左半邊才點得到,
   {poly:sc(R4(290,130,570,300)),app:pt([385,460]),text:['牆上掛滿了畫和海報。']},
   {poly:sc(R4(150,295,605,446)),app:pt([385,460]),hunt:'underSofa',text:memHot('memory_sofa',searchHot('underSofa',pt([380,440]),['「右邊一看就比較好坐。」']))},
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
@@ -451,8 +451,17 @@ function memory(frag){return[{fn:()=>memCv('dim')},{wait:500},{fn:()=>{flashWhit
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
  const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
- c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter='grayscale(.7) sepia(.3)';g.drawImage(src,x,y,w,h,0,0,w,h);
+ c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter='grayscale(.7) sepia(.3)';g.drawImage(src,x,y,w,h,0,0,w,h);g.filter='none';if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
  o.style.transition='none';o.style.opacity=0;o.style.pointerEvents='auto';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
+// 記憶特寫上的模糊人影（不畫出五官和細節，只有剪影）。先畫在很小的畫布上再放大，就會變模糊
+function ghostDraw(g,w,h,kind){const k=4,c=document.createElement('canvas');c.width=Math.ceil(w/k);c.height=Math.ceil(h/k);const x=c.getContext('2d');x.scale(1/k,1/k);
+ x.fillStyle='rgb(30,24,28)';const E=(cx,cy,rx,ry,r)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,r||0,0,Math.PI*2);x.fill();};
+ if(kind==='lying'){// 半躺在沙發上滑手機：頭靠扶手、長髮、身體沿著座墊、膝蓋微彎
+  E(82,100,23,25);E(74,134,19,34,.2);// 頭靠在扶手上、披下來的長髮
+  E(165,160,68,26,.08);// 上半身躺在座墊上
+  E(126,110,9,21,-.5);x.fillRect(126,78,15,22);// 舉著手機的手和手機
+  E(266,170,58,19,-.08);E(330,142,42,14,-.75);E(380,166,30,12,.4);}// 腿（膝蓋立起來）
+ g.save();g.globalAlpha=.85;g.imageSmoothingEnabled=true;g.drawImage(c,0,0,c.width,c.height,0,0,w,h);g.restore();}
 // 每段記憶的資料：名稱、觸發條件、記憶內容、結束後的台詞。
 // 新增記憶：在這裡加一筆，再把該物件的 text 改成 memHot('記憶id',[原本的台詞])
 // 物品回憶（和閃光）要等第一幕四項線索全部找到、主線開啟之後才開始
@@ -466,7 +475,7 @@ const MEMORIES={
  // 【待補】正式台詞還沒定，after 先放可替換的文字
  memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>memOpen()&&save.clues.includes('tissue'),
   room:'living2',at:pt([250,370]),hint:'沙發',
-  frag:[{shot:{room:'living2',rect:[271,520,440,300]}}],
+  frag:[{shot:{room:'living2',rect:[271,520,440,300],ghost:'lying'}}],// 沙發特寫＋一個半躺著的模糊女生剪影
   after:['（記憶②台詞待補）']},
  // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
  // 【待補】正式台詞還沒定；看完接「最後提示」（任務文字不變，不提示藏匿地點）
