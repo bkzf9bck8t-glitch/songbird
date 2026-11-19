@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221602';
+const BUILD='20261119221643';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -116,7 +116,7 @@ bed:{img:{src:'assets/bedroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[250,166,450,1
   {poly:sc(R4(280,200,366,336)),app:L_TOP,text:['傑斯維爾。紅色的身體，一臉呆樣。',{ask:'要對它做什麼？',opts:[['抱一下',['……軟軟的。','它好像在嘲笑我。']],['把它放回去',['傑斯維爾回到床頭的位置。','它的表情一點都沒變。']],['算了',[]]]}]},
   {poly:sc(R4(333,488,478,560)),app:pt([405,500]),text:['電視。','「來看一下哲哲好了。」']},
   {poly:sc([[72,278],[120,278],[120,338],[72,338]]),app:pt([104,352]),to:'closet',sx:5,sy:11},
-  {poly:sc([[628,500],[724,500],[716,582],[628,582]]),app:pt([672,548]),to:'balcony',sx:3,sy:3},
+  {poly:sc([[628,500],[724,500],[716,582],[628,582]]),app:pt([672,548]),to:'balcony',dir:'down',sx:3,sy:3},
   {poly:sc([[688,62],[750,38],[750,500],[712,500],[690,470]]),app:pt([694,482]),text:['窗戶。','外面的陽光很刺眼。']},
   {poly:sc([[70,400],[130,418],[130,582],[70,582]]),app:pt([150,470]),to:'living'},
   {poly:sc(CHAIR),app:L_TOP,text:['藍色的椅子。','椅子上堆著衣服。']},
@@ -554,7 +554,8 @@ function exitHint(){save.seen=save.seen||[];if(save.seen.includes(room))return;s
 function exitArrows(){const n=performance.now();if(n>=exitUntil)return;const I=ROOMS[room].img,W0=I.w,H0=I.h,u=W0/1448,fade=Math.min(1,(exitUntil-n)/600),done={};
  I.hot.forEach(o=>{if(!o.to)return;const to=o.to==='back'?kitchenFrom:o.to;if(done[to])return;done[to]=1;
   let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
-  let dx=cx-W0/2,dy=cy-H0/2;if(Math.abs(dx)>Math.abs(dy)){dx=Math.sign(dx);dy=0;}else{dy=Math.sign(dy);dx=0;}// 箭頭朝畫面外
+  let dx=cx-W0/2,dy=cy-H0/2;if(Math.abs(dx)>Math.abs(dy)){dx=Math.sign(dx);dy=0;}else{dy=Math.sign(dy);dx=0;}
+  if(o.dir)[dx,dy]={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[o.dir];// 個別出口可以指定方向（例如臥室的陽台是往下）// 箭頭朝畫面外
   const x=Math.max(90*u,Math.min(W0-90*u,cx)),y=Math.max(90*u,Math.min(H0-90*u,cy)),ang=Math.atan2(dy,dx),f=fade*Math.min(1,(n-exitUntil+5000)/800);
   // 出口處一團淡淡的暖光（像門外透進來的光）＋三個往外流動的小「›」，沒有文字、沒有外框
   const g=ctx.createRadialGradient(x,y,0,x,y,90*u);g.addColorStop(0,'rgba(255,240,205,'+(.28*f)+')');g.addColorStop(1,'rgba(255,240,205,0)');
