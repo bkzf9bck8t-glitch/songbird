@@ -37,7 +37,6 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
-#foundBtn{position:absolute;left:50%;bottom:8%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 22px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);z-index:6}
 #end{position:fixed;inset:0;width:100%;height:100%;z-index:50;background:#000;display:none;opacity:0;transition:opacity 2.5s;touch-action:none}
 @keyframes ring{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-4deg)}75%{transform:translateX(-50%) rotate(4deg)}}
 #nb{position:fixed;inset:0;z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#f7eedb;color:#2b2230;display:none;flex-direction:column;background-image:repeating-linear-gradient(#f7eedb 0 27px,#e6d8bb 27px 28px)}
@@ -65,7 +64,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <canvas id="c"></canvas>
 <div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div>
 <div id="fade"></div>
-<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button><button id="foundBtn">我找到了！</button>
+<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
 <div id="toast"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
 <div id="nbBody"></div>
@@ -78,13 +77,13 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119212055';
+const BUILD='20261119212405';
 let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
   const m=t.match(/const BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;
-  if(typeof busy!=='undefined'&&busy){updWait=true;return;}// 對話中先不打斷，等說完
+  if((typeof busy!=='undefined'&&busy)||(typeof ending!=='undefined'&&ending)){updWait=true;return;}// 對話中先不打斷，等說完
   location.reload();}).catch(()=>{});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
 window.addEventListener('pageshow',checkUpdate);
@@ -344,7 +343,7 @@ function say(ls,cb){lines=ls.slice();after=cb||null;busy=true;next();}
 function next(){
  const d=$('dlg');
  if(asking)return;
- if(!lines.length){d.style.display='none';busy=false;const a=after;after=null;if(a)a();return;}
+ if(!lines.length){d.style.display='none';busy=ending;const a=after;after=null;if(a)a();return;}
  const l=lines.shift();
  if(l.fn){l.fn();next();return;}
  if(l.wait){d.style.display='none';setTimeout(next,l.wait);return;}
@@ -432,7 +431,6 @@ let nbOpen=false;
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
  if(save.quest>=2)$('questSub').textContent='前往衣帽間，調查包包。';
- $('foundBtn').style.display=save.quest>=3&&!ending?'block':'none';
  if(announce&&!save.quest&&lifeN()>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
 // ===== 記憶碎片演出系統（MemoryFragmentSystem）=====
 // 共用流程：變暗（0.3 秒）→ 褪色、輕微模糊、暗角 → 閃白 → 記憶內容（點一下推進）→ 恢復色彩 → 記錄進度
@@ -472,9 +470,19 @@ const MEMORIES={
 function finalHint(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'（想到衣帽間包包的提示台詞待補）',
  {fn:()=>{save.quest=2;persist();questCheck(false);}},
  '<div class="qcard">🎁 主線任務更新<b>前往衣帽間，調查包包</b></div>'];}
-// 衣帽間的包包：調查後出現「我找到了！」按鈕（之後到現實中找禮物）
+// 衣帽間的包包：宋鳥先翻找一陣子（跳動＋窸窣的動態），翻完才出現對話框和「我找到了！」
+// 對話框會一直停著，等玩家在現實中找到禮物再按。重新開遊戲的話，回衣帽間再點一次包包就會再出現
 // 【待補】調查包包的台詞還沒定
-function bagTalk(){return['（調查包包的台詞待補）',{fn:()=>{if(save.quest<3){save.quest=3;persist();}questCheck(false);}}];}
+function bagTalk(){return[{fn:()=>rummage(2600)},{wait:2900},{fn:()=>{if(save.quest<3){save.quest=3;persist();}}},
+ {ask:'（調查包包的台詞待補）',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]}];}
+let rumUntil=0;
+function rummage(ms){const t0=performance.now();rumUntil=t0+ms;
+ (function f(){const n=performance.now();if(n<rumUntil){P.hopY=Math.abs(Math.sin((n-t0)/90))*12;requestAnimationFrame(f);}else P.hopY=0;})();}
+function rummageDraw(){if(room!=='closet'||performance.now()>=rumUntil)return;const n=performance.now()/1000;
+ ctx.save();ctx.strokeStyle='#fff6e4';ctx.lineWidth=7;ctx.lineCap='round';
+ for(let i=0;i<5;i++){const k=Math.floor(n*8)+i*7,x=255+Math.sin(k*1.7)*80,y=950+Math.cos(k*2.3)*90;ctx.globalAlpha=.55+.45*Math.sin(n*20+i);
+  ctx.beginPath();ctx.moveTo(x-14,y);ctx.quadraticCurveTo(x,y-14,x+14,y);ctx.stroke();}
+ ctx.restore();}
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
  if((save.mem||[]).includes(id)||!m.when())return normal;// 還沒到時機、或已經看過：只說原本的台詞
  hintT=Date.now();
@@ -485,7 +493,7 @@ function memHot(id,normal){return()=>{const m=MEMORIES[id];
 const HINT_AFTER=60000;let hintT=Date.now();
 function memAvail(){return Object.keys(MEMORIES).filter(id=>!(save.mem||[]).includes(id)&&MEMORIES[id].when());}
 function memSparkle(){const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
- if(save.quest===2&&room==='closet')pts.push([255,960]);// 最後提示之後：衣帽間的包包
+ rummageDraw();if(save.quest>=2&&!ending&&room==='closet')pts.push([255,960]);// 最後提示之後：衣帽間的包包
  pts.filter(Boolean).forEach(([x,y])=>{
  const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3);
  ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#fff6c8';ctx.shadowColor='#ffe680';ctx.shadowBlur=30;
@@ -789,7 +797,7 @@ const CAKE_AT=[6,35],FLAMES=CANDLES.map(x=>CAKE_AT[0]+1+x);// 蛋糕在人物圖
 let wakeLock=null;
 function keepAwake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{});}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(ending&&!document.hidden)keepAwake();});
-function endingStart(){if(ending)return;ending=true;busy=true;$('foundBtn').style.display='none';
+function endingStart(){if(ending)return;ending=true;busy=true;
  keepAwake();if(typeof Music!=='undefined')Music.fadeOut(3);
  const f=$('fade');f.style.transition='opacity 2.5s';f.style.opacity=1;
  const E=$('end'),g=E.getContext('2d'),girl=spriteCanvas(40,64,drawGirl),cake=spriteCanvas(26,16,drawCake),tmp=document.createElement('canvas');
@@ -824,8 +832,6 @@ function endingStart(){if(ending)return;ending=true;busy=true;$('foundBtn').styl
   glow.addColorStop(0,'rgba(255,170,70,'+(.22*show)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
   requestAnimationFrame(frame);}
  setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);},2500);}
-$('foundBtn').addEventListener('pointerdown',e=>e.stopPropagation());
-$('foundBtn').addEventListener('click',e=>{e.stopPropagation();if(!busy)endingStart();});
 $('end').addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();});
 $('intro').addEventListener('pointerdown',()=>{
  if(typeof Music!=='undefined')Music.start();// iOS 規定音訊要在點擊時建立，這裡只建立不出聲
