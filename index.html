@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119214351';
+const BUILD='20261119215809';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -676,7 +676,13 @@ function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
  for(let j=0;j<c.height;j++)for(let i=0;i<c.width;i++)if(d[(j*c.width+i)*4+3]>40){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j;}
  return sbBox=[x0,y0,x1-x0+1,y1-y0+1];}
 // (fx,fy) 是腳底位置，s 是放大倍率，cut 是從腳底往上遮掉幾格（躺在床上、坐著）
+// 宋鳥角色：PIX_SB=true 用程式畫的像素人物（和結局的女友同一種畫風）；false 改回原本的 assets/songbird.png
+const PIX_SB=true;let sbPix=null;
 function playerDraw(fx,fy,s,cut){
+ if(PIX_SB){sbPix=sbPix||spriteCanvas(40,64,drawSongbird);const k=SB_H*.8/sbPix.height,w=sbPix.width*k,h=SB_H*.8,b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0;
+  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
+  if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(-w*.35,-1,w*.7,2.5);}
+  if(P.pose==='stretch')ctx.scale(1.06,1.06);ctx.imageSmoothingEnabled=false;ctx.drawImage(sbPix,-w/2,-h-b,w,h);ctx.restore();return;}
  const bx=sbCrop();if(!bx){playerDrawPix(fx,fy,s,cut);return;}
  ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
  const b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0,h=SB_H,w=h*bx[2]/bx[3];
@@ -848,6 +854,20 @@ function drawGirl(g){const H='#3a2722',H2='#5a3f35',S='#f6cfae',T='#f3e2c6',T2='
  spx(g,H,11,18,3,2);spx(g,H,17,18,2,2);spx(g,H,25,18,4,2);spx(g,H2,13,10,6,1);spx(g,H2,23,11,4,1);
  spx(g,D,14,21,3,4);spx(g,D,23,21,3,4);spx(g,'#fff',15,21,1,1);spx(g,'#fff',24,21,1,1);// 眼睛（有反光）
  spx(g,'#f3a3a0',11,26,3,1);spx(g,'#f3a3a0',26,26,3,1);spx(g,'#b4545a',19,28,2,1);}// 臉頰、嘴巴
+// 宋鳥：捲捲的黑髮、眼鏡、黑 T 恤、黑褲子（照 assets/songbird.png 的特徵，用和女友一樣的畫法）
+function drawSongbird(g){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',T='#2a252d',T2='#3a3440',P='#1f1b22',O='#2e2a33';
+ sell(g,H,20,16,14,12);// 一頭捲髮
+ [[7,12],[9,6],[14,3],[20,2],[26,3],[31,6],[33,12],[34,18],[6,18],[8,24],[32,24]].forEach(([x,y])=>sell(g,H,x,y,4,4));
+ spx(g,T,11,33,18,12);spx(g,T,8,34,4,5);spx(g,T,28,34,4,5);// 黑 T 恤、短袖
+ spx(g,S,8,39,3,7);spx(g,S,29,39,3,7);// 手臂
+ spx(g,T2,11,44,18,1);spx(g,'#8a8790',19,44,3,1);// 皮帶
+ spx(g,P,13,45,6,13);spx(g,P,21,45,6,13);spx(g,O,12,57,7,4);spx(g,O,21,57,7,4);// 褲子、鞋子
+ spx(g,S,18,30,4,4);sell(g,S,20,23,10,9);sell(g,S,10,24,2,2);sell(g,S,30,24,2,2);// 脖子、臉、耳朵
+ [[13,15],[18,13],[23,14],[28,16]].forEach(([x,y])=>sell(g,H,x,y,4,3.5));// 瀏海的捲
+ [[12,8],[22,5],[29,11],[9,18]].forEach(([x,y])=>spx(g,H2,x,y,3,1));// 頭髮的反光
+ spx(g,D,13,20,6,5);spx(g,D,21,20,6,5);spx(g,'#e8eef4',14,21,4,3);spx(g,'#e8eef4',22,21,4,3);spx(g,D,19,21,2,1);// 眼鏡
+ spx(g,D,15,22,2,2);spx(g,D,23,22,2,2);spx(g,'#fff',15,22,1,1);spx(g,'#fff',23,22,1,1);// 眼睛（小一點，有反光）
+ spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,17,27,1,1);spx(g,D,18,28,4,1);spx(g,D,22,27,1,1);}// 臉頰、微笑
 const CANDLES=[6,12,18];
 function drawCake(g){const F='#fff8ee',B='#f0c99a',R='#e0435a',K='#f7a8c4';
  CANDLES.forEach(x=>{spx(g,K,x,0,2,5);spx(g,'#fff',x,1,1,1);});
