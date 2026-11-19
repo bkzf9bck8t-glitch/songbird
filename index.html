@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221728';
+const BUILD='20261119221841';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -174,8 +174,8 @@ bath:{img:{src:'assets/bathroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[440,228,600
   {poly:sc(R4(538,318,592,500)),app:pt([560,520]),text:['拖把。']},
   {poly:sc(R4(588,235,716,445)),app:pt([620,520]),text:['置物架上擺滿瓶瓶罐罐。']},
   {poly:sc(R4(645,445,716,600)),app:pt([625,560]),text:['洗衣籃。']},
-  {poly:sc(R4(716,0,800,600)),app:pt([632,560]),to:'living2'},
-  {poly:sc(R4(274,550,650,600)),app:pt([460,580]),to:'living2'}],
+  {poly:sc(R4(716,0,800,600)),app:pt([632,560]),to:'living2',noHint:1},// 右邊也能回客廳，但提示只放在下方
+  {poly:sc(R4(274,550,650,600)),app:pt([460,580]),to:'living2',dir:'down'}],
  occ:[],
  spawn:{start:pt([620,560]),living:pt([620,560]),kitchen:pt([460,575]),living2:pt([460,575]),entrance:pt([632,560])}}},
 // 客廳視角 2（朝沙發）：撿衛生紙。從浴室出來後出現。左邊往臥室，點吧台往廚房，右下往浴室。
