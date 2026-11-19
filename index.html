@@ -77,10 +77,10 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="panel"><div id="dlg"></div></div>
 </div>
 <canvas id="end"></canvas>
-<script src="music.js?v=1"></script>
+<script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119215828';
+const BUILD='20261119220202';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -879,7 +879,7 @@ let wakeLock=null;
 function keepAwake(){try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{});}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(ending&&!document.hidden)keepAwake();});
 function endingStart(){if(ending)return;ending=true;busy=true;
- keepAwake();if(typeof Music!=='undefined')Music.fadeOut(3);
+ keepAwake();
  const f=$('fade');f.style.transition='opacity 2.5s';f.style.opacity=1;
  const E=$('end'),g=E.getContext('2d'),girl=spriteCanvas(40,64,drawGirl),cake=spriteCanvas(26,16,drawCake),tmp=document.createElement('canvas');
  let t0=0;const ease=k=>k<0?0:k>1?1:k*k*(3-2*k),seg=(t,a,b)=>ease((t-a)/(b-a));
@@ -912,7 +912,8 @@ function endingStart(){if(ending)return;ending=true;busy=true;
   g.globalCompositeOperation='lighter';const glow=g.createRadialGradient(fx,fy,0,fx,fy,R*.8);
   glow.addColorStop(0,'rgba(255,170,70,'+(.22*show)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
   requestAnimationFrame(frame);}
- setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);},2500);}
+ setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);
+  if(typeof Music!=='undefined')Music.setMode('birthday',1.5);},2500);}// 蛋糕出現的那一刻：切到生日快樂歌，唱完接燭光氛圍
 $('end').addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();});
 $('intro').addEventListener('pointerdown',()=>{
  if(typeof Music!=='undefined')Music.start();// iOS 規定音訊要在點擊時建立，這裡只建立不出聲
