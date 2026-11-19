@@ -73,7 +73,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261118211903';
+const BUILD='20261119210543';
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
@@ -178,7 +178,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(72,225,132,295)),app:pt([150,530]),text:['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」']},
   {poly:sc(R4(38,28,110,105)),app:pt([150,530]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(5,105,150,498)),app:pt([150,530]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
-  {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:memHot('memory_coffee',['吧檯上的咖啡機。','「好無聊，來泡個咖啡放冰箱吧。」'])},
+  {poly:sc(R4(680,240,750,305)),app:pt([660,500]),text:memHot('memory_coffee',['吧檯上的咖啡機。'])},
   {poly:sc(R4(578,135,672,305)),app:pt([640,480]),text:['玻璃展示櫃。','裡面擺著公仔和收藏品。']},
   {poly:sc(R4(318,30,456,92)),app:pt([385,460]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(130,40,285,440)),app:pt([150,530]),text:['弧形落地燈。']},
