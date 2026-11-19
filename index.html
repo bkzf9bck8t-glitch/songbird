@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119220733';
+const BUILD='20261119221028';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -437,7 +437,6 @@ let nbOpen=false;
 // 第一幕結尾｜遺失的記憶：筆記本記下第四條線索，那段對話說完就播記憶，播完才解鎖主線任務
 const QUEST_AT=4;
 function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?'':'none';
- if(save.quest>=2)$('questSub').textContent='前往衣帽間，調查包包。';
  if(announce&&!save.quest&&lifeN()>=QUEST_AT&&!lines.some(l=>l.quest))lines=lines.concat(questScene());}// 第四條線索：目前這段對話說完就接記憶
 // ===== 記憶碎片演出系統（MemoryFragmentSystem）=====
 // 共用流程：變暗（0.3 秒）→ 褪色、輕微模糊、暗角 → 閃白 → 記憶內容（點一下推進）→ 恢復色彩 → 記錄進度
@@ -468,7 +467,7 @@ const MEMORIES={
   frag:[{shot:{room:'living2',rect:[271,520,440,300]}}],
   after:['（記憶②台詞待補）']},
  // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
- // 【待補】正式台詞還沒定；看完接「最後提示」，主線更新成「前往衣帽間，調查包包」
+ // 【待補】正式台詞還沒定；看完接「最後提示」（任務文字不變，不提示藏匿地點）
  memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
   spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
   frag:[{shot:{room:'living',rect:[860,370,170,170]}}],
@@ -476,9 +475,8 @@ const MEMORIES={
   then:()=>finalHint()}};
 // 第三階段｜最後提示：再想起第一段生日記憶，主線更新
 // 【待補】引導到包包的提示台詞還沒定
-function finalHint(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'（想到衣帽間包包的提示台詞待補）',
- {fn:()=>{save.quest=2;persist();questCheck(false);}},
- '<div class="qcard">🎁 主線任務更新<b>前往衣帽間，調查包包</b></div>'];}
+function finalHint(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'（最後提示的台詞待補）',
+ {fn:()=>{save.quest=2;persist();questCheck(false);}}];}// 不更新任務文字、不提衣帽間或包包，避免劇透
 // 衣帽間的包包：宋鳥先翻找一陣子（跳動＋窸窣的動態），翻完才出現對話框和「我找到了！」
 // 對話框會一直停著，等玩家在現實中找到禮物再按。重新開遊戲的話，回衣帽間再點一次包包就會再出現
 // 【待補】調查包包的台詞還沒定
@@ -512,7 +510,7 @@ function giveItem(id){if(hasItem(id))return;save.items=save.items||[];save.items
 // 第二階段：繼續翻找 → 最後的尋寶事件（空盒子 → 五秒挑戰 → 對話框停在「我找到了！」）
 // 【待補】兩個階段的台詞、詢問的句子；觸發條件可改 FINAL_OPEN
 const FINAL_OPEN=()=>save.quest>=2;
-const LEFT1=['（左側收納區・第一階段：翻找包包的台詞待補）'],LEFT_ASK='（是否繼續翻找：詢問句待補）',LEFT2=['（左側收納區・第二階段：進一步搜尋的台詞待補）'];
+const LEFT1=['（搜查衣帽間左側：台詞待補）'],LEFT_ASK='（是否繼續翻找：詢問句待補）',LEFT2=['（進一步搜尋：台詞待補）'];
 function closetLeft(normal){return()=>{
  const dig=ms=>[{fn:()=>rummage(ms,[255,960])},{wait:ms+300},{fn:()=>huntMark('closetL')}];
  if(save.quest>=3)return[...dig(2000),FOUND_ASK];// 已經挑戰過：直接回到「我找到了！」
@@ -566,6 +564,7 @@ function questScene(){return[...memory(['？？？：「我把你的生日禮物
  '<div class="qcard">🎁 主線任務解鎖<b>尋找你的生日禮物</b>有人在這個家裡留下了生日禮物。<br>找到禮物，也許就能想起被遺忘的事情。</div>'];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
  $('nbBtn').classList.add('new');toast('📓 筆記本更新了');questCheck(true);return true;}
+if(save.quest&&lifeN()<QUEST_AT){save.quest=0;persist();}// 舊存檔（以前衛生紙也算線索）：還沒找齊四項線索就不該有主線
 questCheck(false);statShow();
 let toastQ=[],toastOn=false;function toast(t){if(toastQ.includes(t)||(toastOn&&$('toast').textContent===t))return;toastQ.push(t);if(!toastOn)toastNext();}
 function toastNext(){const e=$('toast');if(!toastQ.length){toastOn=false;e.classList.remove('on');return;}
