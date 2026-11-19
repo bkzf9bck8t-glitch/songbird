@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221643';
+const BUILD='20261119221728';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -154,7 +154,7 @@ living:{img:{src:'assets/livingroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[330,196
   {poly:sc(R4(632,42,718,122)),app:pt([620,555]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(565,130,648,292)),app:pt([488,368]),text:['弧形落地燈。']},
   {poly:sc(R4(655,165,748,305)),app:pt([660,560]),text:['右牆上的掛畫。']},
-  {poly:sc([[500,320],[560,295],[650,310],[748,380],[748,548],[590,548]]),app:pt([560,520]),to:'living2'},// 點沙發：轉到面向沙發的視角 2
+  {poly:sc([[500,320],[560,295],[650,310],[748,380],[748,548],[590,548]]),app:pt([560,520]),to:'living2',noHint:1},// 點沙發：轉到面向沙發的視角 2（不是門，不顯示出口提示）
   {poly:sc(R4(100,560,430,600)),app:pt([300,575]),to:'bath'},
   {poly:sc(R4(430,560,740,600)),app:pt([600,572]),to:'kitchen'}],
  occ:[{poly:sc([[150,412],[205,412],[215,440],[212,475],[195,492],[188,492],[188,515],[220,520],[220,555],[150,555],[150,520],[175,515],[175,492],[165,492],[145,475],[142,440]]),behind:(x,y)=>y<555*K},
@@ -552,7 +552,7 @@ const ROOM_NAME={bed:'臥室',living:'客廳',living2:'客廳',kitchen:'廚房',
 let exitUntil=0;
 function exitHint(){save.seen=save.seen||[];if(save.seen.includes(room))return;save.seen.push(room);persist();exitUntil=performance.now()+5000;}
 function exitArrows(){const n=performance.now();if(n>=exitUntil)return;const I=ROOMS[room].img,W0=I.w,H0=I.h,u=W0/1448,fade=Math.min(1,(exitUntil-n)/600),done={};
- I.hot.forEach(o=>{if(!o.to)return;const to=o.to==='back'?kitchenFrom:o.to;if(done[to])return;done[to]=1;
+ I.hot.forEach(o=>{if(!o.to||o.noHint)return;const to=o.to==='back'?kitchenFrom:o.to;if(done[to])return;done[to]=1;
   let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
   let dx=cx-W0/2,dy=cy-H0/2;if(Math.abs(dx)>Math.abs(dy)){dx=Math.sign(dx);dy=0;}else{dy=Math.sign(dy);dx=0;}
   if(o.dir)[dx,dy]={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[o.dir];// 個別出口可以指定方向（例如臥室的陽台是往下）// 箭頭朝畫面外
