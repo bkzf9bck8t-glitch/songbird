@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119221028';
+const BUILD='20261119221504';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -111,7 +111,7 @@ bed:{img:{src:'assets/bedroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[250,166,450,1
  walk:sc([[78,240],[718,240],[720,500],[714,575],[628,575],[628,503],[168,503],[168,575],[130,575],[128,420],[80,408]]),
  blocks:[BED,DESK,CHAIR,WCHAIR,FAN,CORNER].map(sc),
  hot:[
-  {poly:sc(R4(548,268,628,336)),app:R_SIDE,text:['椅子上鋪著一張藍色的地毯。','「好粗糙，看起來不像買的。」',{clue:'rug'}]},
+  {poly:sc(R4(548,268,628,336)),app:R_SIDE,clue:'rug',text:['椅子上鋪著一張藍色的地毯。','「好粗糙，看起來不像買的。」',{clue:'rug'}]},
   {poly:sc(WCHAIR),app:R_SIDE,text:['白色折疊椅。','上面鋪著一張地毯。']},
   {poly:sc(R4(280,200,366,336)),app:L_TOP,text:['傑斯維爾。紅色的身體，一臉呆樣。',{ask:'要對它做什麼？',opts:[['抱一下',['……軟軟的。','它好像在嘲笑我。']],['把它放回去',['傑斯維爾回到床頭的位置。','它的表情一點都沒變。']],['算了',[]]]}]},
   {poly:sc(R4(333,488,478,560)),app:pt([405,500]),text:['電視。','「來看一下哲哲好了。」']},
@@ -149,7 +149,7 @@ living:{img:{src:'assets/livingroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[330,196
   {poly:sc(R4(162,282,198,332)),app:pt([215,345]),text:['電視櫃上的小檯燈。','暖暖的光。']},
   {poly:sc(R4(158,165,202,278)),app:pt([215,345]),text:['左牆上的掛畫。']},
   {poly:sc(R4(140,408,218,562)),app:pt([235,520]),text:['小寶小寶……']},
-  {poly:sc(R4(408,402,452,452)),app:pt([488,430]),text:()=>save.tea?['冰紅茶已經冰進冰箱了。']:TEA},
+  {poly:sc(R4(408,402,452,452)),app:pt([488,430]),clue:'tea',text:()=>save.tea?['冰紅茶已經冰進冰箱了。']:TEA},
   {poly:sc(R4(303,320,472,520)),app:pt([388,535]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
   {poly:sc(R4(632,42,718,122)),app:pt([620,555]),text:['冷氣。','遙控器不知道又放去哪了。']},
   {poly:sc(R4(565,130,648,292)),app:pt([488,368]),text:['弧形落地燈。']},
@@ -166,7 +166,7 @@ bath:{img:{src:'assets/bathroom.jpg?v=1',w:1448,h:1086,speed:300,ph:[440,228,600
  walk:sc([[192,462],[290,436],[545,472],[600,498],[650,500],[650,598],[274,598],[274,530],[192,500]]),
  blocks:[],
  hot:[
-  {poly:sc(R4(366,222,468,288)),app:pt([420,478]),text:()=>save.brush?['四支牙刷。',BRUSH_ASK]:BRUSH},
+  {poly:sc(R4(366,222,468,288)),app:pt([420,478]),clue:'toothbrush',text:()=>save.brush?['四支牙刷。',BRUSH_ASK]:BRUSH},
   {poly:sc(R4(368,92,498,222)),app:pt([420,478]),text:()=>save.hair?['鏡子。','鏡子裡的我，還是雞窩頭。']:['鏡子。']},
   {poly:sc(R4(345,288,498,438)),app:pt([420,478]),text:['洗手台。']},
   {poly:sc(R4(50,430,274,600)),app:pt([300,560]),text:toiletTalk},
@@ -183,7 +183,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
  walk:sc([[2,560],[60,505],[150,495],[155,447],[600,447],[610,432],[700,492],[792,560],[798,598],[2,598]]),
  blocks:[R4(188,472,552,588)].map(sc),
  hot:[
-  {poly:sc(R4(470,456,514,502)),app:pt([585,478]),text:()=>save.tea?['冰紅茶已經冰進冰箱了。']:TEA},
+  {poly:sc(R4(470,456,514,502)),app:pt([585,478]),clue:'tea',text:()=>save.tea?['冰紅茶已經冰進冰箱了。']:TEA},
   {poly:sc(R4(72,225,132,295)),app:pt([150,530]),text:memHot('memory_lego',['一盆粉紅色的梅花。','仔細一看，是樂高拼的。','「這個應該不會死了吧。」'])},
   {poly:sc(R4(38,28,110,105)),app:pt([150,530]),text:['書櫃頂上的白貓擺飾。','它在俯視整個客廳。']},
   {poly:sc(R4(5,105,150,498)),app:pt([150,530]),text:['高大的白色書櫃。','擺滿書和各種收藏。']},
@@ -258,7 +258,7 @@ balcony:{img:{src:'assets/balcony.jpg?v=1',w:1447,h:1087,speed:300,k:1,ph:[945,5
  walk:[[480,945],[805,945],[810,992],[1045,997],[1058,1080],[300,1080]],
  blocks:[],
  hot:[
-  {poly:R4(625,495,712,565),app:[640,965],text:['「這什麼……死掉了。」','「我怎麼還不丟？」',{clue:'deadplant'}]},// 洗衣機上的小盆栽
+  {poly:R4(625,495,712,565),app:[640,965],clue:'deadplant',text:['「這什麼……死掉了。」','「我怎麼還不丟？」',{clue:'deadplant'}]},// 洗衣機上的小盆栽
   {poly:R4(485,560,840,940),app:[660,965],hunt:'washer',text:searchHot('washer',[660,750],['洗衣機。','塞得滿滿的……'])},
   {poly:R4(1055,485,1425,1087),app:[1010,1040],hunt:'balconyCab',text:searchHot('balconyCab',[1240,780],['木櫃。','裡面大概是一堆用不到的東西。'])},
   {poly:R4(0,1010,1060,1087),app:[600,1070],to:'bed'},// 畫面下方 → 臥室
@@ -545,7 +545,28 @@ function memHot(id,normal){return()=>{const m=MEMORIES[id];
 // 2. 主線開啟後，有記憶可以看、玩家卻一陣子沒找到時，跳出一句提示（之後每隔一段時間再提示一次）
 const HINT_AFTER=60000;let hintT=Date.now();
 function memAvail(){return Object.keys(MEMORIES).filter(id=>!(save.mem||[]).includes(id)&&MEMORIES[id].when());}
-function memSparkle(){const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
+// ===== 看得出能點什麼、出口在哪 =====
+// 1. 第一次進一個房間：每個出口閃一個會跳動的小箭頭＋去哪裡，約 5 秒
+// 2. 還沒找到的線索物件：很淡的光暈，慢慢呼吸；找到後消失
+const ROOM_NAME={bed:'臥室',living:'客廳',living2:'客廳',kitchen:'廚房',bath:'浴室',entrance:'玄關',closet:'衣帽間',balcony:'陽台'};
+let exitUntil=0;
+function exitHint(){save.seen=save.seen||[];if(save.seen.includes(room))return;save.seen.push(room);persist();exitUntil=performance.now()+5000;}
+function exitArrows(){const n=performance.now();if(n>=exitUntil)return;const I=ROOMS[room].img,W0=I.w,H0=I.h,u=W0/1448,fade=Math.min(1,(exitUntil-n)/600),done={};
+ I.hot.forEach(o=>{if(!o.to)return;const to=o.to==='back'?kitchenFrom:o.to;if(done[to])return;done[to]=1;
+  let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
+  let dx=cx-W0/2,dy=cy-H0/2;if(Math.abs(dx)>Math.abs(dy)){dx=Math.sign(dx);dy=0;}else{dy=Math.sign(dy);dx=0;}// 箭頭朝畫面外
+  const b=Math.sin(n/160)*12*u,x=Math.max(90*u,Math.min(W0-90*u,cx))+dx*b,y=Math.max(110*u,Math.min(H0-110*u,cy))+dy*b,r=52*u,ang=Math.atan2(dy,dx);
+  ctx.save();ctx.globalAlpha=fade*(.75+.25*Math.sin(n/200));ctx.translate(x,y);
+  ctx.save();ctx.rotate(ang);ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(-r*.6,-r*.8);ctx.lineTo(-r*.2,0);ctx.lineTo(-r*.6,r*.8);ctx.closePath();
+  ctx.fillStyle='#fff6e4';ctx.strokeStyle='#2b2230';ctx.lineWidth=7*u;ctx.lineJoin='round';ctx.stroke();ctx.fill();ctx.restore();
+  ctx.font='bold '+Math.round(46*u)+'px sans-serif';ctx.textAlign='center';ctx.lineWidth=8*u;ctx.strokeStyle='#2b2230';ctx.fillStyle='#fff6e4';
+  const ty=dy<0?r*1.9:-r*1.3;ctx.strokeText(ROOM_NAME[to]||'',0,ty);ctx.fillText(ROOM_NAME[to]||'',0,ty);ctx.restore();});}
+function clueDraw(){const I=ROOMS[room].img,u=I.w/1448,t=performance.now()/1000;
+ I.hot.forEach((o,i)=>{if(!o.clue||save.clues.includes(o.clue))return;
+  let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
+  const a=.18+.14*Math.sin(t*1.6+i),r=(46+6*Math.sin(t*1.6+i))*u,g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+  g.addColorStop(0,'rgba(255,248,215,'+a+')');g.addColorStop(1,'rgba(255,248,215,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();});}
+function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
  rummageDraw();// 找禮物時不在包包上閃光，讓玩家自己找
  if(SHOW_HOT)ROOMS[room].img.hot.forEach(o=>{if(!o.hunt)return;ctx.save();ctx.strokeStyle='#ff5a1f';ctx.lineWidth=6;ctx.setLineDash([18,10]);ctx.fillStyle='rgba(255,90,31,.18)';
   ctx.beginPath();o.poly.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();ctx.stroke();
@@ -634,6 +655,7 @@ function tapGrid(x,y){
 }
 // 進房間時的事件：第一次從臥室走進客廳會變熱；臥室客廳來回三次解鎖隱藏成就
 function onEnter(from){
+ exitHint();
  if(!save.quest&&lifeN()>=QUEST_AT){say(questScene());return;}// 舊存檔已有四條線索卻還沒看過記憶：進房間時補播
  if(room==='bath'&&(save.tis||[]).length===TISSUES.length&&!save.flushed){say(toiletTalk());return;}// 拿著衛生紙經過馬桶
  if(room==='bed'&&from.startsWith('living')){save.trips=(save.trips||0)+1;persist();if(save.trips>=3)unlockAch('hot5');}
@@ -832,7 +854,7 @@ async function opening(){
  P.pose='stretch';await wait(900);P.pose='sit';await wait(400);
  P.pose='hop';await hop(BED_OUT,700);P.pose=null;
  await wait(300);
- say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{$('hud').style.opacity=1;$('nbBtn').style.display='block';
+ say(['今天是個特別的日子。','因為今天是你的生日。','「喔，生日。」','「……那今天應該可以不用上班吧。」'],()=>{exitHint();$('hud').style.opacity=1;$('nbBtn').style.display='block';
   $('mute').style.display='block';if(typeof Music!=='undefined')Music.begin();});// 開場台詞說完才開始主旋律
 }
 // ===== 第四階段｜生日結局 =====
