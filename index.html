@@ -80,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119215809';
+const BUILD='20261119215828';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -867,7 +867,7 @@ function drawSongbird(g){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',
  [[12,8],[22,5],[29,11],[9,18]].forEach(([x,y])=>spx(g,H2,x,y,3,1));// 頭髮的反光
  spx(g,D,13,20,6,5);spx(g,D,21,20,6,5);spx(g,'#e8eef4',14,21,4,3);spx(g,'#e8eef4',22,21,4,3);spx(g,D,19,21,2,1);// 眼鏡
  spx(g,D,15,22,2,2);spx(g,D,23,22,2,2);spx(g,'#fff',15,22,1,1);spx(g,'#fff',23,22,1,1);// 眼睛（小一點，有反光）
- spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,17,27,1,1);spx(g,D,18,28,4,1);spx(g,D,22,27,1,1);}// 臉頰、微笑
+ spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,18,28,4,1);}// 臉頰、嘴巴（平的，宋鳥平常不太笑）
 const CANDLES=[6,12,18];
 function drawCake(g){const F='#fff8ee',B='#f0c99a',R='#e0435a',K='#f7a8c4';
  CANDLES.forEach(x=>{spx(g,K,x,0,2,5);spx(g,'#fff',x,1,1,1);});
