@@ -37,6 +37,9 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 #alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
+#count{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) scale(.6);font-size:96px;font-weight:900;color:#fff6e4;-webkit-text-stroke:4px #2b2230;text-shadow:0 6px 0 #2b2230;opacity:0;pointer-events:none;z-index:7}
+#count.on{animation:cnt 1s ease-out forwards}
+@keyframes cnt{0%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
 #end{position:fixed;inset:0;width:100%;height:100%;z-index:50;background:#000;display:none;opacity:0;transition:opacity 2.5s;touch-action:none}
 @keyframes ring{0%,100%{transform:translateX(-50%) rotate(0)}25%{transform:translateX(-50%) rotate(-4deg)}75%{transform:translateX(-50%) rotate(4deg)}}
 #nb{position:fixed;inset:0;z-index:20;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);background:#f7eedb;color:#2b2230;display:none;flex-direction:column;background-image:repeating-linear-gradient(#f7eedb 0 27px,#e6d8bb 27px 28px)}
@@ -65,7 +68,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div>
 <div id="fade"></div>
 <canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
-<div id="toast"></div>
+<div id="toast"></div><div id="count"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
 <div id="nbBody"></div>
 </div>
@@ -77,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=1"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261119212405';
+const BUILD='20261119212810';
 let ending=false;// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -222,11 +225,12 @@ closet:{img:{src:'assets/closet.jpg?v=1',w:1086,h:1448,speed:300,k:1,ph:[975,430
  blocks:[],
  hot:[
   {poly:R4(190,860,320,1060),app:[330,1120],when:()=>save.quest>=2,text:bagTalk},// 掛衣區下方的包包：最後提示之後才出現
-  {poly:R4(400,440,560,600),app:[495,990],text:['窗戶。','外面是別人家的晾衣架。']},
-  {poly:R4(380,680,600,958),app:[495,990],text:['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。']},
-  {poly:[[190,330],[400,330],[400,960],[330,1200],[190,1200]],app:[330,1120],text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
-  {poly:[[560,280],[860,280],[860,1180],[700,1180],[600,960]],app:[630,1120],text:['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？']},
-  {poly:R4(900,860,1086,1200),app:[640,1300],text:['梳妝台上的吹風機。']},
+  // 找禮物時（主線「前往衣帽間，調查包包」）：每個東西都會翻找一下，再說一句「不在這裡」的台詞
+  {poly:R4(400,440,560,600),app:[495,990],text:searchHot('window',[480,520],['窗戶。','外面是別人家的晾衣架。'])},
+  {poly:R4(380,680,600,958),app:[495,990],text:searchHot('shelf',[490,820],['盡頭的架子。','上面有一個彩色的袋子，掛著一隻黑貓。'])},
+  {poly:[[190,330],[400,330],[400,960],[330,1200],[190,1200]],app:[330,1120],text:searchHot('clothesL',[300,650],['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？'])},
+  {poly:[[560,280],[860,280],[860,1180],[700,1180],[600,960]],app:[630,1120],text:searchHot('clothesR',[730,650],['吊掛的衣服和抽屜。','這麼多，我平常到底穿哪幾件？'])},
+  {poly:R4(900,860,1086,1200),app:[640,1300],text:searchHot('dresser',[990,1000],['梳妝台上的吹風機。'])},
   {poly:R4(240,1330,700,1448),app:[460,1420],to:'bed'}],
  occ:[],
  spawn:{start:[460,1380],bed:[460,1380]}}},
@@ -473,14 +477,28 @@ function finalHint(){return[...memory(['？？？：「我把你的生日禮物�
 // 衣帽間的包包：宋鳥先翻找一陣子（跳動＋窸窣的動態），翻完才出現對話框和「我找到了！」
 // 對話框會一直停著，等玩家在現實中找到禮物再按。重新開遊戲的話，回衣帽間再點一次包包就會再出現
 // 【待補】調查包包的台詞還沒定
-function bagTalk(){return[{fn:()=>rummage(2600)},{wait:2900},{fn:()=>{if(save.quest<3){save.quest=3;persist();}}},
- {ask:'（調查包包的台詞待補）',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]}];}
-let rumUntil=0;
-function rummage(ms){const t0=performance.now();rumUntil=t0+ms;
+// 【待補】每個地方「不在這裡」的台詞還沒定
+const SEARCH_LINES={window:['（翻找窗戶：台詞待補）'],shelf:['（翻找盡頭的架子：台詞待補）'],clothesL:['（翻找左邊的衣服：台詞待補）'],
+ clothesR:['（翻找右邊的衣服：台詞待補）'],dresser:['（翻找梳妝台：台詞待補）']};
+function searchHot(id,at,normal){return()=>save.quest===2?[{fn:()=>rummage(1800,at)},{wait:2000},...SEARCH_LINES[id]]:normal;}
+// 包包：翻找 → 空盒子（規格書第十一節）→ 五秒尋寶挑戰（規格書第十二節）→ 對話框停在「我找到了！」
+const FOUND_ASK={ask:'找不到也沒關係，反正你還是得自己找。',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]};
+function bagTalk(){const dig=[{fn:()=>rummage(2600,[255,960])},{wait:2900}];
+ if(save.quest>=3)return[...dig,FOUND_ASK];// 已經挑戰過：直接回到「我找到了！」
+ return[...dig,'「終於找到了。」','你打開了盒子。','裡面是空的。','恭喜你，獲得一個空盒子。','「……」','真正的禮物不在這裡。',
+  '「嗨宋鳥，祝你生日快樂！」',
+  {ask:'「你覺得你可以在五秒內找到禮物嗎？」',opts:[['開始挑戰',[...[5,4,3,2,1].flatMap(n=>[{fn:()=>countShow(n)},{wait:1000}]),{fn:()=>{countShow(0);save.quest=3;persist();}},'時間到！',FOUND_ASK]]]}];}
+// 五秒倒數：畫面中央的大數字＋嗶聲，自動倒數
+function countShow(n){const e=$('count');if(!n){e.classList.remove('on');return;}
+ e.textContent=n;e.classList.remove('on');e.offsetWidth;e.classList.add('on');
+ try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;
+  o.type='square';o.frequency.value=n===1?1320:880;g.gain.setValueAtTime(.08,t);g.gain.exponentialRampToValueAtTime(.001,t+.25);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+.3);}catch(e){}}
+let rumUntil=0,rumAt=[255,960];
+function rummage(ms,at){const t0=performance.now();rumUntil=t0+ms;if(at)rumAt=at;
  (function f(){const n=performance.now();if(n<rumUntil){P.hopY=Math.abs(Math.sin((n-t0)/90))*12;requestAnimationFrame(f);}else P.hopY=0;})();}
 function rummageDraw(){if(room!=='closet'||performance.now()>=rumUntil)return;const n=performance.now()/1000;
  ctx.save();ctx.strokeStyle='#fff6e4';ctx.lineWidth=7;ctx.lineCap='round';
- for(let i=0;i<5;i++){const k=Math.floor(n*8)+i*7,x=255+Math.sin(k*1.7)*80,y=950+Math.cos(k*2.3)*90;ctx.globalAlpha=.55+.45*Math.sin(n*20+i);
+ for(let i=0;i<5;i++){const k=Math.floor(n*8)+i*7,x=rumAt[0]+Math.sin(k*1.7)*80,y=rumAt[1]+Math.cos(k*2.3)*90;ctx.globalAlpha=.55+.45*Math.sin(n*20+i);
   ctx.beginPath();ctx.moveTo(x-14,y);ctx.quadraticCurveTo(x,y-14,x+14,y);ctx.stroke();}
  ctx.restore();}
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
@@ -493,7 +511,7 @@ function memHot(id,normal){return()=>{const m=MEMORIES[id];
 const HINT_AFTER=60000;let hintT=Date.now();
 function memAvail(){return Object.keys(MEMORIES).filter(id=>!(save.mem||[]).includes(id)&&MEMORIES[id].when());}
 function memSparkle(){const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
- rummageDraw();if(save.quest>=2&&!ending&&room==='closet')pts.push([255,960]);// 最後提示之後：衣帽間的包包
+ rummageDraw();// 找禮物時不在包包上閃光，讓玩家自己找// 最後提示之後：衣帽間的包包
  pts.filter(Boolean).forEach(([x,y])=>{
  const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3);
  ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#fff6c8';ctx.shadowColor='#ffe680';ctx.shadowBlur=30;
