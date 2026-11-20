@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261120194346';
+const BUILD='20261120194425';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -475,7 +475,7 @@ const MEMORIES={
  memory_coffee:{name:'下意識的習慣',when:()=>memOpen(),// 四項線索都找到、主線開啟後才會觸發（之前不會閃光）
   room:'living2',at:pt([715,262]),hint:'客廳',// 閃光位置；提示用的地點
   frag:[{shot:{room:'living2',rect:[1170,380,260,220]}},{shot:{room:'kitchen',rect:[1110,400,280,600]}}],// 咖啡機特寫 → 冰箱特寫（沒有對話）
-  after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」']},
+  after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」','「手好像自己會動。」','「……這杯是要留給誰的？」']},
  // 記憶② 沙發（暫定）：撿完衛生紙之後再點沙發。沙發左半邊（坐在沙發上的人的右邊）的模糊特寫，不出現女友
  // 【待補】正式台詞還沒定，after 先放可替換的文字
  memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>memOpen()&&save.clues.includes('tissue'),
