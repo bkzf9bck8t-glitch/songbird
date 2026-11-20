@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261120194425';
+const BUILD='20261120195224';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -426,7 +426,7 @@ const ACH={tissue:{name:'衛生紙清道夫',desc:'撿完客廳散落的五個�
  hot5:{name:'冰火五重天',desc:'你已經掌握了高雄住宅的氣候分布。',hidden:1}};
 function unlockAch(id){save.ach=save.ach||[];if(save.ach.includes(id))return;save.ach.push(id);persist();toast('🏆 成就解鎖：'+ACH[id].name);}
 // 狀態列：炎熱、造型
-function statShow(){const t=[];if(save.hot)t.push('炎熱 Lv.1');if(save.hair)t.push('雞窩頭');$('stat').innerHTML=t.length?'<br>狀態：'+t.join('｜'):'';}
+function statShow(){const t=[];if(save.hot)t.push('炎熱 Lv.1');if(save.hair)t.push('雞窩頭');if(save.dusty)t.push('灰頭土臉');$('stat').innerHTML=t.length?'<br>狀態：'+t.join('｜'):'';}
 const CATS=['生活中的不同','被遺忘的人','我們的生活'];
 const ACT1=['rug','tea','deadplant','toothbrush'];// 第一幕的四項正式線索：地毯、冰紅茶、死掉的植物、牙刷（衛生紙不算）
 const lifeN=()=>save.clues.filter(c=>ACT1.includes(c)).length;
@@ -504,7 +504,7 @@ const HUNT=[['underSofa','沙發底下','客廳'],['kitchenCab','廚房櫃子','
  ['underBed','床底下','臥室'],['shoeCab','鞋櫃','玄關'],['barCab','吧台下方櫃子','客廳'],['closetR','右側衣櫥','衣帽間'],['closetL','左側收納區','衣帽間']];
 // 搜查台詞：陣列＝固定台詞；函式＝依狀態決定（例如一次性道具）。【待補】標示的是還沒定案的占位文字
 const SEARCH_LINES={
- underSofa:['「天....只有灰塵」'],
+ underSofa:['「天....只有灰塵」',{fn:()=>{if(!save.dusty){save.dusty=1;persist();toast('💨 獲得狀態：灰頭土臉');statShow();}}}],
  kitchenCab:()=>hasItem('bugspray')?['（再次搜查廚房櫃子：台詞待補）']:['獲得道具：【殺蟲劑】×1',{fn:()=>giveItem('bugspray')}],
  washer:['「塞滿了衣服，這裡會有禮物嗎？」'],
  balconyCab:['（搜查陽台木櫃：台詞待補）'],
@@ -725,9 +725,9 @@ function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
 // 宋鳥角色：PIX_SB=true 用程式畫的像素人物（和結局的女友同一種畫風）；false 改回原本的 assets/songbird.png
 const PIX_SB=true;let sbPix=null;
 function playerDraw(fx,fy,s,cut){
- if(PIX_SB){const hair=!!save.hair;sbPix=sbPix||{};
+ if(PIX_SB){const hair=!!save.hair,dust=!!save.dusty,key=hair+'_'+dust;sbPix=sbPix||{};
   // 上方多留 7 格給雞窩頭的那撮毛；比例用原本 66 格高算，身體大小不變
-  const im=sbPix[hair]||(sbPix[hair]=spriteCanvas(40,71,g=>{g.translate(0,7);drawSongbird(g,hair);}));
+  const im=sbPix[key]||(sbPix[key]=spriteCanvas(40,71,g=>{g.translate(0,7);drawSongbird(g,hair,dust);}));
   const k=SB_H*.8/66,w=im.width*k,h=im.height*k,b=P.moving?Math.abs(Math.sin(P.t*10))*.8:0;
   ctx.save();ctx.translate(Math.round(fx),Math.round(fy));ctx.scale(s,s);
   if(cut!=null){ctx.beginPath();ctx.rect(-20,-60,40,60-cut);ctx.clip();}else{ctx.fillStyle='rgba(60,40,20,.28)';ctx.fillRect(-w*.35,-1,w*.7,2.5);}
@@ -910,7 +910,7 @@ function drawGirl(g){const H='#3a2722',H2='#5a3f35',S='#f6cfae',T='#f3e2c6',T2='
  spx(g,D,14,21,3,4);spx(g,D,23,21,3,4);spx(g,'#fff',15,21,1,1);spx(g,'#fff',24,21,1,1);// 眼睛（有反光）
  spx(g,'#f3a3a0',11,26,3,1);spx(g,'#f3a3a0',26,26,3,1);spx(g,'#b4545a',19,28,2,1);}// 臉頰、嘴巴
 // 宋鳥：捲捲的黑髮、眼鏡、黑 T 恤、黑褲子（照 assets/songbird.png 的特徵，用和女友一樣的畫法）
-function drawSongbird(g,messy){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',T='#2a252d',T2='#3a3440',P='#1f1b22',O='#2e2a33';
+function drawSongbird(g,messy,dusty){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c1418',T='#2a252d',T2='#3a3440',P='#1f1b22',O='#2e2a33';
  sell(g,H,20,16,14,12);// 一頭捲髮
  [[7,12],[9,6],[14,3],[20,2],[26,3],[31,6],[33,12],[34,18],[6,18],[8,24],[32,24]].forEach(([x,y])=>sell(g,H,x,y,4,4));
  spx(g,T,11,33,18,12);spx(g,T,8,34,4,5);spx(g,T,28,34,4,5);// 黑 T 恤、短袖
@@ -931,7 +931,9 @@ function drawSongbird(g,messy){const H='#211b22',H2='#3d3542',S='#f6cfae',D='#1c
   spx(g,H,14,2,13,3);spx(g,H,13,1,2,2);spx(g,H,26,2,2,1);}// 前面再蓋一點頭髮，看起來是從頭髮裡冒出來
  spx(g,D,13,20,6,5);spx(g,D,21,20,6,5);spx(g,'#e8eef4',14,21,4,3);spx(g,'#e8eef4',22,21,4,3);spx(g,D,19,21,2,1);// 眼鏡
  spx(g,D,15,22,2,2);spx(g,D,23,22,2,2);spx(g,'#fff',15,22,1,1);spx(g,'#fff',23,22,1,1);// 眼睛（小一點，有反光）
- spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,18,28,4,1);}// 臉頰、嘴巴（平的，宋鳥平常不太笑）
+ spx(g,'#f3a3a0',11,26,2,1);spx(g,'#f3a3a0',27,26,2,1);spx(g,D,18,28,4,1);// 臉頰、嘴巴（平的，宋鳥平常不太笑）
+ if(dusty){const A='rgba(110,104,100,.75)',B='rgba(140,134,128,.6)';// 灰頭土臉：臉上一塊一塊的灰
+  spx(g,A,12,24,3,2);spx(g,B,13,26,2,1);spx(g,A,25,25,3,2);spx(g,B,26,27,2,1);spx(g,A,20,25,2,2);spx(g,B,16,28,2,1);spx(g,A,23,29,2,1);spx(g,B,17,18,3,1);spx(g,B,24,18,2,1);}}
 const CANDLES=[6,12,18];
 function drawCake(g){const F='#fff8ee',B='#f0c99a',R='#e0435a',K='#f7a8c4';
  CANDLES.forEach(x=>{spx(g,K,x,0,2,5);spx(g,'#fff',x,1,1,1);});
