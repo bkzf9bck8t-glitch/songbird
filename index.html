@@ -82,7 +82,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261120195224';
+const BUILD='20261120195504';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -196,7 +196,7 @@ living2:{img:{src:'assets/living2.jpg?v=1',w:1448,h:1086,speed:300,ph:[450,269,5
   {poly:sc(R4(290,130,570,300)),app:pt([385,460]),text:['牆上掛滿了畫和海報。']},
   {poly:sc(R4(150,295,605,446)),app:pt([385,460]),hunt:'underSofa',text:memHot('memory_sofa',searchHot('underSofa',pt([380,440]),['「右邊一看就比較好坐。」']))},
   {poly:sc(R4(186,445,556,590)),app:pt([150,560]),text:['玻璃茶几。','上面堆滿桌遊和雜物。']},
-  {poly:sc(R4(608,345,790,550)),app:pt([700,530]),when:searching,hunt:'barCab',text:searchHot('barCab',pt([700,440]))},// 吧台下方櫃子（找禮物時才有）
+  {poly:sc(R4(612,445,790,535)),app:pt([700,530]),when:searching,hunt:'barCab',text:searchHot('barCab',pt([700,440]))},// 吧台下方櫃子（找禮物時才有）：只蓋最下面有門的櫃子，吧台其他地方和右下角仍然是去廚房、浴室的出口
   {poly:sc([[600,300],[672,300],[672,100],[800,100],[800,540],[600,540]]),app:pt([700,530]),to:'kitchen'},// 點吧台（含後面看得到的廚房）→ 廚房
   {poly:sc(R4(0,500,140,600)),app:pt([40,575]),to:'bed'},
   {poly:sc(R4(660,540,800,600)),app:pt([760,580]),to:'bath'}],
