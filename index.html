@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122042609';
+const BUILD='20261122043250';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -458,14 +458,14 @@ function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?
 // 演出中 busy=true：角色不能走、物件不能點，也不會重複觸發
 // 記憶色調：依「已完成幾段生活記憶（咖啡機、沙發）」決定，觸發順序不限。只套在回憶演出上，不用模糊，像素格子保持清楚
 // 第一段：灰褐、飽和度約 20%；第二段：飽和度約 50%、褪色感減弱；樂高梅花壓軸：從第一段的灰褐慢慢恢復到約 82%
-const TONE=['saturate(.2) sepia(.5)','saturate(.5) sepia(.22)'],TONE_END='saturate(.82) sepia(.06)';
+const TONE=['grayscale(.9) sepia(.25)','saturate(.5) sepia(.22)'],TONE_END='saturate(.82) sepia(.06)';
 function memStage(){return['memory_coffee','memory_sofa'].filter(i=>(save.mem||[]).includes(i)).length;}
 function memTone(){return TONE[Math.min(memStage(),1)];}
 const MEM_FX={dim:()=>memTone()+' brightness(.7)',frag:()=>memTone()+' brightness(.35)'};
-function memCv(m){cv.style.transition=m==='dim'?'filter 1.3s':m==='frag'?'filter .7s':'filter 1.2s';cv.style.filter=MEM_FX[m]?MEM_FX[m]():'none';$('memV').style.opacity=m?1:0;}
+function memCv(m){cv.style.transition=m==='dim'?'filter 2.2s':m==='frag'?'filter 1s':'filter 2s';cv.style.filter=MEM_FX[m]?MEM_FX[m]():'none';$('memV').style.opacity=m?1:0;}
 // frag：記憶內容，可以是文字（灰色斜體）或 {shot:{room,rect:[x,y,w,h]}}（該房間底圖的局部特寫，原圖像素）
-function memory(frag){return[{fn:()=>memCv('dim')},{wait:1500},{fn:()=>{flashWhite();memCv('frag');}},{wait:1200},
- ...frag.map(t=>typeof t==='string'?'<span class="memv">'+t+'</span>':t),{fn:()=>{memShot(null);memCv(0);}},{wait:800}];}
+function memory(frag){return[{wait:600},{fn:()=>{memCv('dim');if(typeof Music!=='undefined')Music.setMode('memory',2.5);}},{wait:2400},{fn:()=>{flashWhite();memCv('frag');}},{wait:1600},
+ ...frag.flatMap(t=>[typeof t==='string'?'<span class="memv">'+t+'</span>':t,{wait:700}]),{fn:()=>{memShot(null);memCv(0);if(typeof Music!=='undefined')Music.setMode('main',3);}},{wait:1800}];}
 // 沙發回憶：停住 → 畫面微暗、音樂換成回憶版、鏡頭慢慢靠近沙發右邊 → 褪色的回憶客廳（沙發右邊有模糊人影，閃一下就消失）→ 閃白回到現實
 // 全程不能點、沒有對話框；回到現實後才接台詞
 function sofaFocus(on){cv.style.transition='filter 2.2s, transform 2.6s ease-in-out';cv.style.transformOrigin='50% 60%';
@@ -507,9 +507,9 @@ function sofaPeople(x,sx,sy){x.imageSmoothingEnabled=false;
  put(girl,170,262);put(sb,438,190);}
 
 function sofaFull(on){const st=memStage();// 第一次：從很灰慢慢浮現一點顏色；第二次：從灰褐浮現到一半以上的顏色
- fullMem(on,{people:1,haze:.14,tone:st?'saturate(.25) sepia(.4)':'saturate(.05) sepia(.55) brightness(.95)',toneTo:st?'saturate(.65) sepia(.15)':'saturate(.3) sepia(.42)',toneMs:3200});}
-function sofaMemory(){return[{wait:800},{fn:()=>sofaFocus(true)},{wait:2800},{fn:()=>sofaFull(true)},{wait:3600},
- {fn:()=>{flashWhite();sofaFull(false);sofaFocus(false);}},{wait:1500}];}
+ fullMem(on,{people:1,haze:.14,tone:st?'saturate(.25) sepia(.4)':'saturate(.05) sepia(.55) brightness(.95)',toneTo:st?'saturate(.65) sepia(.15)':'saturate(.3) sepia(.42)',toneMs:4200});}
+function sofaMemory(){return[{wait:900},{fn:()=>sofaFocus(true)},{wait:3400},{fn:()=>sofaFull(true)},{wait:4800},
+ {fn:()=>{flashWhite();sofaFull(false);sofaFocus(false);}},{wait:2200}];}
 // 樂高梅花壓軸（四幕）：
 // 一｜鏡頭慢慢靠近梅花，整個畫面灰褐 →「這個……」「我記得這盆花。」→ 安靜
 // 二｜遠遠的聲音「這樣怎麼養都不會死掉了。」→ 閃過陽台枯掉的盆栽 → 回到梅花，花瓣先浮現一點粉紅
@@ -563,7 +563,7 @@ function legoEnd(){return[{wait:1800},{fn:()=>{cancelAnimationFrame(bloomRaf);pl
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
  const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
- c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter=sh.tone||memTone();g.drawImage(src,x,y,w,h,0,0,w,h);g.filter='none';if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
+ c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.drawImage(src,x,y,w,h,0,0,w,h);c.style.filter=sh.tone||memTone();memShotT=Date.now();// 用 CSS 濾鏡上色（iPhone Safari 不支援 canvas 的 filter，會變彩色）if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
  o.style.transition='none';o.style.opacity=0;o.style.pointerEvents=sh.timed?'none':'auto';o.querySelector('small').style.display=sh.timed?'none':'';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
 // 記憶特寫上的模糊人影（不畫出五官和細節，只有剪影）。先畫在很小的畫布上再放大，就會變模糊
 function ghostDraw(g,w,h,kind){const k=kind==='sitting'?1.4:2.5,c=document.createElement('canvas');c.width=Math.ceil(w/k);c.height=Math.ceil(h/k);const x=c.getContext('2d');x.scale(1/k,1/k);
@@ -715,8 +715,8 @@ function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts
   ctx.setLineDash([]);ctx.font='bold 40px sans-serif';ctx.textAlign='center';ctx.lineWidth=8;ctx.strokeStyle='#000';ctx.strokeText(e[1],cx,cy);ctx.fillStyle='#fff';ctx.fillText(e[1],cx,cy);ctx.restore();});// 最後提示之後：衣帽間的包包
  pts.filter(Boolean).forEach(([x,y])=>{
  // 回憶物品的亮晶晶：兩三顆小小的、半透明的星光輪流閃一下（不要太搶眼）
- [[0,0,0,1],[26,-20,2.1,.65],[-22,14,4.2,.55]].forEach(([dx,dy,ph,sz])=>{const k=Math.max(0,Math.sin(t*1.8+ph));if(k<.05)return;
-  const r=(15+8*k)*sz;ctx.save();ctx.globalAlpha=.55*k;ctx.fillStyle='#fffbe8';ctx.shadowColor='rgba(255,236,170,.8)';ctx.shadowBlur=10;
+ [[0,0,0,1],[40,-30,2.1,.6],[-34,22,4.2,.5]].forEach(([dx,dy,ph,sz])=>{const k=Math.max(0,Math.sin(t*1.8+ph));if(k<.05)return;
+  const r=(26+12*k)*sz;ctx.save();ctx.globalAlpha=.75*k;ctx.fillStyle='#fffbe8';ctx.shadowColor='rgba(255,236,170,.9)';ctx.shadowBlur=18;
   ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.18:r;ctx.lineTo(x+dx+Math.cos(ang)*rr,y+dy+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});});}
 // 補救：四個線索都找到了、主線卻還沒開（例如主線那段對話播到一半就關掉遊戲），沒在對話中時自動補播
 setInterval(()=>{if(!save.quest&&!busy&&!nbOpen&&!ending&&$('intro').style.display==='none'&&lifeN()>=QUEST_AT)say(questScene());},1500);
@@ -762,7 +762,7 @@ $('nb').addEventListener('pointerdown',e=>e.stopPropagation());
 $('nb').querySelector('.x').addEventListener('click',closeNb);
 $('dlg').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
 $('panel').addEventListener('pointerdown',()=>{if($('dlg').style.display==='block'&&!asking)next();});
-$('memShot').addEventListener('pointerdown',e=>{e.stopPropagation();next();});
+let memShotT=0;$('memShot').addEventListener('pointerdown',e=>{e.stopPropagation();if(Date.now()-memShotT<1500)return;next();});// 特寫至少停 1.5 秒才能點掉
 // 音樂按鈕：music.js 會寫「音樂：開／關」，這裡換成圖示 🔊（有聲音）／🔇（靜音），不用改 music.js
 (function(){const b=$('mute');const fix=()=>{const t=b.textContent;if(t==='🔊'||t==='🔇')return;const off=t.includes('關');
  b.textContent=off?'🔇':'🔊';b.setAttribute('aria-label',off?'音樂已關，點一下打開':'音樂已開，點一下關掉');b.title=b.getAttribute('aria-label');};
