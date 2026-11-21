@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122043714';
+const BUILD='20261122045204';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -559,7 +559,8 @@ function legoFlash(){const T2='saturate(.95) sepia(.03)';return[{fn:()=>memShot(
  {fn:()=>{memShot(null);fullMem(true,{people:1,tone:T2})}},{wait:1700},{fn:()=>fullMem(false)},{wait:1100}];}
 // 場景 7：回到現實 → 音樂慢慢回來 → 生日禮物那句話短暫浮現（之後才顯示獲得記憶碎片）
 function legoEnd(){return[{wait:1800},{fn:()=>{cancelAnimationFrame(bloomRaf);plumFocus(false);if(typeof Music!=='undefined')setTimeout(()=>Music.begin(),400);}},{wait:3000},
- '<span class="memv voice">？？？：「我把你的生日禮物藏起來了，你自己找！」</span>'];}
+ '<span class="memv voice">？？？：「我把你的生日禮物藏起來了，你自己找！」</span>',
+ '<span class="memv voice">「寶寶，祝你生日快樂！」</span>','<span class="memv voice">「你覺得我會把禮物藏在哪裡？」</span>'];}
 // ===== 咖啡機回憶 =====
 // 生活音效（自己合成，不用音檔）：咖啡機運作、杯子輕放、冰箱開門、關門。音樂關掉時也不出聲
 let sfxAC=null;
@@ -703,24 +704,44 @@ function searchHot(id,at,normal){return()=>{if(!searching())return normal||[];co
 const ITEMS={bugspray:{name:'殺蟲劑'}};
 function hasItem(id){return(save.items||[]).includes(id);}
 function giveItem(id){if(hasItem(id))return;save.items=save.items||[];save.items.push(id);persist();$('nbBtn').classList.add('new');toast('🎒 獲得道具：'+ITEMS[id].name);}
-// 衣帽間左側收納區（真正的藏禮物位置）：兩階段
+// 衣帽間左側收納區（真正的藏禮物位置）：三階段
 // 第一階段：翻找包包，不宣布找到。關鍵記憶（樂高梅花）之後才會問要不要「繼續翻找」
-// 第二階段：繼續翻找 → 最後的尋寶事件（空盒子 → 五秒挑戰 → 對話框停在「我找到了！」）
+// 第二階段：要不要再仔細翻找看看？（先算了 → 回到探索，之後再來還會問）
+// 第三階段：繼續翻找 → 翻三次、包包一次比一次被撥開 → 第三次從包包之間露出黑色禮物盒 →「是這個嗎？」→ 直接進生日結局
 // 觸發條件可改 FINAL_OPEN
 const FINAL_OPEN=()=>save.quest>=2;
 const LEFT1=['「這裡怎麼塞了這麼多包包……」','「感覺翻起來會很麻煩。」'],LEFT_ASK='要不要再仔細翻找看看？',LEFT2=['「……嗯？」','「掛著的衣服下面，好像有個地方還沒翻過。」','「包包跟包包之間……？」',{wait:1800}];// 最後停一下，讓玩家把遊戲裡的線索和現實的衣櫥連起來
 function closetLeft(normal){return()=>{
  const dig=ms=>[{fn:()=>rummage(ms,[255,960])},{wait:ms+300},{fn:()=>huntMark('closetL')}];
- if(save.quest>=3)return[...dig(2000),FOUND_ASK];// 已經挑戰過：直接回到「我找到了！」
+ if(save.quest>=3)return giftFound();// 舊存檔（以前挑戰過）：直接找到禮物
  if(!searching())return normal;
  if(!FINAL_OPEN())return[...dig(2000),...LEFT1];
- return[...dig(2000),...LEFT1,{ask:LEFT_ASK,opts:[['繼續翻找',[...dig(2600),...LEFT2,...finalHunt()]],['先算了',[]]]}];};}
-// 最後的尋寶事件：空盒子（規格書第十一節）→ 五秒尋寶挑戰（規格書第十二節）→ 對話框停在「我找到了！」
-const FOUND_ASK={ask:'找不到也沒關係，反正你還是得自己找。',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]};
-function finalHunt(){
- return['「終於找到了。」','你打開了盒子。','裡面是空的。','恭喜你，獲得一個空盒子。','「……」','真正的禮物不在這裡。',
-  '「嗨宋鳥，祝你生日快樂！」',
-  {ask:'「你覺得你可以在五秒內找到禮物嗎？」',opts:[['開始挑戰',[...[5,4,3,2,1].flatMap(n=>[{fn:()=>countShow(n)},{wait:1000}]),{fn:()=>{countShow(0);save.quest=3;persist();}},'時間到！',FOUND_ASK]]]}];}
+ return[...dig(2000),...LEFT1,{ask:LEFT_ASK,opts:[['繼續翻找',[...LEFT2,...giftFound()]],['先算了',[]]]}];};}
+// 禮物盒：正方形、黑色盒身、黑色緞帶在頂部打成蝴蝶結（像素風；黑色上用一點點反光讓輪廓看得出來）
+function drawGiftBox(g){const B='#1b181d',B2='#26222a',T='#2f2a33',R='#0a090b',H='#5a5462',H2='#3c3742';
+ spx(g,B,1,8,20,13);spx(g,B2,1,8,20,2);spx(g,T,0,6,22,3);spx(g,H2,0,6,22,1);// 盒身、盒蓋
+ spx(g,R,9,6,4,15);spx(g,R,0,7,22,2);spx(g,H,10,9,1,11);spx(g,H,2,7,6,1);spx(g,H,14,7,6,1);// 黑色緞帶（直的、橫的）和反光
+ spx(g,R,4,2,6,4);spx(g,R,12,2,6,4);spx(g,R,5,1,4,1);spx(g,R,13,1,4,1);spx(g,R,9,4,4,3);// 蝴蝶結
+ spx(g,H,5,2,2,1);spx(g,H,15,2,2,1);spx(g,H,10,4,1,1);spx(g,R,6,6,2,3);spx(g,R,14,6,2,3);// 蝴蝶結的反光、垂下來的緞帶尾
+ spx(g,'#08070a',1,20,20,1);}
+let gift=null;// {t0, open:0~1 包包撥開的程度, show:禮物盒出現, lift:拿出來}
+const GIFT_AT=[250,1000];// 禮物盒在衣帽間圖上的位置（原圖像素）：左側掛衣區下方的包包之間
+function giftDraw(){if(!gift||room!=='closet')return;const o=gift.open;
+ if(o>0){ctx.save();ctx.translate(GIFT_AT[0],GIFT_AT[1]+10);ctx.scale(1,1.5);const r=30+50*o,sh=ctx.createRadialGradient(0,0,0,0,0,r);// 包包被撥開，中間露出一塊暗暗的空隙（慢慢變大）
+  sh.addColorStop(0,'rgba(14,10,14,'+(.75*o)+')');sh.addColorStop(.65,'rgba(14,10,14,'+(.45*o)+')');sh.addColorStop(1,'rgba(14,10,14,0)');ctx.fillStyle=sh;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(gift.show>0){const box=gift.box||(gift.box=spriteCanvas(22,21,drawGiftBox)),S=4.2*(1+gift.lift*.35),w=box.width*S,h=box.height*S,x=GIFT_AT[0]-w/2,y=GIFT_AT[1]-h/2-gift.lift*120;
+  ctx.save();ctx.globalAlpha=gift.show;const gl=ctx.createRadialGradient(GIFT_AT[0],y+h/2,0,GIFT_AT[0],y+h/2,w*1.1);gl.addColorStop(0,'rgba(255,232,190,.35)');gl.addColorStop(1,'rgba(255,232,190,0)');
+  ctx.fillStyle=gl;ctx.fillRect(x-w,y-h,w*3,h*3);ctx.imageSmoothingEnabled=false;ctx.drawImage(box,x,y,w,h);ctx.restore();}}
+function giftTo(k,v,ms){const a=gift[k],t0=performance.now();(function f(){const q=Math.min(1,(performance.now()-t0)/ms);gift[k]=a+(v-a)*(q*q*(3-2*q));if(q<1)requestAnimationFrame(f);})();}
+function giftFound(){const dig=(ms,open)=>[{fn:()=>{rummage(ms,[255,960]);giftTo('open',open,ms);}},{wait:ms+500}];
+ const pc=()=>{const c=cv.width,h=cv.height;return[GIFT_AT[0]/c*100,GIFT_AT[1]/h*100];};
+ return[{fn:()=>{gift={open:0,show:0,lift:0};const t=[470,1190];const p=ipath(P.x,P.y,t[0],t[1]);if(p)P.path=p;}},{wait:900},// 站到包包右邊，好伸手翻
+  ...dig(1800,.25),...dig(1800,.55),...dig(2200,1),// 翻三次，包包一次比一次被撥開
+  {fn:()=>giftTo('show',1,1600)},{wait:1800},// 從包包之間露出黑色禮物盒
+  {fn:()=>{const[px,py]=pc();memFocus(true,px,py,1.7);cv.style.filter='none';$('memV').style.opacity=.6;}},{wait:3200},// 鏡頭慢慢靠近禮物盒
+  {fn:()=>giftTo('lift',1,1800)},{wait:2600},// 宋鳥把禮物盒拿出來，停一下
+  '「是這個嗎？」',
+  {fn:()=>{save.quest=3;persist();setTimeout(endingStart,300);}}];}
 // 五秒倒數：畫面中央的大數字＋嗶聲，自動倒數
 function countShow(n){const e=$('count');if(!n){e.classList.remove('on');return;}
  e.textContent=n;e.classList.remove('on');e.offsetWidth;e.classList.add('on');
@@ -768,7 +789,7 @@ function clueDraw(){const I=ROOMS[room].img,u=I.w/1448,t=performance.now()/1000;
   const a=.18+.14*Math.sin(t*1.6+i),r=(46+6*Math.sin(t*1.6+i))*u,g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
   g.addColorStop(0,'rgba(255,248,215,'+a+')');g.addColorStop(1,'rgba(255,248,215,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();});}
 function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts=(busy?[]:memAvail()).map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
- rummageDraw();// 找禮物時不在包包上閃光，讓玩家自己找
+ rummageDraw();giftDraw();// 找禮物時不在包包上閃光，讓玩家自己找
  if(SHOW_HOT)ROOMS[room].img.hot.forEach(o=>{if(!o.hunt)return;ctx.save();ctx.strokeStyle='#ff5a1f';ctx.lineWidth=6;ctx.setLineDash([18,10]);ctx.fillStyle='rgba(255,90,31,.18)';
   ctx.beginPath();o.poly.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();ctx.stroke();
   const e=HUNT.find(x=>x[0]===o.hunt),cx=o.poly.reduce((a,p)=>a+p[0],0)/o.poly.length,cy=o.poly.reduce((a,p)=>a+p[1],0)/o.poly.length;
@@ -1139,12 +1160,12 @@ function endingStart(){if(ending)return;ending=true;busy=true;
  function frame(now){if(!t0)t0=now;const t=(now-t0)/1000,dpr=Math.min(3,window.devicePixelRatio||1),W=innerWidth*dpr,H=innerHeight*dpr;
   if(E.width!==Math.round(W)||E.height!==Math.round(H)){E.width=Math.round(W);E.height=Math.round(H);}
   g.setTransform(1,0,0,1,0,0);g.fillStyle='#000';g.fillRect(0,0,W,H);
-  // 鏡頭：從整個人慢慢推近到蛋糕（按下後約 5～19 秒）
-  const z=seg(t,2.5,16.5),S0=H*.55/girl.height,S1=Math.min(W*.8/cake.width,H*.5/(cake.height+5)),S=S0*Math.pow(S1/S0,z),
+  // 結局順序：黑幕＋生日快樂歌（讓現實中的女友有時間端蛋糕出來）→ 黑暗中先出現燭光 → 蛋糕慢慢出現 → 鏡頭拉遠看到端著蛋糕的她 → 再推近到蛋糕、她慢慢淡掉，只剩燭光
+  const z=t<19?1-seg(t,11,18):seg(t,21,33),flameA=seg(t,4.5,7),cakeA=seg(t,7.5,10.5),S0=H*.55/girl.height,S1=Math.min(W*.8/cake.width,H*.5/(cake.height+5)),S=S0*Math.pow(S1/S0,z),
    cx=girl.width/2,cy=girl.height/2+(CAKE_AT[1]+cake.height/2-2-girl.height/2)*z,X=a=>W/2+(a-cx)*S,Y=a=>H/2+(a-cy)*S;
-  const show=seg(t,0,2.5),rise=(1-show)*2;
-  // 人物：出現 → 開始模糊 → 淡出
-  const blur=seg(t,4.5,11.5),ga=show*(1-seg(t,6.5,13.5));
+  const show=cakeA,rise=0;
+  // 人物：鏡頭拉遠時出現 → 推近時開始模糊 → 淡出
+  const blur=seg(t,24,31),ga=seg(t,12,16)*(1-seg(t,26,32));
   if(ga>0){const gx=X(0),gy=Y(rise),gw=girl.width*S,gh=girl.height*S;g.globalAlpha=ga;
    if(blur<.02){g.imageSmoothingEnabled=false;g.drawImage(girl,gx,gy,gw,gh);}
    else{const k=1+blur*14;tmp.width=Math.max(2,gw/k);tmp.height=Math.max(2,gh/k);const tg=tmp.getContext('2d');tg.imageSmoothingEnabled=false;
@@ -1154,15 +1175,15 @@ function endingStart(){if(ending)return;ending=true;busy=true;
   g.globalAlpha=show;g.imageSmoothingEnabled=false;g.drawImage(cake,X(CAKE_AT[0]),Y(CAKE_AT[1]+rise),cake.width*S,cake.height*S);
   // 燭火：每根各自搖曳
   if(now-flT>110){flT=now;fl=fl.map(()=>Math.random());}
-  FLAMES.forEach((fx,i)=>{const h=3+(fl[i]>.6?1:0),sx=fl[i]>.85?.3:fl[i]<.15?-.3:0,top=CAKE_AT[1]+1+rise-h;
+  g.globalAlpha=flameA;FLAMES.forEach((fx,i)=>{const h=3+(fl[i]>.6?1:0),sx=fl[i]>.85?.3:fl[i]<.15?-.3:0,top=CAKE_AT[1]+1+rise-h;
    g.fillStyle='#ffb347';g.fillRect(X(fx+sx),Y(top),2*S,h*S);g.fillStyle='#fff3b0';g.fillRect(X(fx+sx+.5),Y(top+h*.4),S,h*.6*S);});
   g.globalAlpha=1;
   // 光線：周圍慢慢變全黑，只留蠟燭的光
-  const dark=.35+.62*seg(t,8.5,16.5),fx=X(FLAMES[1]+1),fy=Y(CAKE_AT[1]+rise-1),fk=1+.05*Math.sin(now/90)+.04*(fl[1]-.5),R=S*(20-9*seg(t,8.5,16.5))*fk;
+  const dark=.97-.62*seg(t,12,16)+.62*seg(t,26,33),fx=X(FLAMES[1]+1),fy=Y(CAKE_AT[1]+rise-1),fk=1+.05*Math.sin(now/90)+.04*(fl[1]-.5),R=S*(11+9*(1-z))*fk;
   g.save();const hole=g.createRadialGradient(fx,fy,R*.25,fx,fy,R*1.6);hole.addColorStop(0,'rgba(0,0,0,0)');hole.addColorStop(1,'rgba(0,0,0,'+dark+')');
   g.fillStyle=hole;g.fillRect(0,0,W,H);// 漸層外圍自動延伸成全暗
   g.globalCompositeOperation='lighter';const glow=g.createRadialGradient(fx,fy,0,fx,fy,R*.8);
-  glow.addColorStop(0,'rgba(255,170,70,'+(.22*show)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
+  glow.addColorStop(0,'rgba(255,170,70,'+(.26*flameA)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
   requestAnimationFrame(frame);}
  setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);
   if(typeof Music!=='undefined')Music.setMode('birthday',1.5);},2500);}// 蛋糕出現的那一刻：切到生日快樂歌，唱完接燭光氛圍
