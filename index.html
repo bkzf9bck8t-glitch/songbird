@@ -21,6 +21,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #dlg .qcard{text-align:center;font-size:13px;line-height:1.45}#dlg .qcard b{display:block;font-size:16px;margin:1px 0 2px}#dlg .qcard+small{margin-top:-14px}
 #memV{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
 #memFull{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity 1.1s}
+#bloom{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .9s}
 #memFull canvas{position:absolute;inset:0;width:100%;height:100%;transform-origin:31% 60%;transform:scale(1.15)}
 #memFull .gh{opacity:0;filter:blur(1px)}#memFull.on .gh{animation:ghFlick 3.4s ease-in-out forwards}
 @keyframes ghFlick{0%{opacity:0}22%{opacity:.95}38%{opacity:.45}52%{opacity:1}70%{opacity:.6}84%{opacity:.9}100%{opacity:0}}
@@ -70,7 +71,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <div id="top"><div id="hud">1124｜宋鳥的一天<span id="quest" style="display:none"><br>主線任務：尋找你的生日禮物<br><small id="questSub">尋找禮物的線索，找回被遺忘的記憶。</small></span><span id="stat"></span></div><div id="btns"><button id="nbBtn" aria-label="線索筆記本"><b>📓</b>筆記</button>
 <button id="mute" aria-label="音樂開關">音樂：開</button></div></div>
 <div id="stage">
-<canvas id="c"></canvas>
+<canvas id="c"></canvas><canvas id="bloom"></canvas>
 <div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div><div id="memFull"><canvas></canvas><canvas class="gh"></canvas></div>
 <div id="fade"></div>
 <canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
@@ -86,7 +87,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122025851';
+const BUILD='20261122030345';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -473,14 +474,38 @@ function fullMem(on,o){const el=$('memFull');if(!on){el.classList.remove('on');e
 function sofaFull(on){fullMem(on,{ghost:'sitting',tone:memTone()+' brightness(1.03)',haze:.18});}
 function sofaMemory(){return[{wait:800},{fn:()=>sofaFocus(true)},{wait:2800},{fn:()=>sofaFull(true)},{wait:3600},
  {fn:()=>{flashWhite();sofaFull(false);sofaFocus(false);}},{wait:1500}];}
-// 樂高梅花壓軸：灰褐色開始 → 咖啡機、沙發的片段各閃一下 → 整個客廳灰褐 → 3～5 秒慢慢恢復顏色（咖啡機、沙發、梅花一起）→ 台詞 → 回到正常客廳
-function legoMemory(){const T0=TONE[0];return[{wait:800},
- {fn:()=>{cv.style.transition='filter 2s';cv.style.filter=T0+' brightness(.75)';$('memV').style.opacity=1;if(typeof Music!=='undefined')Music.setMode('memory',1.8);}},{wait:2400},
- {fn:()=>memShot({room:'living2',rect:[1170,380,260,220],tone:T0,timed:1})},{wait:2200},// 片段：咖啡機
- {fn:()=>{memShot(null);fullMem(true,{ghost:'sitting',tone:T0,haze:.18})}},{wait:2600},// 片段：沙發上的人影
- {fn:()=>{flashWhite();fullMem(true,{tone:T0,zoom:false})}},{wait:900},
- {fn:()=>{const bg=$('memFull').querySelector('canvas');bg.style.transition='filter 4.2s ease-in-out';bg.style.filter=TONE_END;}},{wait:4600}];}
-function legoEnd(){return[{fn:()=>{fullMem(false);cv.style.transition='filter .8s';cv.style.filter='none';$('memV').style.opacity=0;if(typeof Music!=='undefined')Music.setMode('main',1.5);}},{wait:900}];}
+// 樂高梅花壓軸（四幕）：
+// 一｜鏡頭慢慢靠近梅花，整個畫面灰褐 →「這個……」「我記得這盆花。」→ 安靜
+// 二｜遠遠的聲音「這樣怎麼養都不會死掉了。」→ 閃過陽台枯掉的盆栽 → 回到梅花，花瓣先浮現一點粉紅
+// 三｜不閃白：顏色從梅花開始一圈一圈往外恢復 → 再閃過咖啡機、沙發的片段（這次不那麼灰）
+// 四｜回到書櫃前，梅花已是原本的顏色 → 宋鳥終於想起來（after 的台詞）→ 恢復正常畫面 → 生日禮物那句話短暫響起，繼續尋寶
+const PLUM_AT={living:[65.3,41.7],living2:[12.8,43.3]};// 梅花在畫面上的位置（%）
+let bloomRaf=0,plumHide=false;
+function plumFocus(on){plumHide=on;const[px,py]=PLUM_AT[room]||[50,45];cv.style.transformOrigin=px+'% '+py+'%';
+ cv.style.transition=on?'filter 2.5s, transform 3.8s ease-in-out':'filter .4s, transform 1.8s ease-in-out';
+ const S=1.8,cl=(v,p)=>Math.max(-(S-1)*(100-p),Math.min((S-1)*p,v)),tx=cl(50-px,px),ty=cl(50-py,py);// 把梅花盡量移到畫面中間（不露出黑邊）
+ cv.style.filter=on?TONE[0]+' brightness(.85)':'none';cv.style.transform=on?'translate('+tx+'%,'+ty+'%) scale('+S+')':'';$('memV').style.opacity=on?1:0;
+ const b=$('bloom');b.style.transformOrigin=cv.style.transformOrigin;b.style.transition='opacity 1.2s, transform 1.8s ease-in-out, filter 0s';if(!on){b.style.transform='';b.style.opacity=0;}
+ if(typeof Music!=='undefined')Music.setMode(on?'memory':'main',on?2:1.8);}
+// 從梅花開始恢復顏色：把目前畫面的彩色版本疊在灰褐畫面上，只露出以梅花為中心、半徑 r% 的圓，慢慢放大
+function bloom(r,ms,filt){const b=$('bloom'),[px,py]=PLUM_AT[room]||[50,45];
+ if(b.style.opacity!=='1'){b.width=cv.width;b.height=cv.height;b.getContext('2d').drawImage(cv,0,0);b.style.transform=cv.style.transform;b.dataset.r=0;b.style.opacity=1;}
+ b.style.transition='opacity 1.2s, transform 1.8s ease-in-out, filter '+ms+'ms ease-in-out';b.style.filter=filt;
+ const r0=+b.dataset.r,t0=performance.now();cancelAnimationFrame(bloomRaf);
+ (function f(){const q=Math.min(1,(performance.now()-t0)/ms),e=q<.5?2*q*q:1-2*(1-q)*(1-q),c=r0+(r-r0)*e;b.dataset.r=c;
+  const m='radial-gradient(circle farthest-corner at '+px+'% '+py+'%, #000 '+c.toFixed(2)+'%, transparent '+(c*1.5+4).toFixed(2)+'%)';
+  b.style.webkitMaskImage=b.style.maskImage=m;if(q<1)bloomRaf=requestAnimationFrame(f);})();}
+function legoMemory(){const T0=TONE[0],T1='saturate(.7) sepia(.12)';return[{wait:700},
+ {fn:()=>plumFocus(true)},{wait:4000},
+ '「這個……」','「我記得這盆花。」',{wait:1800},
+ '<span class="memv">？？？：「這樣怎麼養都不會死掉了。」</span>',
+ {wait:500},{fn:()=>memShot({room:'balcony',rect:[560,420,220,190],tone:T0,timed:1})},{wait:1500},{fn:()=>memShot(null)},{wait:1200},// 閃過陽台枯掉的盆栽
+ {fn:()=>bloom(7,2200,'saturate(.5) sepia(.25)')},{wait:2800},// 花瓣先浮現一點粉紅
+ {fn:()=>bloom(160,5500,'none')},{wait:6000},// 顏色從梅花往外慢慢回來
+ {fn:()=>memShot({room:'living2',rect:[1170,380,260,220],tone:T1,timed:1})},{wait:2000},// 咖啡機
+ {fn:()=>{memShot(null);fullMem(true,{ghost:'sitting',tone:T1,haze:.12})}},{wait:3000},// 沙發
+ {fn:()=>fullMem(false)},{wait:1400}];}
+function legoEnd(){return[{fn:()=>{cancelAnimationFrame(bloomRaf);plumFocus(false);}},{wait:1900}];}
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
  const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
@@ -531,11 +556,11 @@ const MEMORIES={
  memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
   spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
   seq:()=>legoMemory(),end:()=>legoEnd(),// 壓軸：顏色慢慢回來，台詞在彩色畫面上播，播完才回到正常客廳
-  after:['（記憶③台詞待補）'],
+  after:['「……對了。」','「這是她送我的。」','「那咖啡……還有沙發……」',{wait:1500},'「我怎麼會把她忘記？」'],
   then:()=>finalHint()}};
 // 第三階段｜最後提示：再想起第一段生日記憶，主線更新
 // 【待補】引導到包包的提示台詞還沒定
-function finalHint(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'（最後提示的台詞待補）',
+function finalHint(){return[{fn:()=>memCv('dim')},{wait:1300},'<span class="memv">？？？：「我把你的生日禮物藏起來了，你自己找！」</span>',{fn:()=>memCv(0)},{wait:1000},// 生日禮物那句話短暫響起
  {fn:()=>{save.quest=2;persist();questCheck(false);}}];}// 不更新任務文字、不提衣帽間或包包，避免劇透
 // 衣帽間的包包：宋鳥先翻找一陣子（跳動＋窸窣的動態），翻完才出現對話框和「我找到了！」
 // 對話框會一直停著，等玩家在現實中找到禮物再按。重新開遊戲的話，回衣帽間再點一次包包就會再出現
@@ -629,7 +654,7 @@ function clueDraw(){const I=ROOMS[room].img,u=I.w/1448,t=performance.now()/1000;
   let cx=0,cy=0;o.poly.forEach(p=>{cx+=p[0];cy+=p[1];});cx/=o.poly.length;cy/=o.poly.length;
   const a=.18+.14*Math.sin(t*1.6+i),r=(46+6*Math.sin(t*1.6+i))*u,g=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
   g.addColorStop(0,'rgba(255,248,215,'+a+')');g.addColorStop(1,'rgba(255,248,215,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();});}
-function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts=memAvail().map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
+function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts=(busy?[]:memAvail()).map(id=>{const m=MEMORIES[id];return(m.spots||{[m.room]:m.at})[room];});
  rummageDraw();// 找禮物時不在包包上閃光，讓玩家自己找
  if(SHOW_HOT)ROOMS[room].img.hot.forEach(o=>{if(!o.hunt)return;ctx.save();ctx.strokeStyle='#ff5a1f';ctx.lineWidth=6;ctx.setLineDash([18,10]);ctx.fillStyle='rgba(255,90,31,.18)';
   ctx.beginPath();o.poly.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();ctx.stroke();
@@ -769,6 +794,7 @@ function sbCrop(){if(sbBox||!SB.naturalWidth)return sbBox;
 // 宋鳥角色：PIX_SB=true 用程式畫的像素人物（和結局的女友同一種畫風）；false 改回原本的 assets/songbird.png
 const PIX_SB=true;let sbPix=null;
 function playerDraw(fx,fy,s,cut){
+ if(plumHide)return;// 梅花回憶鏡頭拉近時不畫宋鳥（不然他會變得很大、擋住梅花）
  if(PIX_SB){const hair=!!save.hair,dust=!!save.dusty,key=hair+'_'+dust;sbPix=sbPix||{};
   // 上方多留 7 格給雞窩頭的那撮毛；比例用原本 66 格高算，身體大小不變
   const im=sbPix[key]||(sbPix[key]=spriteCanvas(40,71,g=>{g.translate(0,7);drawSongbird(g,hair,dust);}));
