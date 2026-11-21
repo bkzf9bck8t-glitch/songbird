@@ -92,17 +92,19 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122034219';
+const BUILD='20261122041930';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
-let updWait=false;
+let updWait=false,newBuild='';
+// 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
+function goNew(){const u=new URL(location.href);u.searchParams.delete('reset');u.searchParams.set('v',newBuild);location.replace(u.toString());}
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.text():'').then(t=>{
-  const m=t.match(/const BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;
+  const m=t.match(/const BUILD='([^']+)'/);if(!m||m[1]===BUILD)return;newBuild=m[1];
   if((typeof busy!=='undefined'&&busy)||(typeof ending!=='undefined'&&ending)){updWait=true;return;}// 對話中先不打斷，等說完
-  location.reload();}).catch(()=>{});}
+  goNew();}).catch(()=>{});}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate();});
 window.addEventListener('pageshow',checkUpdate);
-setInterval(()=>{if(updWait&&!busy)location.reload();},1000);
+setInterval(()=>{if(updWait&&!busy)goNew();},1000);
 const T=16,C=11,R=13,W=C*T,H=R*T;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const $=id=>document.getElementById(id);
