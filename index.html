@@ -94,7 +94,7 @@ button,input{font-family:inherit}
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122055001';
+const BUILD='20261122055144';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -697,7 +697,7 @@ const SEARCH_LINES={
  shoeCab:['「不會有人把禮物放鞋櫃吧」'],
  barCab:['「ㄟ還有肉鬆 不知道過期了沒」'],
  closetR:['「裡面好暗」']};
-function searching(){return save.quest>=1&&save.quest<3;}
+function searching(){return save.quest===2;}// 三段回憶都看完（樂高梅花之後）才能翻找各個尋寶地點，找到禮物後就結束
 function huntMark(id){save.hunt=save.hunt||[];if(save.hunt.includes(id))return;
  save.hunt.push(id);persist();const n=save.hunt.filter(h=>HUNT.some(x=>x[0]===h)).length,e=HUNT.find(x=>x[0]===id);toast('🔍 搜查過：'+e[1]+'（'+n+'/'+HUNT.length+'）');}
 function searchHot(id,at,normal){return()=>{if(!searching())return normal||[];const L=SEARCH_LINES[id];
