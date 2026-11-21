@@ -25,7 +25,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #memFull .gh{opacity:0;filter:blur(1px)}#memFull.on .gh{animation:ghFlick 1.9s ease-in-out forwards}
 @keyframes ghFlick{0%{opacity:0}22%{opacity:.95}38%{opacity:.45}52%{opacity:1}70%{opacity:.6}84%{opacity:.9}100%{opacity:0}}
 #memShot{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s;background:radial-gradient(ellipse at center,rgba(40,34,30,.2) 30%,rgba(0,0,0,.85) 100%)}
-#memShot canvas{border-radius:6px;filter:blur(.6px);box-shadow:0 0 40px 20px rgba(0,0,0,.6)}
+#memShot canvas{border-radius:6px;box-shadow:0 0 40px 20px rgba(0,0,0,.6)}
 #memShot small{position:absolute;right:16px;bottom:12px;color:#fff6e4;opacity:.6;font-size:14px}
 #dlg .memv{font-style:italic;color:#6b5f73}
 #dlg small{display:block;text-align:right;opacity:.5;font-size:12px}
@@ -86,7 +86,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122024712';
+const BUILD='20261122025523';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -447,30 +447,45 @@ function questCheck(announce){const on=!!save.quest;$('quest').style.display=on?
 // ===== 記憶碎片演出系統（MemoryFragmentSystem）=====
 // 共用流程：變暗（0.3 秒）→ 褪色、輕微模糊、暗角 → 閃白 → 記憶內容（點一下推進）→ 恢復色彩 → 記錄進度
 // 演出中 busy=true：角色不能走、物件不能點，也不會重複觸發
-const MEM_FX={dim:'grayscale(.85) brightness(.6) blur(1.5px)',frag:'grayscale(1) brightness(.35) blur(5px)'};
-function memCv(m){cv.style.transition=m==='dim'?'filter .3s':m==='frag'?'filter .15s':'filter .8s';cv.style.filter=MEM_FX[m]||'none';$('memV').style.opacity=m?1:0;}
+// 記憶色調：依「已完成幾段生活記憶（咖啡機、沙發）」決定，觸發順序不限。只套在回憶演出上，不用模糊，像素格子保持清楚
+// 第一段：灰褐、飽和度約 20%；第二段：飽和度約 50%、褪色感減弱；樂高梅花壓軸：從第一段的灰褐慢慢恢復到約 82%
+const TONE=['saturate(.2) sepia(.5)','saturate(.5) sepia(.22)'],TONE_END='saturate(.82) sepia(.06)';
+function memStage(){return['memory_coffee','memory_sofa'].filter(i=>(save.mem||[]).includes(i)).length;}
+function memTone(){return TONE[Math.min(memStage(),1)];}
+const MEM_FX={dim:()=>memTone()+' brightness(.7)',frag:()=>memTone()+' brightness(.35)'};
+function memCv(m){cv.style.transition=m==='dim'?'filter .3s':m==='frag'?'filter .15s':'filter .8s';cv.style.filter=MEM_FX[m]?MEM_FX[m]():'none';$('memV').style.opacity=m?1:0;}
 // frag：記憶內容，可以是文字（灰色斜體）或 {shot:{room,rect:[x,y,w,h]}}（該房間底圖的局部特寫，原圖像素）
 function memory(frag){return[{fn:()=>memCv('dim')},{wait:500},{fn:()=>{flashWhite();memCv('frag');}},{wait:600},
  ...frag.map(t=>typeof t==='string'?'<span class="memv">'+t+'</span>':t),{fn:()=>{memShot(null);memCv(0);}},{wait:800}];}
 // 沙發回憶：停住 → 畫面微暗、音樂換成回憶版、鏡頭慢慢靠近沙發右邊 → 褪色的回憶客廳（沙發右邊有模糊人影，閃一下就消失）→ 閃白回到現實
 // 全程不能點、沒有對話框；回到現實後才接台詞
 function sofaFocus(on){cv.style.transition='filter 1.2s, transform 1.4s ease-in-out';cv.style.transformOrigin='31% 60%';
- cv.style.filter=on?'brightness(.72) saturate(.75)':'none';cv.style.transform=on?'scale(1.15)':'';$('memV').style.opacity=on?1:0;
+ cv.style.filter=on?memTone()+' brightness(.8)':'none';cv.style.transform=on?'scale(1.15)':'';$('memV').style.opacity=on?1:0;
  if(typeof Music!=='undefined')Music.setMode(on?'memory':'main',on?1.2:1.5);}
-function sofaFull(on){const o=$('memFull');if(!on){o.classList.remove('on');o.style.opacity=0;return;}
- const I=ROOMS.living2.img,src=img(I.src),[bg,gh]=o.querySelectorAll('canvas'),W=src.naturalWidth||I.w,H=src.naturalHeight||I.h;
- bg.width=gh.width=W;bg.height=gh.height=H;const g=bg.getContext('2d');
- g.filter='sepia(.55) saturate(.7) brightness(1.05) blur(1.5px)';g.drawImage(src,0,0,W,H);g.filter='none';
- const r=g.createRadialGradient(W*.31,H*.58,0,W*.31,H*.58,W*.6);r.addColorStop(0,'rgba(255,246,228,.32)');r.addColorStop(1,'rgba(255,240,220,.08)');g.fillStyle=r;g.fillRect(0,0,W,H);
- const x=gh.getContext('2d');x.clearRect(0,0,W,H);x.save();x.scale(W/800,H/600);ghostDraw(x,800,600,'sitting');x.restore();// 人影坐在沙發左邊（亮晶晶那一邊、靠書櫃），座標用 800 格
- o.classList.remove('on');o.offsetWidth;o.classList.add('on');o.style.opacity=1;}
+// 整個客廳（視角 2）的回憶畫面：o.tone 色調、o.ghost 人影、o.haze 白霧、o.zoom 是否放大到沙發
+function fullMem(on,o){const el=$('memFull');if(!on){el.classList.remove('on');el.style.opacity=0;return;}o=o||{};
+ const I=ROOMS.living2.img,src=img(I.src),[bg,gh]=el.querySelectorAll('canvas'),W=src.naturalWidth||I.w,H=src.naturalHeight||I.h;
+ bg.width=gh.width=W;bg.height=gh.height=H;const g=bg.getContext('2d');g.drawImage(src,0,0,W,H);
+ if(o.haze){const r=g.createRadialGradient(W*.31,H*.58,0,W*.31,H*.58,W*.6);r.addColorStop(0,'rgba(255,246,228,'+o.haze+')');r.addColorStop(1,'rgba(255,240,220,.05)');g.fillStyle=r;g.fillRect(0,0,W,H);}
+ bg.style.transition='none';bg.style.filter=o.tone||'none';[bg,gh].forEach(c=>c.style.transform=o.zoom===false?'none':'');
+ const x=gh.getContext('2d');x.clearRect(0,0,W,H);if(o.ghost){x.save();x.scale(W/800,H/600);ghostDraw(x,800,600,o.ghost);x.restore();}// 人影坐在沙發左邊（亮晶晶那一邊、靠書櫃），座標用 800 格
+ el.classList.remove('on');el.offsetWidth;if(o.ghost)el.classList.add('on');el.style.opacity=1;}
+function sofaFull(on){fullMem(on,{ghost:'sitting',tone:memTone()+' brightness(1.03)',haze:.18});}
 function sofaMemory(){return[{wait:450},{fn:()=>sofaFocus(true)},{wait:1500},{fn:()=>sofaFull(true)},{wait:2000},
  {fn:()=>{flashWhite();sofaFull(false);sofaFocus(false);}},{wait:1000}];}
+// 樂高梅花壓軸：灰褐色開始 → 咖啡機、沙發的片段各閃一下 → 整個客廳灰褐 → 3～5 秒慢慢恢復顏色（咖啡機、沙發、梅花一起）→ 台詞 → 回到正常客廳
+function legoMemory(){const T0=TONE[0];return[{wait:400},
+ {fn:()=>{cv.style.transition='filter 1s';cv.style.filter=T0+' brightness(.75)';$('memV').style.opacity=1;if(typeof Music!=='undefined')Music.setMode('memory',1.2);}},{wait:1200},
+ {fn:()=>memShot({room:'living2',rect:[1170,380,260,220],tone:T0,timed:1})},{wait:1400},// 片段：咖啡機
+ {fn:()=>{memShot(null);fullMem(true,{ghost:'sitting',tone:T0,haze:.18})}},{wait:1600},// 片段：沙發上的人影
+ {fn:()=>{flashWhite();fullMem(true,{tone:T0,zoom:false})}},{wait:900},
+ {fn:()=>{const bg=$('memFull').querySelector('canvas');bg.style.transition='filter 4.2s ease-in-out';bg.style.filter=TONE_END;}},{wait:4600}];}
+function legoEnd(){return[{fn:()=>{fullMem(false);cv.style.transition='filter .8s';cv.style.filter='none';$('memV').style.opacity=0;if(typeof Music!=='undefined')Music.setMode('main',1.5);}},{wait:900}];}
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
  const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
- c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter='grayscale(.7) sepia(.3)';g.drawImage(src,x,y,w,h,0,0,w,h);g.filter='none';if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
- o.style.transition='none';o.style.opacity=0;o.style.pointerEvents='auto';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
+ c.width=w;c.height=h;const st=$('stage'),f=Math.min(st.clientWidth*.78/w,st.clientHeight*.7/h);c.style.width=w*f+'px';c.style.height=h*f+'px';const g=c.getContext('2d');g.filter=sh.tone||memTone();g.drawImage(src,x,y,w,h,0,0,w,h);g.filter='none';if(sh.ghost)ghostDraw(g,w,h,sh.ghost);
+ o.style.transition='none';o.style.opacity=0;o.style.pointerEvents=sh.timed?'none':'auto';o.querySelector('small').style.display=sh.timed?'none':'';o.offsetWidth;o.style.transition='';o.style.opacity=1;}
 // 記憶特寫上的模糊人影（不畫出五官和細節，只有剪影）。先畫在很小的畫布上再放大，就會變模糊
 function ghostDraw(g,w,h,kind){const k=2.5,c=document.createElement('canvas');c.width=Math.ceil(w/k);c.height=Math.ceil(h/k);const x=c.getContext('2d');x.scale(1/k,1/k);
  const col='rgb(16,12,15)';x.fillStyle=col;x.strokeStyle=col;x.lineCap='round';x.lineJoin='round';
@@ -512,7 +527,7 @@ const MEMORIES={
  // 【待補】正式台詞還沒定；看完接「最後提示」（任務文字不變，不提示藏匿地點）
  memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
   spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
-  frag:[{shot:{room:'living',rect:[860,370,170,170]}}],
+  seq:()=>legoMemory(),end:()=>legoEnd(),// 壓軸：顏色慢慢回來，台詞在彩色畫面上播，播完才回到正常客廳
   after:['（記憶③台詞待補）'],
   then:()=>finalHint()}};
 // 第三階段｜最後提示：再想起第一段生日記憶，主線更新
@@ -581,7 +596,7 @@ function rummageDraw(){if(room!==rumRoom||performance.now()>=rumUntil)return;con
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
  if((save.mem||[]).includes(id)||!m.when())return typeof normal==='function'?normal():normal;// 還沒到時機、或已經看過：只說原本的台詞
  hintT=Date.now();
- return[...(m.seq?m.seq():memory(m.frag)),...m.after,{memGot:id},...(m.then?m.then():[])];};}
+ return[...(m.seq?m.seq():memory(m.frag)),...m.after,...(m.end?m.end():[]),{memGot:id},...(m.then?m.then():[])];};}
 // ===== 下一步提示 =====
 // 1. 可以觸發記憶的物件旁邊有閃光（看過就消失）
 // 2. 主線開啟後，有記憶可以看、玩家卻一陣子沒找到時，跳出一句提示（之後每隔一段時間再提示一次）
@@ -623,7 +638,7 @@ function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts
  ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.3:r;ctx.lineTo(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});}
 setInterval(()=>{if(!save.quest||busy||nbOpen||!memAvail().length){if(busy)hintT=Math.max(hintT,Date.now()-HINT_AFTER+15000);return;}
  if(Date.now()-hintT<HINT_AFTER)return;hintT=Date.now();
- const m=MEMORIES[memAvail()[0]];toast('💭 好像有什麼事想不起來……'+m.hint+'那邊？');},3000);
+ const av=memAvail().filter(id=>id!=='memory_lego');if(!av.length)return;const m=MEMORIES[av[0]];toast('💭 好像有什麼事想不起來……'+m.hint+'那邊？');},3000);
 function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
 function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「……蛤？誰在講話？」','「所以我今年真的有生日禮物？」',
  {quest:1,fn:()=>{save.quest=1;persist();questCheck(false);hintT=Date.now();}},
