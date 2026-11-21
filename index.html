@@ -94,7 +94,7 @@ button,input{font-family:inherit}
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122054205';
+const BUILD='20261122055001';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -832,7 +832,7 @@ function renderNb(){
   mg.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🧩 '+MEMORIES[id].name;b.appendChild(e);});}
  if((save.items||[]).length){const h=document.createElement('h3');h.textContent='道具';b.appendChild(h);
   save.items.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🎒 '+ITEMS[id].name;b.appendChild(e);});}
- if(save.quest){const L=NB_HUNT(),h=document.createElement('h3');h.textContent='尋寶地點（'+L.filter(x=>x[2]).length+'/'+L.length+'）';b.appendChild(h);
+ if(save.quest>=2){const L=NB_HUNT(),h=document.createElement('h3');/* 三段回憶都看完（樂高梅花之後）才顯示尋寶地點 */h.textContent='尋寶地點（'+L.filter(x=>x[2]).length+'/'+L.length+'）';b.appendChild(h);
   NB_HUNT().forEach(([n,place,done])=>{const e=document.createElement('div');e.className='clue';e.innerHTML=(done?'✅ ':'⬜ ')+n+'<small>'+place+'</small>';b.appendChild(e);});}
  const got=save.ach||[],h=document.createElement('h3');h.textContent='成就';b.appendChild(h);
  Object.entries(ACH).forEach(([id,a])=>{if(a.hidden&&!got.includes(id))return;const e=document.createElement('div');e.className='ded';
