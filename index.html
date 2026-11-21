@@ -94,7 +94,7 @@ button,input{font-family:inherit}
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122054115';
+const BUILD='20261122054205';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -810,7 +810,7 @@ setInterval(()=>{if(!save.quest||busy||nbOpen||!memAvail().length){if(busy)hintT
  if(Date.now()-hintT<HINT_AFTER)return;hintT=Date.now();
  const av=memAvail().filter(id=>id!=='memory_lego');if(!av.length)return;const m=MEMORIES[av[0]];toast('💭 好像有什麼事想不起來……'+m.hint+'那邊？');},3000);
 function flashWhite(){const f=$('fade');f.style.background='#fff';f.style.opacity=1;setTimeout(()=>{f.style.opacity=0;setTimeout(()=>f.style.background='',350);},220);}
-function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「這是誰....誰在說話？」','「什麼意思啊」','「所以我今年真的有生日禮物？」',
+function questScene(){return[...memory(['？？？：「我把你的生日禮物藏起來了，你自己找！」']),'「這是誰....誰在說話？」','「什麼意思啊」',
  {quest:1,fn:()=>{save.quest=1;persist();questCheck(false);hintT=Date.now();}},
  '<div class="qcard">🎁 主線任務解鎖<b>尋找你的生日禮物</b>有人在這個家裡留下了生日禮物。<br>找到禮物，也許就能想起被遺忘的事情。</div>'];}
 function addClue(id){if(!CLUES[id]||save.clues.includes(id))return false;save.clues.push(id);persist();
