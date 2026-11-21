@@ -4,7 +4,7 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>宋鳥的一天（階段 1）</title>
+<title>宋鳥的一天</title>
 <style>
 :root{--bg:#f1e8dc;--ink:#2b2230;--box:#fff9ec;--line:#7a5a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1722;--ink:#f0e6d8;--line:#c9a77a}}
@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122034017';
+const BUILD='20261122034219';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -712,9 +712,10 @@ function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts
   const e=HUNT.find(x=>x[0]===o.hunt),cx=o.poly.reduce((a,p)=>a+p[0],0)/o.poly.length,cy=o.poly.reduce((a,p)=>a+p[1],0)/o.poly.length;
   ctx.setLineDash([]);ctx.font='bold 40px sans-serif';ctx.textAlign='center';ctx.lineWidth=8;ctx.strokeStyle='#000';ctx.strokeText(e[1],cx,cy);ctx.fillStyle='#fff';ctx.fillText(e[1],cx,cy);ctx.restore();});// 最後提示之後：衣帽間的包包
  pts.filter(Boolean).forEach(([x,y])=>{
- const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3);
- ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#fff6c8';ctx.shadowColor='#ffe680';ctx.shadowBlur=30;
- ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.3:r;ctx.lineTo(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});}
+ // 回憶物品的亮晶晶：兩三顆小小的、半透明的星光輪流閃一下（不要太搶眼）
+ [[0,0,0,1],[26,-20,2.1,.65],[-22,14,4.2,.55]].forEach(([dx,dy,ph,sz])=>{const k=Math.max(0,Math.sin(t*1.8+ph));if(k<.05)return;
+  const r=(15+8*k)*sz;ctx.save();ctx.globalAlpha=.55*k;ctx.fillStyle='#fffbe8';ctx.shadowColor='rgba(255,236,170,.8)';ctx.shadowBlur=10;
+  ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.18:r;ctx.lineTo(x+dx+Math.cos(ang)*rr,y+dy+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});});}
 // 補救：四個線索都找到了、主線卻還沒開（例如主線那段對話播到一半就關掉遊戲），沒在對話中時自動補播
 setInterval(()=>{if(!save.quest&&!busy&&!nbOpen&&!ending&&$('intro').style.display==='none'&&lifeN()>=QUEST_AT)say(questScene());},1500);
 setInterval(()=>{if(!save.quest||busy||nbOpen||!memAvail().length){if(busy)hintT=Math.max(hintT,Date.now()-HINT_AFTER+15000);return;}
