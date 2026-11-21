@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122032206';
+const BUILD='20261122032530';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -599,13 +599,13 @@ const MEMORIES={
   after:['「……我剛剛是不是把咖啡放進冰箱了？」','「可是我幹嘛泡完不喝？」','「手好像自己會動。」','「……這杯是要留給誰的？」']},
  // 記憶② 沙發（暫定）：撿完衛生紙之後再點沙發。沙發左半邊（坐在沙發上的人的右邊）的模糊特寫，不出現女友
  // 【待補】正式台詞還沒定，after 先放可替換的文字
- memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>memOpen()&&save.clues.includes('tissue'),
+ memory_sofa:{name:'沙發的另一邊',when:()=>memOpen()&&save.clues.includes('tissue'),
   room:'living2',at:pt([250,370]),hint:'沙發',
   seq:()=>sofaMemory(),// 特別演出：先覺得不對勁 → 褪色的回憶客廳、沙發右邊有個看不清的人影 → 回到現實才說話
   after:['「……剛剛那是什麼？」']},
  // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
  // 【待補】正式台詞還沒定；看完接「最後提示」（任務文字不變，不提示藏匿地點）
- memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
+ memory_lego:{name:'樂高梅花',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
   spots:{living:pt([522,250]),living2:pt([102,260])},hint:'書櫃',
   seq:()=>legoMemory(),end:()=>legoEnd(),// 壓軸：顏色慢慢回來，台詞在彩色畫面上播，播完才回到正常客廳
   after:['「……對了。」','「這是她送我的。」',...legoFlash(),'「那咖啡……還有沙發……」',{wait:1600},'「我怎麼會把她忘記？」'],
