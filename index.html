@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122031950';
+const BUILD='20261122032206';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -627,7 +627,7 @@ const SEARCH_LINES={
  underSofa:['「天....只有灰塵」',{fn:()=>{if(!save.dusty){save.dusty=1;persist();toast('💨 獲得狀態：灰頭土臉');statShow();}}}],
  kitchenCab:()=>hasItem('bugspray')?['「上次不是已經翻出殺蟲劑了嗎？」','「……難道我的生日禮物是要我去除蟲？」']:['獲得道具：【殺蟲劑】×1',{fn:()=>giveItem('bugspray')}],
  washer:['「塞滿了衣服，這裡會有禮物嗎？」'],
- balconyCab:['（搜查陽台木櫃：台詞待補）'],
+ balconyCab:['「只有一堆雜物」'],
  underBed:['「我猜這裡應該塞不了東西」'],
  shoeCab:['「不會有人把禮物放鞋櫃吧」'],
  barCab:['「ㄟ還有肉鬆 不知道過期了沒」'],
