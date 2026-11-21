@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122041930';
+const BUILD='20261122042609';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -403,7 +403,7 @@ function tissueHot(x,y){if(room!=='living2')return null;const got=tisGot();
 function pickTissue(id){save.tis=save.tis||[];if(save.tis.includes(id))return[];save.tis.push(id);persist();const n=save.tis.length;
  const L=n===1?['沙發上散落著幾團衛生紙。','「幹，怎麼這麼多。」','你撿起了一團衛生紙。（1/5）','裡面似乎包著某種不明物質。','「……」','你決定不要深入研究。']
   :['你撿起了一團衛生紙。（'+n+'/5）'];
- if(n===TISSUES.length)L.push('五團衛生紙都撿起來了。','「……為什麼我做這件事這麼熟練？」',{clue:'tissue'},{fn:()=>unlockAch('tissue')});
+ if(n===TISSUES.length)L.push('五團衛生紙都撿起來了。','「……為什麼我做這件事這麼熟練？」',{fn:()=>{if(!save.clues.includes('tissue')){save.clues.push('tissue');persist();}unlockAch('tissue');}});
  return L;}
 function tissueDraw(){if(room!=='living2')return;const got=tisGot(),u=9;
  const M=['..##..','.####.','######','##o###','.####.'];
@@ -735,9 +735,9 @@ let toastQ=[],toastOn=false;function toast(t){if(toastQ.includes(t)||(toastOn&&$
 function toastNext(){const e=$('toast');if(!toastQ.length){toastOn=false;e.classList.remove('on');return;}
  toastOn=true;e.textContent=toastQ.shift();e.classList.add('on');setTimeout(()=>{e.classList.remove('on');setTimeout(toastNext,250);},1800);}
 function renderNb(){
- const b=$('nbBody');b.innerHTML='';
- if(!save.clues.length){b.insertAdjacentHTML('beforeend','<p class="empty">還沒有記下任何線索。<br>到處調查看看吧。</p>');}
- CATS.forEach(cat=>{const ids=save.clues.filter(c=>CLUES[c].cat===cat);if(!ids.length)return;
+ const b=$('nbBody');b.innerHTML='';const shown=save.clues.filter(c=>c!=='tissue');// 衛生紙清道夫只放在「成就」，不算線索
+ if(!shown.length){b.insertAdjacentHTML('beforeend','<p class="empty">還沒有記下任何線索。<br>到處調查看看吧。</p>');}
+ CATS.forEach(cat=>{const ids=shown.filter(c=>CLUES[c].cat===cat);if(!ids.length)return;
   const h=document.createElement('h3');h.textContent=cat;b.appendChild(h);
   ids.forEach(id=>{const c=CLUES[id],e=document.createElement('div');e.className='clue';
    e.innerHTML=c.name+'<small>'+c.note+'</small>';
