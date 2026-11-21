@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122032530';
+const BUILD='20261122034017';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -420,7 +420,7 @@ const BRUSH=['「我怎麼有這麼多支牙刷？」','你數了一下。','一
 function toiletTalk(){const held=(save.tis||[]).length===TISSUES.length&&!save.flushed;
  const opts=[];
  if(held)opts.push(['把衛生紙沖掉',['你把五團衛生紙丟進馬桶。','嘩——','什麼都吃的馬桶，一口就吞掉了。','這個家暫時恢復了文明。'],()=>{save.flushed=1;persist();}]);
- opts.push(['抽個煙',['「呼……」']]);
+ opts.push(['抽個煙',['「呼.....起床抽一根神清氣爽」']]);
  return ['什麼都吃的馬桶，高麗菜殺手。',{ask:held?'手上還拿著衛生紙。要做什麼？':'要做什麼？',opts}];}
 // 廚房：冰箱。第一次點有旁白介紹，之後直接問要不要打開
 function fridgeTalk(){const open={ask:'冰箱。',opts:[['打開',[save.tea?'裡面除了那杯冰紅茶，空蕩蕩的。':'裡面空蕩蕩。','宋鳥陷入了沉思……','「……」','「該回家補貨了。」']]]};
@@ -715,6 +715,8 @@ function memSparkle(){clueDraw();exitArrows();const t=performance.now()/1000,pts
  const a=.6+.4*(.5+.5*Math.sin(t*3)),r=46+10*Math.sin(t*3);
  ctx.save();ctx.globalAlpha=a;ctx.fillStyle='#fff6c8';ctx.shadowColor='#ffe680';ctx.shadowBlur=30;
  ctx.beginPath();for(let i=0;i<8;i++){const ang=i*Math.PI/4,rr=i%2?r*.3:r;ctx.lineTo(x+Math.cos(ang)*rr,y+Math.sin(ang)*rr);}ctx.closePath();ctx.fill();ctx.restore();});}
+// 補救：四個線索都找到了、主線卻還沒開（例如主線那段對話播到一半就關掉遊戲），沒在對話中時自動補播
+setInterval(()=>{if(!save.quest&&!busy&&!nbOpen&&!ending&&$('intro').style.display==='none'&&lifeN()>=QUEST_AT)say(questScene());},1500);
 setInterval(()=>{if(!save.quest||busy||nbOpen||!memAvail().length){if(busy)hintT=Math.max(hintT,Date.now()-HINT_AFTER+15000);return;}
  if(Date.now()-hintT<HINT_AFTER)return;hintT=Date.now();
  const av=memAvail().filter(id=>id!=='memory_lego');if(!av.length)return;const m=MEMORIES[av[0]];toast('💭 好像有什麼事想不起來……'+m.hint+'那邊？');},3000);
