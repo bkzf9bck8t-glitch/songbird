@@ -94,7 +94,7 @@ button,input{font-family:inherit}
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122053216';
+const BUILD='20261122053319';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -1192,8 +1192,8 @@ function endingStart(){if(ending)return;ending=true;busy=true;
   // 最後停在點了蠟燭的蛋糕上：下方慢慢浮現一句話（沒有對話框）
   const wa=seg(t,34,35.5)*(1-seg(t,40,41.5));if(wa>0){const fs=Math.round(Math.min(W*.058,H*.042)*2/3);g.save();g.globalAlpha=wa;g.textAlign='center';g.textBaseline='middle';// 淡入後停約 5 秒再淡出
    g.font=fs+"px 'Cantarell','PingFang TC','Noto Sans TC',sans-serif";const lk=Math.max(0,Math.min(1,(fk-.93)/.14));// 跟著燭火忽明忽暗
-   const line=(txt,y)=>{const gr=g.createLinearGradient(0,y-fs*.6,0,y+fs*.6),c=(r,gg,bb,m)=>'rgb('+Math.round(r*m)+','+Math.round(gg*m)+','+Math.round(bb*m)+')',m=.72+.28*lk;// 上緣離燭火近比較亮，下緣比較暗
-    gr.addColorStop(0,c(214,170,112,m));gr.addColorStop(1,c(128,92,60,m));g.fillStyle=gr;g.fillText(txt,W/2,y);};
+   const line=(txt,y)=>{const gr=g.createLinearGradient(0,y-fs*.6,0,y+fs*.6),c=(r,gg,bb,m)=>'rgb('+Math.round(r*m)+','+Math.round(gg*m)+','+Math.round(bb*m)+')',m=.8+.2*lk;// 淺米色；上緣離燭火近比較亮，下緣比較暗
+    gr.addColorStop(0,c(242,228,204,m));gr.addColorStop(1,c(196,178,150,m));g.fillStyle=gr;g.fillText(txt,W/2,y);};
    g.shadowColor='rgba(255,150,60,'+(.18+.22*lk)+')';g.shadowBlur=fs*(.5+.5*lk);
    line('寶寶許個願',H*.85-fs*.8);line('希望你的願望都成真',H*.85+fs*.8);g.restore();}
   requestAnimationFrame(frame);}
