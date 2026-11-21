@@ -92,7 +92,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122031205';
+const BUILD='20261122031950';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -625,12 +625,12 @@ const HUNT=[['underSofa','沙發底下','客廳'],['kitchenCab','廚房櫃子','
 // 搜查台詞：陣列＝固定台詞；函式＝依狀態決定（例如一次性道具）。【待補】標示的是還沒定案的占位文字
 const SEARCH_LINES={
  underSofa:['「天....只有灰塵」',{fn:()=>{if(!save.dusty){save.dusty=1;persist();toast('💨 獲得狀態：灰頭土臉');statShow();}}}],
- kitchenCab:()=>hasItem('bugspray')?['（再次搜查廚房櫃子：台詞待補）']:['獲得道具：【殺蟲劑】×1',{fn:()=>giveItem('bugspray')}],
+ kitchenCab:()=>hasItem('bugspray')?['「上次不是已經翻出殺蟲劑了嗎？」','「……難道我的生日禮物是要我去除蟲？」']:['獲得道具：【殺蟲劑】×1',{fn:()=>giveItem('bugspray')}],
  washer:['「塞滿了衣服，這裡會有禮物嗎？」'],
  balconyCab:['（搜查陽台木櫃：台詞待補）'],
  underBed:['「我猜這裡應該塞不了東西」'],
- shoeCab:['（搜查鞋櫃：台詞待補）'],
- barCab:['（搜查吧台下方櫃子：台詞待補）'],
+ shoeCab:['「不會有人把禮物放鞋櫃吧」'],
+ barCab:['「ㄟ還有肉鬆 不知道過期了沒」'],
  closetR:['「好黑的衣櫥」']};
 function searching(){return save.quest>=1&&save.quest<3;}
 function huntMark(id){save.hunt=save.hunt||[];if(save.hunt.includes(id))return;
@@ -644,15 +644,15 @@ function giveItem(id){if(hasItem(id))return;save.items=save.items||[];save.items
 // 衣帽間左側收納區（真正的藏禮物位置）：兩階段
 // 第一階段：翻找包包，不宣布找到。關鍵記憶（樂高梅花）之後才會問要不要「繼續翻找」
 // 第二階段：繼續翻找 → 最後的尋寶事件（空盒子 → 五秒挑戰 → 對話框停在「我找到了！」）
-// 【待補】兩個階段的台詞、詢問的句子；觸發條件可改 FINAL_OPEN
+// 觸發條件可改 FINAL_OPEN
 const FINAL_OPEN=()=>save.quest>=2;
-const LEFT1=['（搜查衣帽間左側：台詞待補）'],LEFT_ASK='（是否繼續翻找：詢問句待補）',LEFT2=['（進一步搜尋：台詞待補）'];
+const LEFT1=['「這裡怎麼塞了這麼多包包……」','「感覺翻起來會很麻煩。」'],LEFT_ASK='要不要再仔細翻找看看？',LEFT2=['「……嗯？」','「掛著的衣服下面，好像有個地方還沒翻過。」','「包包跟包包之間……？」',{wait:1800}];// 最後停一下，讓玩家把遊戲裡的線索和現實的衣櫥連起來
 function closetLeft(normal){return()=>{
  const dig=ms=>[{fn:()=>rummage(ms,[255,960])},{wait:ms+300},{fn:()=>huntMark('closetL')}];
  if(save.quest>=3)return[...dig(2000),FOUND_ASK];// 已經挑戰過：直接回到「我找到了！」
  if(!searching())return normal;
  if(!FINAL_OPEN())return[...dig(2000),...LEFT1];
- return[...dig(2000),...LEFT1,{ask:LEFT_ASK,opts:[['繼續翻找',[...dig(2600),...LEFT2,...finalHunt()]],['先不要',[]]]}];};}
+ return[...dig(2000),...LEFT1,{ask:LEFT_ASK,opts:[['繼續翻找',[...dig(2600),...LEFT2,...finalHunt()]],['先算了',[]]]}];};}
 // 最後的尋寶事件：空盒子（規格書第十一節）→ 五秒尋寶挑戰（規格書第十二節）→ 對話框停在「我找到了！」
 const FOUND_ASK={ask:'找不到也沒關係，反正你還是得自己找。',opts:[['我找到了！',[],()=>setTimeout(endingStart,50)]]};
 function finalHunt(){
