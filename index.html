@@ -9,7 +9,7 @@
 <style>
 :root{--bg:#f1e8dc;--ink:#2b2230;--box:#fff9ec;--line:#7a5a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c1722;--ink:#f0e6d8;--line:#c9a77a}}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'Cantarell','PingFang TC','Noto Sans TC',system-ui,sans-serif;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 #wrap{max-width:440px;margin:0 auto;height:100%;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:8px}
 #top{display:flex;align-items:flex-start;gap:8px;min-height:52px;flex:none}
 #hud{flex:1;font-size:14px;min-height:20px;text-align:left;opacity:0;transition:opacity .6s;line-height:1.5;padding-top:4px}
@@ -49,6 +49,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 @keyframes nbGlow{0%,100%{filter:drop-shadow(0 3px 3px rgba(0,0,0,.55)) drop-shadow(0 0 6px rgba(255,214,140,.8));transform:translateY(-1px)}50%{filter:drop-shadow(0 5px 4px rgba(0,0,0,.6)) drop-shadow(0 0 14px rgba(255,214,140,1)) drop-shadow(0 0 4px rgba(255,236,190,1));transform:translateY(-3px)}}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+button,input{font-family:inherit}
 #alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font-family:'Cantarell','PingFang TC','Noto Sans TC',system-ui,sans-serif;font-size:18px;letter-spacing:.06em;min-height:48px;padding:8px 22px;border:1.5px solid rgba(255,255,255,.55);border-radius:999px;background:rgba(255,248,236,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#2b2230;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18);animation:ring .7s infinite;z-index:6}
 #count{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) scale(.6);font-size:96px;font-weight:900;color:#fff6e4;-webkit-text-stroke:4px #2b2230;text-shadow:0 6px 0 #2b2230;opacity:0;pointer-events:none;z-index:7}
 #count.on{animation:cnt 1s ease-out forwards}
@@ -93,7 +94,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122051054';
+const BUILD='20261122052314';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -1188,6 +1189,10 @@ function endingStart(){if(ending)return;ending=true;busy=true;
   g.fillStyle=hole;g.fillRect(0,0,W,H);// 漸層外圍自動延伸成全暗
   g.globalCompositeOperation='lighter';const glow=g.createRadialGradient(fx,fy,0,fx,fy,R*.8);
   glow.addColorStop(0,'rgba(255,170,70,'+(.26*flameA)*fk+')');glow.addColorStop(1,'rgba(255,140,40,0)');g.fillStyle=glow;g.fillRect(0,0,W,H);g.restore();
+  // 最後停在點了蠟燭的蛋糕上：下方慢慢浮現一句話（沒有對話框）
+  const wa=seg(t,34,37.5);if(wa>0){const fs=Math.round(Math.min(W*.058,H*.042));g.save();g.globalAlpha=wa;g.textAlign='center';g.textBaseline='middle';
+   g.font=fs+"px 'Cantarell','PingFang TC','Noto Sans TC',sans-serif";g.shadowColor='rgba(255,170,70,.55)';g.shadowBlur=fs*.8;g.fillStyle='#f8e9cc';
+   g.fillText('寶寶許個願，希望你的願望都成真',W/2,H*.86);g.restore();}
   requestAnimationFrame(frame);}
  setTimeout(()=>{E.style.display='block';E.offsetWidth;E.style.opacity=1;requestAnimationFrame(frame);
   if(typeof Music!=='undefined')Music.setMode('birthday',1.5);},2500);}// 蛋糕出現的那一刻：切到生日快樂歌，唱完接燭光氛圍
