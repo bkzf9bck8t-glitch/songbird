@@ -3,6 +3,7 @@
 <meta charset="utf-8">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cantarell:wght@400;700&display=swap">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>宋鳥的一天</title>
 <style>
@@ -48,7 +49,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 @keyframes nbGlow{0%,100%{filter:drop-shadow(0 3px 3px rgba(0,0,0,.55)) drop-shadow(0 0 6px rgba(255,214,140,.8));transform:translateY(-1px)}50%{filter:drop-shadow(0 5px 4px rgba(0,0,0,.6)) drop-shadow(0 0 14px rgba(255,214,140,1)) drop-shadow(0 0 4px rgba(255,236,190,1));transform:translateY(-3px)}}
 #toast{position:absolute;left:50%;top:10px;transform:translate(-50%,-8px);background:rgba(43,34,48,.88);color:#fff6e4;font-size:14px;padding:6px 12px;border-radius:999px;white-space:nowrap;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}
-#alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font:inherit;font-size:18px;min-height:48px;padding:8px 20px;border:3px solid var(--line);border-radius:999px;background:var(--box);color:#2b2230;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.3);animation:ring .7s infinite;z-index:6}
+#alarmBtn{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);display:none;font-family:'Cantarell','PingFang TC','Noto Sans TC',system-ui,sans-serif;font-size:18px;letter-spacing:.06em;min-height:48px;padding:8px 22px;border:1.5px solid rgba(255,255,255,.55);border-radius:999px;background:rgba(255,248,236,.42);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#2b2230;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18);animation:ring .7s infinite;z-index:6}
 #count{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%) scale(.6);font-size:96px;font-weight:900;color:#fff6e4;-webkit-text-stroke:4px #2b2230;text-shadow:0 6px 0 #2b2230;opacity:0;pointer-events:none;z-index:7}
 #count.on{animation:cnt 1s ease-out forwards}
 @keyframes cnt{0%{opacity:0;transform:translate(-50%,-50%) scale(1.8)}20%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(.9)}}
@@ -79,7 +80,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <canvas id="c"></canvas><canvas id="bloom"></canvas><div id="plumTap"></div>
 <div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div><div id="memFull"><canvas></canvas><canvas class="gh"></canvas></div>
 <div id="fade"></div>
-<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
+<canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">關掉鬧鐘</button>
 <div id="toast"></div><div id="count"></div>
 <div id="nb"><header><h2>線索筆記本</h2><button class="x" aria-label="關閉">✕</button></header>
 <div id="nbBody"></div>
@@ -92,7 +93,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261122045204';
+const BUILD='20261122051054';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false,newBuild='';
 // 換到新版：網址加上新版本號，手機就不會拿到瀏覽器存著的舊網頁（GitHub 會讓瀏覽器把網頁存 10 分鐘）
@@ -464,13 +465,13 @@ function memTone(){return TONE[Math.min(memStage(),1)];}
 const MEM_FX={dim:()=>memTone()+' brightness(.7)',frag:()=>memTone()+' brightness(.35)'};
 function memCv(m){cv.style.transition=m==='dim'?'filter 2.2s':m==='frag'?'filter 1s':'filter 2s';cv.style.filter=MEM_FX[m]?MEM_FX[m]():'none';$('memV').style.opacity=m?1:0;}
 // frag：記憶內容，可以是文字（灰色斜體）或 {shot:{room,rect:[x,y,w,h]}}（該房間底圖的局部特寫，原圖像素）
-function memory(frag){return[{wait:600},{fn:()=>{memCv('dim');if(typeof Music!=='undefined')Music.setMode('memory',2.5);}},{wait:2400},{fn:()=>{flashWhite();memCv('frag');}},{wait:1600},
- ...frag.flatMap(t=>[typeof t==='string'?'<span class="memv">'+t+'</span>':t,{wait:700}]),{fn:()=>{memShot(null);memCv(0);if(typeof Music!=='undefined')Music.setMode('main',3);}},{wait:1800}];}
+function memory(frag){return[{wait:600},{fn:()=>{memCv('dim');if(typeof Music!=='undefined')Music.setMode('memory',4);}},{wait:2400},{fn:()=>{flashWhite();memCv('frag');}},{wait:1600},
+ ...frag.flatMap(t=>[typeof t==='string'?'<span class="memv">'+t+'</span>':t,{wait:700}]),{fn:()=>{memShot(null);memCv(0);if(typeof Music!=='undefined')Music.setMode('main',6);}},{wait:1800}];}
 // 沙發回憶：停住 → 畫面微暗、音樂換成回憶版、鏡頭慢慢靠近沙發右邊 → 褪色的回憶客廳（沙發右邊有模糊人影，閃一下就消失）→ 閃白回到現實
 // 全程不能點、沒有對話框；回到現實後才接台詞
 function sofaFocus(on){cv.style.transition='filter 2.2s, transform 2.6s ease-in-out';cv.style.transformOrigin='50% 60%';
  cv.style.filter=on?memTone()+' brightness(.8)':'none';cv.style.transform=on?'scale(1.15)':'';$('memV').style.opacity=on?1:0;
- if(typeof Music!=='undefined')Music.setMode(on?'memory':'main',on?1.2:1.5);}
+ if(typeof Music!=='undefined')Music.setMode(on?'memory':'main',on?4:6);}// 原本的音樂慢慢淡出、回憶音樂慢慢進來；結束時反過來，主旋律從小聲慢慢接回
 // 整個客廳（視角 2）的回憶畫面：o.tone 色調、o.ghost 人影、o.haze 白霧、o.zoom 是否放大到沙發
 function fullMem(on,o){const el=$('memFull');if(!on){el.classList.remove('on');el.style.opacity=0;return;}o=o||{};
  const I=ROOMS[o.room||'living2'].img,src=img(I.src),[bg,gh]=el.querySelectorAll('canvas'),W=src.naturalWidth||I.w,H=src.naturalHeight||I.h;
@@ -523,7 +524,7 @@ function plumFocus(on){const[px,py]=PLUM_AT[room]||[50,45];const b=$('bloom');
  if(on==='zoom'){plumHide=true;const S=1.8,cl=(v,p)=>Math.max(-(S-1)*(100-p),Math.min((S-1)*p,v)),tx=cl(50-px,px),ty=cl(50-py,py);// 把梅花盡量移到畫面中間（不露出黑邊）
   plumXY=[px+tx,py+ty];cv.style.transformOrigin=b.style.transformOrigin=px+'% '+py+'%';cv.style.transition='transform 3.8s ease-in-out';cv.style.transform='translate('+tx+'%,'+ty+'%) scale('+S+')';return;}
  if(on==='grey'){cv.style.transition='filter 3.2s ease-in-out, transform 3.8s ease-in-out';cv.style.filter=TONE[0]+' brightness(.85)';$('memV').style.opacity=1;
-  if(typeof Music!=='undefined')Music.setMode('memory',3);return;}
+  if(typeof Music!=='undefined')Music.setMode('memory',4);return;}
  cv.style.transition='filter .4s, transform 2.8s ease-in-out';cv.style.filter='none';cv.style.transform='';$('memV').style.opacity=0;
  b.style.transition='opacity 2s, transform 2.8s ease-in-out, filter 0s';b.style.transform='';b.style.opacity=0;setTimeout(()=>{plumHide=false;},2600);}
 // 場景 5：花瓣上慢慢亮起的光，玩家點一下才繼續（只要一次，沒有失敗條件）
@@ -616,10 +617,10 @@ function coffeeScene(){const el=$('memFull'),gh=el.querySelectorAll('canvas')[1]
    sb(gx,A*.95,t>=d.cup&&t<d.p,bob);}
   coffeeRaf=requestAnimationFrame(f);})();}
 function coffeeMemory(){const[cx,cy]=[89,44];return[{wait:700},
- {fn:()=>{memFocus(true,cx,cy,1.35);if(typeof Music!=='undefined')Music.fadeOut(2.5);}},{wait:3000},// 宋鳥沒有說話；畫面慢慢轉成回憶色調、周圍安靜下來
+ {fn:()=>{memFocus(true,cx,cy,1.35);if(typeof Music!=='undefined')Music.setMode('memory',4);}},{wait:3000},// 宋鳥沒有說話；畫面慢慢轉成回憶色調、周圍安靜下來
  {fn:()=>{const st=memStage(),tone=st?'saturate(.55) sepia(.2)':TONE[0];fullMem(true,{room:'kitchen',tone,zoom:false,anim:1});coffeeScene();}},{wait:coffeeMs()},// 過去的早晨（重複三次）
  {fn:()=>cancelAnimationFrame(coffeeRaf)},{wait:900},// 最後一次關上冰箱：畫面停住、聲音消失
- {fn:()=>{fullMem(false);memFocus(false,cx,cy,1.35);if(typeof Music!=='undefined')setTimeout(()=>Music.begin(),600);}},{wait:2400},// 慢慢回到現在
+ {fn:()=>{fullMem(false);memFocus(false,cx,cy,1.35);if(typeof Music!=='undefined')Music.setMode('main',6);}},{wait:2400},// 慢慢回到現在
  {fn:()=>{const t=pt([735,532]);if(inPoly(ROOMS.living2.img.walk,t[0],t[1])){const p=ipath(P.x,P.y,t[0],t[1]);if(p)P.path=p;}}},{wait:1300}];}// 下意識往冰箱的方向走了一步，又停住
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
@@ -694,7 +695,7 @@ const SEARCH_LINES={
  underBed:['「我猜這裡應該塞不了東西」'],
  shoeCab:['「不會有人把禮物放鞋櫃吧」'],
  barCab:['「ㄟ還有肉鬆 不知道過期了沒」'],
- closetR:['「好黑的衣櫥」']};
+ closetR:['「裡面好暗」']};
 function searching(){return save.quest>=1&&save.quest<3;}
 function huntMark(id){save.hunt=save.hunt||[];if(save.hunt.includes(id))return;
  save.hunt.push(id);persist();const n=save.hunt.filter(h=>HUNT.some(x=>x[0]===h)).length,e=HUNT.find(x=>x[0]===id);toast('🔍 搜查過：'+e[1]+'（'+n+'/'+HUNT.length+'）');}
@@ -702,6 +703,9 @@ function searchHot(id,at,normal){return()=>{if(!searching())return normal||[];co
  return[{fn:()=>rummage(1800,at)},{wait:2000},...(typeof L==='function'?L():L),{fn:()=>huntMark(id)}];};}
 // 道具（目前只有殺蟲劑）：記在存檔，筆記本「道具」欄顯示；同一個道具只能拿一次
 const ITEMS={bugspray:{name:'殺蟲劑'}};
+// 筆記本的尋寶地點：衣帽間左右兩邊合成一個「衣帽間」（翻過任何一邊就打勾）
+function NB_HUNT(){const hs=save.hunt||[],L=[];HUNT.forEach(([id,n,place])=>{if(id==='closetL')return;
+ if(id==='closetR')L.push(['衣帽間','臥室',hs.includes('closetR')||hs.includes('closetL')]);else L.push([n,place,hs.includes(id)]);});return L;}
 function hasItem(id){return(save.items||[]).includes(id);}
 function giveItem(id){if(hasItem(id))return;save.items=save.items||[];save.items.push(id);persist();$('nbBtn').classList.add('new');toast('🎒 獲得道具：'+ITEMS[id].name);}
 // 衣帽間左側收納區（真正的藏禮物位置）：三階段
@@ -710,7 +714,7 @@ function giveItem(id){if(hasItem(id))return;save.items=save.items||[];save.items
 // 第三階段：繼續翻找 → 翻三次、包包一次比一次被撥開 → 第三次從包包之間露出黑色禮物盒 →「是這個嗎？」→ 直接進生日結局
 // 觸發條件可改 FINAL_OPEN
 const FINAL_OPEN=()=>save.quest>=2;
-const LEFT1=['「這裡怎麼塞了這麼多包包……」','「感覺翻起來會很麻煩。」'],LEFT_ASK='要不要再仔細翻找看看？',LEFT2=['「……嗯？」','「掛著的衣服下面，好像有個地方還沒翻過。」','「包包跟包包之間……？」',{wait:1800}];// 最後停一下，讓玩家把遊戲裡的線索和現實的衣櫥連起來
+const LEFT1=['「這裡怎麼塞了這麼多包包……」','「感覺翻起來會很麻煩。」'],LEFT_ASK='要不要再仔細翻找看看？',LEFT2=['「……嗯？」','「這裡是不是沒翻過」',{wait:1500}];// 不提示包包之間，讓玩家自己去想
 function closetLeft(normal){return()=>{
  const dig=ms=>[{fn:()=>rummage(ms,[255,960])},{wait:ms+300},{fn:()=>huntMark('closetL')}];
  if(save.quest>=3)return giftFound();// 舊存檔（以前挑戰過）：直接找到禮物
@@ -827,8 +831,8 @@ function renderNb(){
   mg.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🧩 '+MEMORIES[id].name;b.appendChild(e);});}
  if((save.items||[]).length){const h=document.createElement('h3');h.textContent='道具';b.appendChild(h);
   save.items.forEach(id=>{const e=document.createElement('div');e.className='clue';e.textContent='🎒 '+ITEMS[id].name;b.appendChild(e);});}
- if(save.quest){const hs=(save.hunt||[]).filter(h=>HUNT.some(x=>x[0]===h)),h=document.createElement('h3');h.textContent='尋寶地點（'+hs.length+'/'+HUNT.length+'）';b.appendChild(h);
-  HUNT.forEach(([id,n,place])=>{const e=document.createElement('div');e.className='clue';e.innerHTML=(hs.includes(id)?'✅ ':'⬜ ')+n+'<small>'+place+'</small>';b.appendChild(e);});}
+ if(save.quest){const L=NB_HUNT(),h=document.createElement('h3');h.textContent='尋寶地點（'+L.filter(x=>x[2]).length+'/'+L.length+'）';b.appendChild(h);
+  NB_HUNT().forEach(([n,place,done])=>{const e=document.createElement('div');e.className='clue';e.innerHTML=(done?'✅ ':'⬜ ')+n+'<small>'+place+'</small>';b.appendChild(e);});}
  const got=save.ach||[],h=document.createElement('h3');h.textContent='成就';b.appendChild(h);
  Object.entries(ACH).forEach(([id,a])=>{if(a.hidden&&!got.includes(id))return;const e=document.createElement('div');e.className='ded';
   e.textContent=got.includes(id)?'🏆 '+a.name+'：'+a.desc:'🔒 '+a.name;b.appendChild(e);});
@@ -1068,7 +1072,7 @@ function povLoop(t){if(!povOn)return;povDraw(t);requestAnimationFrame(povLoop);}
 let phoneCb=null;
 $('alarmBtn').addEventListener('pointerdown',e=>e.stopPropagation());
 $('alarmBtn').addEventListener('click',e=>{e.stopPropagation();if(phoneCb){const f=phoneCb;phoneCb=null;f();}});
-// 鬧鐘只有按「⏰ 關掉鬧鐘」才會停；點畫面其他地方（包括手機）只提示
+// 鬧鐘只有按「關掉鬧鐘」才會停；點畫面其他地方（包括手機）只提示
 pv.addEventListener('pointerdown',e=>{e.stopPropagation();if(phoneCb)toast('⏰ 按下面的按鈕關掉鬧鐘');});
 const BED_HEAD=pt([482,318]),BED_SIT=pt([482,348]),BED_OUT=pt([592,425]);
 function hop(to,ms){const fx=P.x,fy=P.y,t0=performance.now();
