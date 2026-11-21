@@ -20,6 +20,10 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 #dlg{position:relative;box-sizing:border-box;max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;background:var(--box);color:#2b2230;border:3px solid var(--line);border-radius:8px;padding:10px 12px;font-size:16px;line-height:1.5;display:none}
 #dlg .qcard{text-align:center;font-size:13px;line-height:1.45}#dlg .qcard b{display:block;font-size:16px;margin:1px 0 2px}#dlg .qcard+small{margin-top:-14px}
 #memV{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s;background:radial-gradient(ellipse at center,transparent 45%,rgba(0,0,0,.75) 100%)}
+#memFull{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .5s}
+#memFull canvas{position:absolute;inset:0;width:100%;height:100%;transform-origin:31% 60%;transform:scale(1.15)}
+#memFull .gh{opacity:0;filter:blur(1px)}#memFull.on .gh{animation:ghFlick 1.9s ease-in-out forwards}
+@keyframes ghFlick{0%{opacity:0}22%{opacity:.95}38%{opacity:.45}52%{opacity:1}70%{opacity:.6}84%{opacity:.9}100%{opacity:0}}
 #memShot{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .6s;background:radial-gradient(ellipse at center,rgba(40,34,30,.2) 30%,rgba(0,0,0,.85) 100%)}
 #memShot canvas{border-radius:6px;filter:blur(.6px);box-shadow:0 0 40px 20px rgba(0,0,0,.6)}
 #memShot small{position:absolute;right:16px;bottom:12px;color:#fff6e4;opacity:.6;font-size:14px}
@@ -67,7 +71,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <button id="mute" aria-label="音樂開關">音樂：開</button></div></div>
 <div id="stage">
 <canvas id="c"></canvas>
-<div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div>
+<div id="memV"></div><div id="memShot"><canvas></canvas><small>▼</small></div><div id="memFull"><canvas></canvas><canvas class="gh"></canvas></div>
 <div id="fade"></div>
 <canvas id="pov" width="160" height="120"></canvas><div class="lid" id="lidT"></div><div class="lid" id="lidB"></div><button id="alarmBtn">⏰ 關掉鬧鐘</button>
 <div id="toast"></div><div id="count"></div>
@@ -82,7 +86,7 @@ canvas{width:100%;height:100%;display:block;image-rendering:pixelated;touch-acti
 <script src="music.js?v=3"></script>
 <script>
 // 自動更新：開啟或從背景切回來時，檢查 GitHub 上有沒有新版；有就重新載入（存檔不受影響）。BUILD 由 commit 時自動更新
-const BUILD='20261120195504';
+const BUILD='20261122024333';
 let ending=false;const SHOW_HOT=location.search.includes('hot');// 網址加 ?hot：用橘色框標出尋寶點擊區域（給測試用）// 生日結局播放中：不更新、不能操作
 let updWait=false;
 function checkUpdate(){if(BUILD==='dev'||!navigator.onLine)return;
@@ -448,6 +452,20 @@ function memCv(m){cv.style.transition=m==='dim'?'filter .3s':m==='frag'?'filter 
 // frag：記憶內容，可以是文字（灰色斜體）或 {shot:{room,rect:[x,y,w,h]}}（該房間底圖的局部特寫，原圖像素）
 function memory(frag){return[{fn:()=>memCv('dim')},{wait:500},{fn:()=>{flashWhite();memCv('frag');}},{wait:600},
  ...frag.map(t=>typeof t==='string'?'<span class="memv">'+t+'</span>':t),{fn:()=>{memShot(null);memCv(0);}},{wait:800}];}
+// 沙發回憶：停住 → 畫面微暗、音樂換成回憶版、鏡頭慢慢靠近沙發右邊 → 褪色的回憶客廳（沙發右邊有模糊人影，閃一下就消失）→ 閃白回到現實
+// 全程不能點、沒有對話框；回到現實後才接台詞
+function sofaFocus(on){cv.style.transition='filter 1.2s, transform 1.4s ease-in-out';cv.style.transformOrigin='31% 60%';
+ cv.style.filter=on?'brightness(.72) saturate(.75)':'none';cv.style.transform=on?'scale(1.15)':'';$('memV').style.opacity=on?1:0;
+ if(typeof Music!=='undefined')Music.setMode(on?'memory':'main',on?1.2:1.5);}
+function sofaFull(on){const o=$('memFull');if(!on){o.classList.remove('on');o.style.opacity=0;return;}
+ const I=ROOMS.living2.img,src=img(I.src),[bg,gh]=o.querySelectorAll('canvas'),W=src.naturalWidth||I.w,H=src.naturalHeight||I.h;
+ bg.width=gh.width=W;bg.height=gh.height=H;const g=bg.getContext('2d');
+ g.filter='sepia(.55) saturate(.7) brightness(1.05) blur(1.5px)';g.drawImage(src,0,0,W,H);g.filter='none';
+ const r=g.createRadialGradient(W*.31,H*.58,0,W*.31,H*.58,W*.6);r.addColorStop(0,'rgba(255,246,228,.32)');r.addColorStop(1,'rgba(255,240,220,.08)');g.fillStyle=r;g.fillRect(0,0,W,H);
+ const x=gh.getContext('2d');x.clearRect(0,0,W,H);x.save();x.scale(W/800,H/600);ghostDraw(x,800,600,'sitting');x.restore();// 人影坐在沙發左邊（亮晶晶那一邊、靠書櫃），座標用 800 格
+ o.classList.remove('on');o.offsetWidth;o.classList.add('on');o.style.opacity=1;}
+function sofaMemory(){return[{wait:450},{fn:()=>sofaFocus(true)},{wait:1500},{fn:()=>sofaFull(true)},{wait:2000},
+ {fn:()=>{flashWhite();sofaFull(false);sofaFocus(false);}},{wait:1000}];}
 // 記憶特寫：從現有底圖裁一塊放大、褪色，淡入淡出；不用新圖
 function memShot(sh){const o=$('memShot');if(!sh){o.style.opacity=0;o.style.pointerEvents='none';return;}
  const I=ROOMS[sh.room].img,src=img(I.src),[x,y,w,h]=sh.rect,c=o.querySelector('canvas');
@@ -458,6 +476,14 @@ function ghostDraw(g,w,h,kind){const k=2.5,c=document.createElement('canvas');c.
  const col='rgb(16,12,15)';x.fillStyle=col;x.strokeStyle=col;x.lineCap='round';x.lineJoin='round';
  const E=(cx,cy,rx,ry,r)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,r||0,0,Math.PI*2);x.fill();};
  const L=(wd,...p)=>{x.lineWidth=wd;x.beginPath();x.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)x.lineTo(p[i],p[i+1]);x.stroke();};
+ if(kind==='sitting'){// 坐在沙發上、面向前面低頭滑手機：長頭髮、雙手拿手機在胸前、膝蓋朝前、小腿垂到地板（800 格座標）
+  E(250,262,28,34);E(250,250,22,25);// 披肩長髮、頭
+  x.fillRect(243,272,14,18);// 脖子
+  x.beginPath();x.moveTo(218,290);x.lineTo(282,290);x.lineTo(275,372);x.lineTo(225,372);x.closePath();x.fill();// 上半身
+  L(13,222,296,213,340,240,350);L(13,278,296,287,340,260,350);x.fillRect(239,330,22,22);// 手臂、手機
+  x.beginPath();x.moveTo(220,366);x.lineTo(280,366);x.lineTo(288,394);x.lineTo(212,394);x.closePath();x.fill();// 大腿（膝蓋朝前）
+  L(15,229,392,227,436);L(15,271,392,273,436);E(224,440,11,5);E(276,440,11,5);// 小腿、腳
+ }
  if(kind==='lying'){// 半躺在沙發上滑手機：頭靠扶手、長髮、身體沿著座墊、膝蓋立起來（整個人連在一起，像一個人影）
   E(80,92,37,39);// 頭
   L(34,72,112,64,152,76,174);// 披下來的長髮
@@ -480,8 +506,8 @@ const MEMORIES={
  // 【待補】正式台詞還沒定，after 先放可替換的文字
  memory_sofa:{name:'沙發的另一邊（暫定）',when:()=>memOpen()&&save.clues.includes('tissue'),
   room:'living2',at:pt([250,370]),hint:'沙發',
-  frag:[{shot:{room:'living2',rect:[271,520,440,300],ghost:'lying'}}],// 沙發特寫＋一個半躺著的模糊女生剪影
-  after:['（記憶②台詞待補）']},
+  seq:()=>sofaMemory(),// 特別演出：先覺得不對勁 → 褪色的回憶客廳、沙發右邊有個看不清的人影 → 回到現實才說話
+  after:['「……剛剛那是什麼？」']},
  // 記憶③ 樂高梅花（關鍵記憶，暫定）：①② 都看過之後，點書櫃上的樂高梅花（客廳兩個視角都可以）
  // 【待補】正式台詞還沒定；看完接「最後提示」（任務文字不變，不提示藏匿地點）
  memory_lego:{name:'樂高梅花（暫定）',when:()=>memOpen()&&(save.mem||[]).includes('memory_coffee')&&(save.mem||[]).includes('memory_sofa'),
@@ -555,7 +581,7 @@ function rummageDraw(){if(room!==rumRoom||performance.now()>=rumUntil)return;con
 function memHot(id,normal){return()=>{const m=MEMORIES[id];
  if((save.mem||[]).includes(id)||!m.when())return typeof normal==='function'?normal():normal;// 還沒到時機、或已經看過：只說原本的台詞
  hintT=Date.now();
- return[...memory(m.frag),...m.after,{memGot:id},...(m.then?m.then():[])];};}
+ return[...(m.seq?m.seq():memory(m.frag)),...m.after,{memGot:id},...(m.then?m.then():[])];};}
 // ===== 下一步提示 =====
 // 1. 可以觸發記憶的物件旁邊有閃光（看過就消失）
 // 2. 主線開啟後，有記憶可以看、玩家卻一陣子沒找到時，跳出一句提示（之後每隔一段時間再提示一次）
